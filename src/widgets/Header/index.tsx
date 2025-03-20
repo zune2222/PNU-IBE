@@ -3,10 +3,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import Button from "../../shared/ui/Button";
+import { usePathname } from "next/navigation";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
+
+  // 현재 페이지가 about 페이지인지 확인
+  const isAboutPage = pathname === "/about";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,10 +24,13 @@ export function Header() {
     };
   }, []);
 
+  // about 페이지이거나 스크롤된 상태면 배경색을 적용
+  const shouldShowBackground = isScrolled || isAboutPage;
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-white shadow-md py-2" : "bg-transparent py-4"
+        shouldShowBackground ? "bg-white shadow-md py-2" : "bg-transparent py-4"
       }`}
     >
       <div className="container-custom">
@@ -38,7 +46,7 @@ export function Header() {
             />
             <span
               className={`ml-2 font-bold text-xl transition-colors duration-300 ${
-                isScrolled ? "text-dark" : "text-white"
+                shouldShowBackground ? "text-dark" : "text-white"
               }`}
             >
               정보의생명공학대학
@@ -50,7 +58,7 @@ export function Header() {
             <Link
               href="/about"
               className={`transition-colors duration-300 ${
-                isScrolled
+                shouldShowBackground
                   ? "text-gray-700 hover:text-primary"
                   : "text-white hover:text-tertiary"
               }`}
@@ -60,7 +68,7 @@ export function Header() {
             <Link
               href="/notice"
               className={`transition-colors duration-300 ${
-                isScrolled
+                shouldShowBackground
                   ? "text-gray-700 hover:text-primary"
                   : "text-white hover:text-tertiary"
               }`}
@@ -70,7 +78,7 @@ export function Header() {
             <Link
               href="/events"
               className={`transition-colors duration-300 ${
-                isScrolled
+                shouldShowBackground
                   ? "text-gray-700 hover:text-primary"
                   : "text-white hover:text-tertiary"
               }`}
@@ -80,7 +88,7 @@ export function Header() {
             <Link
               href="/council"
               className={`transition-colors duration-300 ${
-                isScrolled
+                shouldShowBackground
                   ? "text-gray-700 hover:text-primary"
                   : "text-white hover:text-tertiary"
               }`}
@@ -88,10 +96,12 @@ export function Header() {
               학생회 구성
             </Link>
             <Button
-              variant={isScrolled ? "primary" : "outline"}
+              variant={shouldShowBackground ? "primary" : "outline"}
               size="sm"
               className={
-                isScrolled ? "" : "border-white text-white hover:bg-white/20"
+                shouldShowBackground
+                  ? ""
+                  : "border-white text-white hover:bg-white/20"
               }
             >
               문의하기
@@ -100,7 +110,9 @@ export function Header() {
 
           {/* 모바일 메뉴 버튼 */}
           <button
-            className={`md:hidden ${isScrolled ? "text-dark" : "text-white"}`}
+            className={`md:hidden ${
+              shouldShowBackground ? "text-dark" : "text-white"
+            }`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
