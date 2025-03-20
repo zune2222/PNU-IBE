@@ -1,6 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import LogoIcon from "../../shared/ui/icons/LogoIcon";
 
 const footerLinks = [
   {
@@ -119,9 +119,16 @@ export function Footer() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
+              className="flex items-center"
             >
-              <LogoIcon className="h-10 w-10 text-white" />
-              <span className="ml-2 text-xl font-bold text-white">
+              <Image
+                src="/logo.png"
+                alt="부산대학교 정보의생명공학대학 학생회 로고"
+                width={48}
+                height={48}
+                className="h-auto w-auto"
+              />
+              <span className="ml-3 text-xl font-bold text-white">
                 정보의생명공학대학 학생회
               </span>
             </motion.div>
