@@ -173,8 +173,8 @@ export function EventsSection() {
 
                 <div className="mt-auto">
                   <Button
-                    variant="primary"
-                    className="bg-white text-primary hover:bg-white/90 shadow-xl"
+                    variant="outline"
+                    className="bg-white text-primary hover:bg-white/90 hover:text-secondary font-medium shadow-xl border-2 border-transparent hover:border-white transition-all duration-300"
                   >
                     행사 참여하기
                   </Button>
