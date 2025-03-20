@@ -5,29 +5,17 @@ import { motion } from "framer-motion";
 const footerLinks = [
   {
     title: "학생회 소개",
-    links: [
-      { text: "학생회 연혁", href: "/about/history" },
-      { text: "학생회 구성", href: "/about/members" },
-      { text: "학생회 활동", href: "/about/activities" },
-      { text: "학생회 규정", href: "/about/rules" },
-    ],
+    links: [{ text: "학생회 소개", href: "/about" }],
   },
   {
-    title: "학생 지원",
-    links: [
-      { text: "장학금 안내", href: "/support/scholarship" },
-      { text: "학사 일정", href: "/support/academic-calendar" },
-      { text: "동아리 활동", href: "/support/clubs" },
-      { text: "취업 지원", href: "/support/career" },
-    ],
+    title: "공지사항",
+    links: [{ text: "공지사항", href: "/notice" }],
   },
   {
-    title: "커뮤니티",
+    title: "서비스",
     links: [
-      { text: "공지사항", href: "/community/notices" },
-      { text: "학과 소식", href: "/community/news" },
-      { text: "자주 묻는 질문", href: "/community/faq" },
-      { text: "연락처", href: "/community/contact" },
+      { text: "행사 정보", href: "/events" },
+      { text: "물품 대여", href: "/rental" },
     ],
   },
 ];
@@ -113,7 +101,7 @@ export function Footer() {
 
       <div className="container-custom relative pt-16 pb-8 z-10">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10 border-b border-gray-800">
-          <div className="md:col-span-4 space-y-6">
+          <div className="md:col-span-6 space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -214,7 +202,7 @@ export function Footer() {
             </motion.div>
           </div>
 
-          <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div className="md:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-8">
             {footerLinks.map((column, idx) => (
               <motion.div
                 key={column.title}
@@ -264,25 +252,6 @@ export function Footer() {
                 </a>
               ))}
             </div>
-
-            <div className="mt-6">
-              <h4 className="text-lg font-medium text-white mb-4">
-                뉴스레터 구독
-              </h4>
-              <form className="flex">
-                <input
-                  type="email"
-                  placeholder="이메일 주소"
-                  className="bg-gray-800 text-white px-4 py-2 rounded-l-md w-full focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-                <button
-                  type="submit"
-                  className="bg-primary text-white px-4 py-2 rounded-r-md hover:bg-primary/90 transition-colors"
-                >
-                  구독
-                </button>
-              </form>
-            </div>
           </motion.div>
         </div>
 
@@ -294,8 +263,17 @@ export function Footer() {
             transition={{ duration: 0.5, delay: 0.6 }}
             className="text-gray-500 text-sm"
           >
-            © {new Date().getFullYear()} 부산대학교 정보의생명공학대학 학생회.
-            All rights reserved.
+            © {new Date().getFullYear()} 부산대학교 정보의생명공학대학 학생회 |
+            Developed by{" "}
+            <a
+              href="https://github.com/zune2222"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              zune2222
+            </a>
+            . All rights reserved.
           </motion.p>
 
           <motion.div
@@ -316,12 +294,6 @@ export function Footer() {
               className="text-gray-500 hover:text-gray-300 text-sm"
             >
               이용약관
-            </Link>
-            <Link
-              href="/sitemap"
-              className="text-gray-500 hover:text-gray-300 text-sm"
-            >
-              사이트맵
             </Link>
           </motion.div>
         </div>
