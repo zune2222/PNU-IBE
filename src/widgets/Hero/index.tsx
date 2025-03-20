@@ -228,43 +228,6 @@ export function Hero() {
         </div>
 
         {/* 하단 스크롤 안내 */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 1,
-            delay: 1.5,
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
-        >
-          <div className="flex flex-col items-center">
-            <span className="text-sm mb-2">스크롤 다운</span>
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 5L12 19"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19 12L12 19L5 12"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-        </motion.div>
       </div>
 
       {/* 커스텀 스타일 */}
