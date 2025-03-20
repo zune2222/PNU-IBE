@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
-import Button from "../../shared/ui/Button";
 import { usePathname } from "next/navigation";
 
 export function Header() {
@@ -12,6 +11,9 @@ export function Header() {
 
   // 현재 페이지가 about 페이지인지 확인
   const isAboutPage = pathname === "/about";
+  const isNoticePage = pathname === "/notice";
+  const isEventsPage = pathname === "/events";
+  const isRentalPage = pathname === "/rental";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,8 +26,9 @@ export function Header() {
     };
   }, []);
 
-  // about 페이지이거나 스크롤된 상태면 배경색을 적용
-  const shouldShowBackground = isScrolled || isAboutPage;
+  // about 페이지이거나 notice 페이지이거나 스크롤된 상태면 배경색을 적용
+  const shouldShowBackground =
+    isScrolled || isAboutPage || isNoticePage || isEventsPage || isRentalPage;
 
   return (
     <header
@@ -86,26 +89,15 @@ export function Header() {
               행사 정보
             </Link>
             <Link
-              href="/council"
+              href="/rental"
               className={`transition-colors duration-300 ${
                 shouldShowBackground
                   ? "text-gray-700 hover:text-primary"
                   : "text-white hover:text-tertiary"
               }`}
             >
-              학생회 구성
+              물품 대여
             </Link>
-            <Button
-              variant={shouldShowBackground ? "primary" : "outline"}
-              size="sm"
-              className={
-                shouldShowBackground
-                  ? ""
-                  : "border-white text-white hover:bg-white/20"
-              }
-            >
-              문의하기
-            </Button>
           </nav>
 
           {/* 모바일 메뉴 버튼 */}
@@ -148,14 +140,11 @@ export function Header() {
                 행사 정보
               </Link>
               <Link
-                href="/council"
+                href="/rental"
                 className="text-dark hover:text-primary transition-colors"
               >
-                학생회 구성
+                물품 대여
               </Link>
-              <Button variant="primary" size="sm" className="self-start">
-                문의하기
-              </Button>
             </nav>
           </div>
         </div>
