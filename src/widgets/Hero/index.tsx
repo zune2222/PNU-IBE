@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Button from "../../shared/ui/Button";
+import Image from "next/image";
 
 export function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -200,24 +201,51 @@ export function Hero() {
                 </div>
 
                 <div className="relative w-full h-full flex flex-col items-center justify-center text-white p-10 text-center">
-                  <div className="w-24 h-24 mb-6 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
-                    <span className="text-4xl font-bold text-white">정의</span>
-                  </div>
+                  <motion.div
+                    className="w-32 h-32 mb-6 rounded-full bg-white flex items-center justify-center overflow-hidden relative border-4 border-white shadow-[0_0_30px_rgba(255,255,255,0.6)]"
+                    whileHover={{ scale: 1.05 }}
+                    animate={{
+                      boxShadow: [
+                        "0 0 15px rgba(255,255,255,0.4)",
+                        "0 0 30px rgba(255,255,255,0.7)",
+                        "0 0 15px rgba(255,255,255,0.4)",
+                      ],
+                    }}
+                    transition={{
+                      boxShadow: {
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                      },
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-white"></div>
+                    <Image
+                      src="/logo.png"
+                      alt="부산대학교 정보의생명공학대학 학생회 로고"
+                      width={85}
+                      height={85}
+                      className="z-10 relative"
+                    />
+                  </motion.div>
                   <h3 className="text-3xl font-bold mb-4">
                     정보의생명공학대학
                   </h3>
                   <p className="text-lg text-white/80 mb-8">
                     학문과 기술의 융합
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2 justify-center">
                     {["정보", "융합", "미래", "혁신", "생명"].map(
                       (keyword, i) => (
-                        <span
+                        <motion.span
                           key={i}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5 + i * 0.1 }}
                           className="px-3 py-1 rounded-full text-sm bg-white/10 backdrop-blur-md"
                         >
                           {keyword}
-                        </span>
+                        </motion.span>
                       )
                     )}
                   </div>
