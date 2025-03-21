@@ -118,9 +118,7 @@ export function RentalHero() {
                 </div>
                 <div>
                   <h4 className="font-medium text-white">대여 장소</h4>
-                  <p className="text-sm text-white/80">
-                    학생회실 (공학관 309호)
-                  </p>
+                  <p className="text-sm text-white/80">학생회실</p>
                 </div>
               </div>
               <div className="flex items-start">
