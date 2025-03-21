@@ -13,6 +13,7 @@ export function Header() {
   const isAboutPage = pathname === "/about/";
 
   const isNoticeDetailPage = pathname?.startsWith("/notice/");
+  const isEventsDetailPage = pathname?.startsWith("/events/");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,7 +30,8 @@ export function Header() {
   }, []);
 
   // 특정 페이지에서는 항상 배경색 적용
-  const shouldShowBackground = isScrolled || isAboutPage || isNoticeDetailPage;
+  const shouldShowBackground =
+    isScrolled || isAboutPage || isNoticeDetailPage || isEventsDetailPage;
 
   // about 페이지에서는 항상 어두운 텍스트 색상 사용
   const getTextColor = () => {

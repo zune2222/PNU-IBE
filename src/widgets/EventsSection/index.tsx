@@ -1,62 +1,24 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Button from "../../shared/ui/Button";
-
-const events = [
-  {
-    id: 1,
-    title: "신입생 환영회",
-    date: "2025년 3월 15일",
-    time: "오후 2:00 - 5:00",
-    location: "부산대학교 정보의생명공학관 강당",
-    description:
-      "신입생들을 위한 환영 행사입니다. 학과 소개와 선배들과의 만남을 통해 학교 생활에 빠르게 적응할 수 있는 시간을 가질 예정입니다.",
-    image: "/images/event-welcome.jpg",
-    gradient: "from-[#00BFFF] to-[#0077B6]",
-    featured: true,
-  },
-  {
-    id: 2,
-    title: "학술 세미나",
-    date: "2025년 4월 10일",
-    time: "오후 3:30 - 6:00",
-    location: "부산대학교 정보의생명공학관 세미나실",
-    description:
-      "정보의생명공학 분야의 최신 트렌드와 연구 성과를 공유하는 학술 세미나입니다. 관련 분야 전문가들의 강연이 예정되어 있습니다.",
-    image: "/images/event-seminar.jpg",
-    gradient: "from-[#87CEFA] to-[#4A6FA5]",
-    featured: false,
-  },
-  {
-    id: 3,
-    title: "체육대회",
-    date: "2025년 5월 20일",
-    time: "오전 10:00 - 오후 4:00",
-    location: "부산대학교 대운동장",
-    description:
-      "정보의생명공학대학 학생들이 함께하는 체육대회입니다. 다양한 경기와 이벤트를 통해 학과 간 친목을 도모할 수 있는 행사입니다.",
-    image: "/images/event-sports.jpg",
-    gradient: "from-[#485493] to-[#2C3968]",
-    featured: false,
-  },
-  {
-    id: 4,
-    title: "취업 박람회",
-    date: "2025년 9월 5일",
-    time: "오전 11:00 - 오후 5:00",
-    location: "부산대학교 대강당",
-    description:
-      "정보의생명공학 분야 기업들이 참여하는 취업 박람회입니다. 채용 정보 확인 및 현장 면접 기회가 제공됩니다.",
-    image: "/images/event-career.jpg",
-    gradient: "from-[#ADD8E6] to-[#5B8DA0]",
-    featured: false,
-  },
-];
+import Link from "next/link";
+import {
+  getUpcomingEvents,
+  getFeaturedEvents,
+  getStatusText,
+} from "../../shared/data/eventsData";
 
 export function EventsSection() {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const featuredEvent = events.find((event) => event.featured);
-  const regularEvents = events.filter((event) => !event.featured);
+
+  // 피처링된 행사 및 일반 행사 가져오기
+  const featuredEvents = getFeaturedEvents();
+  const featuredEvent = featuredEvents.length > 0 ? featuredEvents[0] : null;
+
+  // 다가오는 행사 (featuredEvent를 제외하고 최대 3개)
+  const upcomingEvents = getUpcomingEvents(4)
+    .filter((event) => !featuredEvent || event.id !== featuredEvent.id)
+    .slice(0, 3);
 
   return (
     <section className="py-24 bg-gray-50 relative overflow-hidden">
@@ -109,7 +71,7 @@ export function EventsSection() {
           >
             <div className="relative overflow-hidden rounded-3xl shadow-xl group">
               <div
-                className={`absolute inset-0 bg-gradient-to-r ${featuredEvent.gradient} opacity-90`}
+                className={`absolute inset-0 bg-gradient-to-r ${featuredEvent.gradient}`}
               ></div>
               <div className="absolute inset-0 bg-black opacity-40"></div>
 
@@ -134,7 +96,8 @@ export function EventsSection() {
                       />
                     </svg>
                     <span>
-                      {featuredEvent.date} • {featuredEvent.time}
+                      {featuredEvent.date.replace(/-/g, ".")} •{" "}
+                      {featuredEvent.time}
                     </span>
                   </div>
                 </div>
@@ -172,12 +135,14 @@ export function EventsSection() {
                 </p>
 
                 <div className="mt-auto">
-                  <Button
-                    variant="outline"
-                    className="bg-white text-primary hover:bg-white/90 hover:text-secondary font-medium shadow-xl border-2 border-transparent hover:border-white transition-all duration-300"
-                  >
-                    행사 참여하기
-                  </Button>
+                  <Link href={`/events/${featuredEvent.id}`}>
+                    <Button
+                      variant="outline"
+                      className="bg-white text-primary hover:bg-white/90 hover:text-secondary font-medium shadow-xl border-2 border-transparent hover:border-white transition-all duration-300"
+                    >
+                      행사 참여하기
+                    </Button>
+                  </Link>
                 </div>
 
                 {/* 장식적인 요소들 */}
@@ -190,7 +155,7 @@ export function EventsSection() {
 
         {/* 일반 이벤트 그리드 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {regularEvents.map((event, index) => (
+          {upcomingEvents.map((event, index) => (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: 30 }}
@@ -204,7 +169,7 @@ export function EventsSection() {
               <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col">
                 <div
                   className={`h-2 w-full bg-gradient-to-r ${
-                    event.gradient
+                    event.gradient || "from-primary to-tertiary"
                   } transition-all duration-300 ${
                     hoveredId === event.id ? "h-3" : "h-2"
                   }`}
@@ -227,7 +192,7 @@ export function EventsSection() {
                           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      <span>{event.date}</span>
+                      <span>{event.date.replace(/-/g, ".")}</span>
                     </div>
 
                     <div className="text-xs font-medium bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
@@ -263,31 +228,65 @@ export function EventsSection() {
                     {event.location}
                   </p>
 
-                  <p className="text-gray-600 mb-6">{event.description}</p>
-                </div>
+                  <p className="text-gray-600 mb-6 line-clamp-3">
+                    {event.description}
+                  </p>
 
-                <div className="px-6 pb-6 mt-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    fullWidth
-                    className="group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-300"
-                  >
-                    자세히 보기
-                  </Button>
+                  <div className="mt-auto">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-medium inline-block px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">
+                          {getStatusText(event.status)}
+                        </span>
+                      </div>
+                      <Link href={`/events/${event.id}`}>
+                        <Button variant="outline" className="text-primary">
+                          상세 정보
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
 
-        <div className="flex justify-center mt-12">
-          <Button
-            variant="primary"
-            className="shadow-lg hover:shadow-primary/20 hover:shadow-xl mt-4 px-8 rounded-full transition-all duration-300 hover:-translate-y-1"
-          >
-            모든 행사 보기
-          </Button>
+        {/* 더 많은 행사 보기 버튼 */}
+        <div className="text-center mt-12">
+          <Link href="/events">
+            <Button variant="outline" className="mx-auto">
+              더 많은 행사 보기
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 ml-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
