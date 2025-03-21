@@ -2,30 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { event as gaEvent } from "../../shared/lib/analytics";
-
-// 공지사항 더미 데이터
-const noticeData = [
-  {
-    id: 1,
-    title: "웹사이트 베타 버전 안내",
-    category: "공지",
-    date: "2024-03-22",
-    views: 325,
-    important: true,
-    preview:
-      "현재 학생회 웹사이트는 베타 버전으로 운영 중입니다. 일부 기능이 제한적이거나 정보가 정확하지 않을 수 있습니다.",
-  },
-  {
-    id: 2,
-    title: "2024 정의대 바람막이 단체 구매 안내",
-    category: "학생회",
-    date: "2024-03-22",
-    views: 148,
-    important: true,
-    preview:
-      "정의대 바람막이를 단체 구매합니다. 신청 기간: 3월 24일(월) ~ 3월 30일(일), 가격: 57,000원, 입금 후 신청 폼 작성 부탁드립니다.",
-  },
-];
+import { noticeData, getCategoryColor } from "../../shared/data/noticeData";
 
 export function NoticeList() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -141,21 +118,9 @@ export function NoticeList() {
                     </td>
                     <td className="px-6 py-5 whitespace-nowrap text-center">
                       <span
-                        className={`px-3 py-1.5 text-xs font-medium rounded-full ${
-                          notice.category === "학사"
-                            ? "bg-blue-100 text-blue-700"
-                            : notice.category === "장학"
-                            ? "bg-green-100 text-green-700"
-                            : notice.category === "행사"
-                            ? "bg-purple-100 text-purple-700"
-                            : notice.category === "취업"
-                            ? "bg-amber-100 text-amber-700"
-                            : notice.category === "동아리"
-                            ? "bg-teal-100 text-teal-700"
-                            : notice.category === "공지"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-gray-100 text-gray-700"
-                        }`}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-full ${getCategoryColor(
+                          notice.category
+                        )}`}
                       >
                         {notice.category}
                       </span>
