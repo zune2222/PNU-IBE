@@ -1,40 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 📚 PNU IBE 학생회 웹사이트
 
-## Getting Started
+<div align="center">
+  <img src="public/images/logo.png" alt="PNU IBE 로고" width="150" />
+  <h3>부산대학교 정보의생명공학대학 학생회 공식 웹사이트</h3>
+  
+  [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+  [![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+</div>
 
-First, run the development server:
+## 🌟 소개
+
+PNU IBE 학생회 웹사이트는 부산대학교 정보의생명공학대학 학생회의 공식 웹 플랫폼입니다. 학생회 활동, 행사 정보, 학생회 구성원 소개 등 다양한 정보를 제공하며, 학우들과의 소통을 강화하기 위해 개발되었습니다.
+
+정보의생명공학대학 학생회 "정의"는 학우들을 위한 다양한 행사와 복지 프로그램을 운영하고 있으며, 이 웹사이트를 통해 모든 활동을 투명하게 공유하고 있습니다.
+
+## ✨ 주요 기능
+
+- **📅 행사 관리 시스템**: 학생회 주최 행사 정보 제공 및 카테고리별 필터링
+- **👥 학생회 소개**: 학생회 구성원 및 조직도 소개
+- **🏆 학생회 연혁**: 학생회의 역사와 주요 성과 타임라인
+- **📢 공지사항**: 중요 공지 및 알림 게시판
+- **📱 반응형 디자인**: 모든 디바이스에서 최적화된 사용자 경험 제공
+
+## 🛠️ 기술 스택
+
+- **프론트엔드**: Next.js, React, TypeScript, Tailwind CSS, Framer Motion
+- **데이터 관리**: 정적 데이터 파일 (JSON/TypeScript)
+- **배포**: Vercel/Netlify
+
+## 🚀 설치 및 실행
 
 ```bash
+# 저장소 클론
+git clone https://github.com/username/pnu-ibe.git
+cd pnu-ibe
+
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# 프로덕션 빌드
+npm run build
+
+# 프로덕션 서버 실행
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📂 프로젝트 구조
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+```
+pnu-ibe/
+├── public/          # 정적 파일 (이미지, 아이콘 등)
+├── src/
+│   ├── app/         # Next.js 앱 라우터
+│   ├── components/  # 재사용 가능한 UI 컴포넌트
+│   ├── pages/       # 페이지 컴포넌트
+│   ├── shared/      # 공유 리소스 (데이터, 유틸리티)
+│   ├── widgets/     # 복합 컴포넌트
+│   └── styles/      # 전역 스타일
+└── package.json     # 프로젝트 의존성 및 스크립트
+```
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## 👨‍💻 학생회 정보
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+- **학생회명**: 정의
+- **설립 연도**: 2025년
+- **위치**: 부산대학교 제6공학관
+- **연락처**: 인스타그램 [@pnu_ibe](https://instagram.com/pnu_ibe)
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔮 향후 개발 계획
 
-## Learn More
+- 학생 커뮤니티 기능 추가
+- 학생회비 사용 내역 공개 시스템
+- 동아리 활동 소개 페이지
+- 학사 일정 캘린더 연동
 
-To learn more about Next.js, take a look at the following resources:
+## 👏 기여하기
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+이 프로젝트에 기여하고 싶으신가요? 언제든지 Pull Request를 보내주세요!
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. 저장소를 Fork합니다
+2. 새로운 Branch를 생성합니다: `git checkout -b feature/amazing-feature`
+3. 변경사항을 Commit합니다: `git commit -m 'Add some amazing feature'`
+4. Branch에 Push합니다: `git push origin feature/amazing-feature`
+5. Pull Request를 생성합니다
 
-## Deploy on Vercel
+## 📝 라이센스
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+© 2025 zune2222 All Rights Reserved.
