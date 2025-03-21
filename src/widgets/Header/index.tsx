@@ -10,10 +10,7 @@ export function Header() {
   const pathname = usePathname();
 
   // 현재 페이지가 about 페이지인지 확인
-  const isAboutPage = pathname === "/about";
-  const isNoticePage = pathname === "/notice";
-  const isEventsPage = pathname === "/events";
-  const isRentalPage = pathname === "/rental";
+  const isAboutPage = pathname === "/about/";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,8 +27,23 @@ export function Header() {
   }, []);
 
   // 특정 페이지에서는 항상 배경색 적용
-  const shouldShowBackground =
-    isScrolled || isAboutPage || isNoticePage || isEventsPage || isRentalPage;
+  const shouldShowBackground = isScrolled || isAboutPage;
+
+  // about 페이지에서는 항상 어두운 텍스트 색상 사용
+  const getTextColor = () => {
+    if (isAboutPage) return "text-gray-700";
+    return shouldShowBackground ? "text-gray-700" : "text-white";
+  };
+
+  const getLogoTextColor = () => {
+    if (isAboutPage) return "text-dark";
+    return shouldShowBackground ? "text-dark" : "text-white";
+  };
+
+  const getHoverColor = () => {
+    if (isAboutPage) return "hover:text-primary";
+    return shouldShowBackground ? "hover:text-primary" : "hover:text-tertiary";
+  };
 
   return (
     <header
@@ -51,9 +63,7 @@ export function Header() {
               className="h-8 w-8 object-contain"
             />
             <span
-              className={`ml-2 font-bold text-lg transition-colors duration-300 ${
-                shouldShowBackground ? "text-dark" : "text-white"
-              }`}
+              className={`ml-2 font-bold text-lg transition-colors duration-300 ${getLogoTextColor()}`}
             >
               정보의생명공학대학
             </span>
@@ -63,41 +73,25 @@ export function Header() {
           <nav className="hidden md:flex items-center space-x-8">
             <Link
               href="/about"
-              className={`transition-colors duration-300 ${
-                shouldShowBackground
-                  ? "text-gray-700 hover:text-primary"
-                  : "text-white hover:text-tertiary"
-              }`}
+              className={`transition-colors duration-300 ${getTextColor()} ${getHoverColor()}`}
             >
               학생회 소개
             </Link>
             <Link
               href="/notice"
-              className={`transition-colors duration-300 ${
-                shouldShowBackground
-                  ? "text-gray-700 hover:text-primary"
-                  : "text-white hover:text-tertiary"
-              }`}
+              className={`transition-colors duration-300 ${getTextColor()} ${getHoverColor()}`}
             >
               공지사항
             </Link>
             <Link
               href="/events"
-              className={`transition-colors duration-300 ${
-                shouldShowBackground
-                  ? "text-gray-700 hover:text-primary"
-                  : "text-white hover:text-tertiary"
-              }`}
+              className={`transition-colors duration-300 ${getTextColor()} ${getHoverColor()}`}
             >
               행사 정보
             </Link>
             <Link
               href="/rental"
-              className={`transition-colors duration-300 ${
-                shouldShowBackground
-                  ? "text-gray-700 hover:text-primary"
-                  : "text-white hover:text-tertiary"
-              }`}
+              className={`transition-colors duration-300 ${getTextColor()} ${getHoverColor()}`}
             >
               물품 대여
             </Link>
@@ -106,7 +100,11 @@ export function Header() {
           {/* 모바일 메뉴 버튼 */}
           <button
             className={`md:hidden ${
-              shouldShowBackground ? "text-dark" : "text-white"
+              isAboutPage
+                ? "text-dark"
+                : shouldShowBackground
+                ? "text-dark"
+                : "text-white"
             }`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
