@@ -5,157 +5,71 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Header } from "../../widgets/Header";
 import { Footer } from "../../widgets/Footer";
+import { event as gaEvent } from "../../shared/lib/analytics";
 
 // 더미 공지사항 데이터
 const noticeData = [
   {
     id: 1,
-    title: "2025학년도 1학기 학생회비 납부 안내",
-    category: "학생회",
-    date: "2025-02-15",
-    views: 256,
+    title: "웹사이트 베타 버전 안내",
+    category: "공지",
+    date: "2024-03-22",
+    views: 325,
     important: true,
     content: `
-      <h3>2025학년도 1학기 학생회비 납부 안내</h3>
-      <p>정보의생명공학대학 학우 여러분, 안녕하십니까?</p>
-      <p>2025학년도 1학기 학생회비 납부에 관한 안내를 드립니다.</p>
+      <h3>웹사이트 베타 버전 안내</h3>
+      <p>부산대학교 정보의생명공학대학 학우 여러분, 안녕하십니까?</p>
+      <p>현재 학생회 웹사이트는 베타 버전으로 운영 중임을 알려드립니다.</p>
       
-      <h4>학생회비 안내</h4>
+      <h4>베타 버전 안내사항</h4>
       <ul>
-        <li>금액: 15,000원</li>
-        <li>납부 기간: 2025년 2월 20일 ~ 3월 15일</li>
-        <li>납부 방법: 계좌이체 또는 현장납부</li>
+        <li>현재 사이트에는 일부 기능이 제한적으로 제공되고 있습니다.</li>
+        <li>콘텐츠와 정보가 정확하지 않거나 완전하지 않을 수 있습니다.</li>
+        <li>사이트 이용 중 오류가 발생할 수 있으며, 지속적으로 개선 중입니다.</li>
+        <li>일부 페이지는 아직 개발 중이거나, 준비 중인 상태입니다.</li>
       </ul>
       
-      <h4>계좌 정보</h4>
-      <p>부산은행 123-456-789012 (예금주: 정보의생명공학대학 학생회)</p>
-      
-      <h4>현장 납부 장소 및 시간</h4>
+      <h4>향후 계획</h4>
       <ul>
-        <li>장소: 정보의생명공학대학 학생회실 (제2공학관 201호)</li>
-        <li>시간: 평일 10:00 ~ 17:00</li>
+        <li>단계적으로 기능을 추가하고 콘텐츠를 업데이트할 예정입니다.</li>
+        <li>학우분들의 의견을 수렴하여 지속적으로 개선해 나가겠습니다.</li>
+        <li>정식 버전 출시는 추후 공지를 통해 안내드리겠습니다.</li>
       </ul>
       
-      <h4>학생회비 사용 계획</h4>
-      <ul>
-        <li>학과 행사 (신입생 환영회, 체육대회, 학술제 등)</li>
-        <li>복지 사업 (간식 나눔, 휴게공간 관리 등)</li>
-        <li>학생 지원 (스터디룸 운영, 학술활동 지원 등)</li>
-        <li>동아리 활동 지원</li>
-      </ul>
+      <p>사이트 이용 중 불편사항이나 개선 의견이 있으시면 학생회(pnu.ibe@gmail.com)로 연락주시기 바랍니다.</p>
       
-      <p>학생회비 납부 여부는 향후 학생회에서 주관하는 각종 행사 참여 및 복지 혜택 제공에 영향을 미칠 수 있습니다. 많은 참여 부탁드립니다.</p>
-      
-      <p>문의사항이 있으신 경우 학생회(051-510-1234)로 연락주시기 바랍니다.</p>
+      <p>감사합니다.</p>
     `,
   },
   {
     id: 2,
-    title: "정보의생명공학대학 동아리 모집 공고",
-    category: "동아리",
-    date: "2025-02-25",
-    views: 183,
-    important: false,
+    title: "2024 정의대 바람막이 단체 구매 안내",
+    category: "학생회",
+    date: "2024-03-22",
+    views: 148,
+    important: true,
     content: `
-      <h3>정보의생명공학대학 동아리 모집 공고</h3>
-      <p>2025학년도 1학기 정보의생명공학대학 소속 동아리 회원을 모집합니다.</p>
+      <h3>2024 정의대 바람막이 단체 구매 안내</h3>
+      <p>안녕하세요, 부산대학교 정보의생명공학대학 학생회 정의입니다.</p>
+      <p>정의대 바람막이를 단체 구매하니, 구매를 원하시는 분들께서는 입금 후 신청 폼 작성부탁드립니다.</p>
       
-      <h4>모집 동아리</h4>
+      <h4>구매 안내</h4>
       <ul>
-        <li><strong>코딩클럽</strong> - 프로그래밍 및 알고리즘 스터디</li>
-        <li><strong>바이오헬스</strong> - 의생명 분야 학술 및 연구 활동</li>
-        <li><strong>데이터사이언스</strong> - 데이터 분석 및 머신러닝 학습</li>
-        <li><strong>PNUGC</strong> - 게임 개발 동아리</li>
-        <li><strong>네트워크 연구회</strong> - 네트워크 및 보안 연구</li>
-        <li><strong>디지털아트</strong> - 디지털 그래픽 및 UI/UX 디자인</li>
+        <li><strong>신청 기간:</strong> 3월 24일(월) ~ 3월 30일(일)</li>
+        <li><strong>상품 가격:</strong> 57,000원</li>
+        <li><strong>입금 계좌:</strong> KB국민은행 275601-04-533239 (손정훈)</li>
+        <li><strong>입금자명:</strong> 이름 + 전화번호 뒷 4자리 (예: 신태일1234)</li>
       </ul>
       
-      <h4>지원 자격</h4>
-      <ul>
-        <li>정보의생명공학대학 재학생</li>
-        <li>해당 분야에 관심 있는 타 단과대학 재학생도 지원 가능</li>
-      </ul>
+      <p><strong>(*원활한 확인을 위해, 입금 후 폼 작성 부탁드립니다.)</strong></p>
+      <p><a href="https://forms.gle/FBoUCH1Qk42DA6qg8" target="_blank" class="text-primary hover:underline">신청 폼 작성하기</a></p>
       
-      <h4>모집 기간</h4>
-      <p>2025년 3월 2일 ~ 3월 10일</p>
+      <p>날이 따뜻해지고 있어 빠르게 진행하기 위해 신청 기간을 일주일로 한정한 점 양해 부탁드립니다.</p>
+      <p>디자인 및 사이즈 표는 첨부된 이미지를 참고해주시고, 바람막이 제작 기간은 최대 4주 소요될 예정입니다.</p>
       
-      <h4>지원 방법</h4>
-      <ol>
-        <li>정보의생명공학대학 홈페이지에서 지원서 양식 다운로드</li>
-        <li>작성한 지원서를 각 동아리 이메일로 제출</li>
-        <li>면접 일정은 개별 안내 예정</li>
-      </ol>
-      
-      <h4>문의처</h4>
-      <ul>
-        <li>코딩클럽: coding.club@pnu.ac.kr</li>
-        <li>바이오헬스: biohealth@pnu.ac.kr</li>
-        <li>데이터사이언스: datasci@pnu.ac.kr</li>
-        <li>PNUGC: game.club@pnu.ac.kr</li>
-        <li>네트워크 연구회: network.club@pnu.ac.kr</li>
-        <li>디지털아트: digital.art@pnu.ac.kr</li>
-      </ul>
-      
-      <p>각 동아리별 상세 활동 내용은 3월 2일 개최되는 동아리 박람회에서 확인하실 수 있습니다.</p>
-    `,
-  },
-  {
-    id: 3,
-    title: "학과 도서관 운영시간 변경 안내",
-    category: "학사",
-    date: "2025-03-01",
-    views: 142,
-    important: false,
-    content: `
-      <h3>학과 도서관 운영시간 변경 안내</h3>
-      <p>정보의생명공학대학 학우 여러분, 안녕하십니까?</p>
-      <p>2025학년도 1학기부터 학과 도서관 운영시간이 변경됨을 알려드립니다.</p>
-      
-      <h4>변경 사항</h4>
-      <table class="border-collapse border w-full my-4">
-        <thead>
-          <tr class="bg-gray-100">
-            <th class="border p-2">구분</th>
-            <th class="border p-2">기존</th>
-            <th class="border p-2">변경</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="border p-2">평일</td>
-            <td class="border p-2">09:00 ~ 18:00</td>
-            <td class="border p-2">08:00 ~ 20:00</td>
-          </tr>
-          <tr>
-            <td class="border p-2">토요일</td>
-            <td class="border p-2">09:00 ~ 13:00</td>
-            <td class="border p-2">09:00 ~ 17:00</td>
-          </tr>
-          <tr>
-            <td class="border p-2">공휴일</td>
-            <td class="border p-2">휴관</td>
-            <td class="border p-2">10:00 ~ 17:00</td>
-          </tr>
-        </tbody>
-      </table>
-      
-      <h4>주요 변경 사유</h4>
-      <ul>
-        <li>학생들의 도서관 이용 편의성 향상</li>
-        <li>시험 기간 자율학습 공간 확대</li>
-        <li>이용자 설문조사 결과 반영</li>
-      </ul>
-      
-      <h4>추가 안내 사항</h4>
-      <ul>
-        <li>시험 기간(중간/기말고사 2주 전부터) 평일 24시간 운영</li>
-        <li>도서 대출/반납은 평일 09:00 ~ 18:00에만 가능</li>
-        <li>그룹 스터디룸은 홈페이지 예약 시스템을 통해 예약 가능</li>
-      </ul>
-      
-      <p>학과 도서관은 학생 여러분의 학업 공간입니다. 조용한 학습 환경을 위해 협조해 주시기 바랍니다.</p>
-      
-      <p>문의: 학과 도서관 담당자 051-510-2345</p>
+      <h4>문의사항</h4>
+      <p>문의사항은 학생회장에게 연락해 주시면 빠르게 답변드리겠습니다.</p>
+      <p>많은 관심과 참여 부탁드립니다.</p>
     `,
   },
 ];
@@ -172,6 +86,15 @@ export default function NoticeDetail() {
       const foundNotice = noticeData.find((item) => item.id === Number(id));
       setNotice(foundNotice || null);
       setLoading(false);
+
+      // Google Analytics 이벤트 전송
+      if (foundNotice) {
+        gaEvent({
+          action: "view_notice",
+          category: "notices",
+          label: `${foundNotice.id} - ${foundNotice.title}`,
+        });
+      }
     }
   }, [id]);
 
