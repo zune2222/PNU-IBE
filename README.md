@@ -1,8 +1,10 @@
 # 📚 PNU IBE 학생회 웹사이트
 
 <div align="center">
-  <img src="public/images/logo.png" alt="PNU IBE 로고" width="150" />
-  <h3>부산대학교 정보의생명공학대학 학생회 공식 웹사이트</h3>
+  
+  ![logo](https://github.com/user-attachments/assets/a2d6af06-cefe-445d-a2eb-848c2956de33)
+  <h3>부산대학교 정보의생명공학대학 학생회 공식
+ 웹사이트</h3>
   
   [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
   [![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
