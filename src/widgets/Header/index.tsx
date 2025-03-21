@@ -12,6 +12,8 @@ export function Header() {
   // 현재 페이지가 about 페이지인지 확인
   const isAboutPage = pathname === "/about/";
 
+  const isNoticeDetailPage = pathname?.startsWith("/notice/");
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
@@ -27,7 +29,7 @@ export function Header() {
   }, []);
 
   // 특정 페이지에서는 항상 배경색 적용
-  const shouldShowBackground = isScrolled || isAboutPage;
+  const shouldShowBackground = isScrolled || isAboutPage || isNoticeDetailPage;
 
   // about 페이지에서는 항상 어두운 텍스트 색상 사용
   const getTextColor = () => {

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import React from "react";
+import { GetStaticProps, GetStaticPaths } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -12,29 +12,21 @@ import {
   Notice,
 } from "../../shared/data/noticeData";
 
-export default function NoticeDetail() {
-  const router = useRouter();
-  const { id } = router.query;
-  const [notice, setNotice] = useState<Notice | null>(null);
-  const [loading, setLoading] = useState(true);
+interface NoticeDetailProps {
+  notice: Notice | null;
+}
 
-  useEffect(() => {
-    if (id) {
-      // 중앙 데이터 파일에서 공지사항 데이터 가져오기
-      const foundNotice = noticeData.find((item) => item.id === Number(id));
-      setNotice(foundNotice || null);
-      setLoading(false);
-
-      // Google Analytics 이벤트 전송
-      if (foundNotice) {
-        gaEvent({
-          action: "view_notice",
-          category: "notices",
-          label: `${foundNotice.id} - ${foundNotice.title}`,
-        });
-      }
+export default function NoticeDetail({ notice }: NoticeDetailProps) {
+  // GA 이벤트 트래킹은 클라이언트 측에서만 실행
+  React.useEffect(() => {
+    if (notice) {
+      gaEvent({
+        action: "view_notice",
+        category: "notices",
+        label: `${notice.id} - ${notice.title}`,
+      });
     }
-  }, [id]);
+  }, [notice]);
 
   return (
     <>
@@ -54,32 +46,7 @@ export default function NoticeDetail() {
       </Head>
       <Header />
       <main className="pt-28 pb-16">
-        {loading ? (
-          <div className="container-custom py-20">
-            <div className="flex items-center justify-center">
-              <svg
-                className="animate-spin h-10 w-10 text-primary"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-            </div>
-          </div>
-        ) : notice ? (
+        {notice ? (
           <div className="container-custom">
             <div className="mb-6">
               <Link
@@ -316,3 +283,27 @@ export default function NoticeDetail() {
     </>
   );
 }
+
+// 빌드 시 생성될 경로 정의
+export const getStaticPaths: GetStaticPaths = async () => {
+  return {
+    paths: noticeData.map((notice) => ({
+      params: { id: String(notice.id) },
+    })),
+    fallback: false, // 없는 페이지는 404 반환
+  };
+};
+
+// 정적 페이지 생성을 위한 데이터 가져오기
+export const getStaticProps: GetStaticProps = async (context) => {
+  const { id } = context.params || {};
+
+  // 공지사항 데이터 찾기
+  const notice = noticeData.find((item) => item.id === Number(id)) || null;
+
+  return {
+    props: {
+      notice,
+    },
+  };
+};
