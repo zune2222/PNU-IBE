@@ -18,89 +18,14 @@ interface RentalItem {
 const rentalItems: RentalItem[] = [
   {
     id: 1,
-    name: "노트북",
+    name: "회장님",
     category: "전자기기",
     image: "/images/rental/laptop.jpg",
     totalQuantity: 5,
     availableQuantity: 3,
-    deposit: 50000,
+    deposit: 500000000000,
     description:
-      "학생회에서 대여 가능한 노트북입니다. 프레젠테이션, 과제 등을 위해 대여할 수 있습니다.",
-  },
-  {
-    id: 2,
-    name: "프로젝터",
-    category: "전자기기",
-    image: "/images/rental/projector.jpg",
-    totalQuantity: 3,
-    availableQuantity: 2,
-    deposit: 30000,
-    description:
-      "소모임, 스터디, 발표를 위한 프로젝터입니다. HDMI 케이블도 함께 대여됩니다.",
-  },
-  {
-    id: 3,
-    name: "카메라",
-    category: "전자기기",
-    image: "/images/rental/camera.jpg",
-    totalQuantity: 2,
-    availableQuantity: 1,
-    deposit: 50000,
-    description:
-      "행사나 활동 기록을 위한 DSLR 카메라입니다. SD 카드는 별도로 준비하셔야 합니다.",
-  },
-  {
-    id: 4,
-    name: "스피커",
-    category: "전자기기",
-    image: "/images/rental/speaker.jpg",
-    totalQuantity: 4,
-    availableQuantity: 4,
-    deposit: 20000,
-    description:
-      "블루투스 연결이 가능한 포터블 스피커입니다. 야외 활동이나 소모임에 활용하기 좋습니다.",
-  },
-  {
-    id: 5,
-    name: "책상",
-    category: "가구",
-    image: "/images/rental/desk.jpg",
-    totalQuantity: 10,
-    availableQuantity: 8,
-    deposit: 10000,
-    description:
-      "접이식 책상으로, 행사나 부스 운영 시 유용하게 사용할 수 있습니다.",
-  },
-  {
-    id: 6,
-    name: "의자",
-    category: "가구",
-    image: "/images/rental/chair.jpg",
-    totalQuantity: 20,
-    availableQuantity: 15,
-    deposit: 5000,
-    description: "접이식 의자로, 행사나 모임에 활용할 수 있습니다.",
-  },
-  {
-    id: 7,
-    name: "돗자리",
-    category: "생활용품",
-    image: "/images/rental/mat.jpg",
-    totalQuantity: 8,
-    availableQuantity: 8,
-    deposit: 5000,
-    description: "야외 활동이나 피크닉에 활용할 수 있는 대형 돗자리입니다.",
-  },
-  {
-    id: 8,
-    name: "운동 기구",
-    category: "스포츠",
-    image: "/images/rental/sports.jpg",
-    totalQuantity: 15,
-    availableQuantity: 10,
-    deposit: 10000,
-    description:
-      "축구공, 농구공, 배구공, 배드민턴 세트 등 다양한 운동 기구를 대여할 수 있습니다.",
+      "학생회에서 대여 가능한 인력입니다. 대여가 가능할지는 잘 모르겠습니다.",
   },
 ];
 
