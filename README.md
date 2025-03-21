@@ -1,22 +1,26 @@
+
 # 📚 PNU IBE 학생회 웹사이트
 
 <div align="center">
   
   ![logo](https://github.com/user-attachments/assets/a2d6af06-cefe-445d-a2eb-848c2956de33)
-  <h3>부산대학교 정보의생명공학대학 학생회 공식
- 웹사이트</h3>
+  <h3>부산대학교 정보의생명공학대학 학생회 공식 웹사이트</h3>
   
   [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
   [![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+  [![Website](https://img.shields.io/badge/웹사이트-red?style=for-the-badge&logo=web&logoColor=white)](https://pnu-ibe.web.app/)
 </div>
+
 
 ## 🌟 소개
 
 PNU IBE 학생회 웹사이트는 부산대학교 정보의생명공학대학 학생회의 공식 웹 플랫폼입니다. 학생회 활동, 행사 정보, 학생회 구성원 소개 등 다양한 정보를 제공하며, 학우들과의 소통을 강화하기 위해 개발되었습니다.
 
 정보의생명공학대학 학생회 "정의"는 학우들을 위한 다양한 행사와 복지 프로그램을 운영하고 있으며, 이 웹사이트를 통해 모든 활동을 투명하게 공유하고 있습니다.
+
+**🔗 웹사이트 바로가기: [https://pnu-ibe.web.app/](https://pnu-ibe.web.app/)**
 
 ## ✨ 주요 기능
 
