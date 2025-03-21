@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 // 학생회 연혁 데이터
 const historyData = [
   {
-    year: "2024",
+    year: "2025",
     title: '제2대 학생회 "정의" 출범',
     description:
       '새로운 비전과 목표로 제2대 정보의생명공학대학 학생회 "정의"가 출범했습니다.',
@@ -15,35 +15,14 @@ const historyData = [
     ],
   },
   {
-    year: "2023",
-    title: "제1대 학생회 활동 종료",
-    description: "첫 학생회의 성공적인 활동 종료 및 새로운 학생회 선거 진행",
-    achievements: [
-      "학생 복지 시설 확충",
-      "취업 지원 프로그램 운영",
-      "학과 축제 성공적 개최",
-    ],
-  },
-  {
-    year: "2022",
-    title: '제1대 학생회 "시작" 출범',
+    year: "2024",
+    title: '제1대 학생회 "정의" 출범',
     description:
-      '정보의생명공학대학 최초의 통합 학생회인 "시작"이 출범했습니다.',
+      '정보의생명공학대학 첫 번째 학생회 "정의"가 출범하여 새로운 시작을 알렸습니다.',
     achievements: [
-      "학생회 조직 및 체계 구축",
-      "학생회비 운영 시스템 구축",
-      "정기 간담회 제도 도입",
-    ],
-  },
-  {
-    year: "2021",
-    title: "정보의생명공학대학 통합",
-    description:
-      "정보컴퓨터공학부와 의생명융합공학과의 통합으로 정보의생명공학대학이 설립되었습니다.",
-    achievements: [
-      "통합 준비위원회 활동",
-      "학생 의견 수렴 간담회 개최",
-      "대학 비전 수립 참여",
+      "학생회 조직 체계 구축",
+      "학생 복지 프로그램 도입",
+      "단과대학 교류 행사 개최",
     ],
   },
 ];
@@ -92,7 +71,7 @@ export function AboutHistory() {
         {/* 타임라인 */}
         <div className="relative">
           {/* 중앙 선 */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gray-200 hidden md:block"></div>
+          {/* <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gray-200 hidden md:block"></div> */}
 
           <div className="space-y-12">
             {historyData.map((item, index) => (

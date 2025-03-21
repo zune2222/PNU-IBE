@@ -5,61 +5,69 @@ import Image from "next/image";
 // 학생회 구성원 데이터
 const membersData = [
   {
-    name: "김학생",
+    name: "신태일",
     position: "학생회장",
-    department: "정보컴퓨터공학부",
-    grade: "4학년",
+    department: "정보의생명공학대학",
+    grade: "21학번",
     image: "/images/member1.jpg",
-    quote: "모든 학우분들의 목소리에 귀 기울이는 학생회가 되겠습니다.",
+    quote: "모든 학우들의 목소리에 귀 기울이는 학생회가 되겠습니다.",
   },
   {
-    name: "이부회장",
+    name: "강재한",
     position: "부학생회장",
-    department: "의생명융합공학과",
-    grade: "3학년",
+    department: "정보의생명공학대학",
+    grade: "20학번",
     image: "/images/member2.jpg",
     quote: "학우들의 권익 향상을 위해 최선을 다하겠습니다.",
   },
   {
-    name: "박총무",
-    position: "총무부장",
-    department: "정보컴퓨터공학부",
-    grade: "3학년",
+    name: "김혜은",
+    position: "문화기획국장",
+    department: "정보의생명공학대학",
+    grade: "25학번",
     image: "/images/member3.jpg",
+    quote: "다양한 문화 행사로 즐거운 대학 생활을 만들겠습니다.",
+  },
+  {
+    name: "서호영",
+    position: "재정사무국장",
+    department: "정보의생명공학대학",
+    grade: "20학번",
+    image: "/images/member4.jpg",
     quote: "투명한 재정 관리로 신뢰받는 학생회를 만들겠습니다.",
   },
   {
-    name: "최기획",
-    position: "기획부장",
-    department: "의생명융합공학과",
-    grade: "2학년",
-    image: "/images/member4.jpg",
-    quote: "창의적인 행사로 즐거운 대학 생활을 만들겠습니다.",
-  },
-  {
-    name: "정홍보",
-    position: "홍보부장",
-    department: "정보컴퓨터공학부",
-    grade: "2학년",
+    name: "윤대한",
+    position: "학생복지국장",
+    department: "정보의생명공학대학",
+    grade: "21학번",
     image: "/images/member5.jpg",
-    quote: "학생회의 활동을 널리 알리겠습니다.",
+    quote: "학우들의 복지 향상을 위해 최선을 다하겠습니다.",
   },
   {
-    name: "한학술",
-    position: "학술부장",
-    department: "의생명융합공학과",
-    grade: "3학년",
+    name: "이연지",
+    position: "소통홍보국장",
+    department: "정보의생명공학대학",
+    grade: "22학번",
     image: "/images/member6.jpg",
-    quote: "다양한 학술 활동으로 학우들의 성장을 돕겠습니다.",
+    quote: "학생회의 활동을 널리 알리고 학우들과 소통하겠습니다.",
+  },
+  {
+    name: "손정훈",
+    position: "총무",
+    department: "정보의생명공학대학",
+    grade: "23학번",
+    image: "/images/member5.jpg",
+    quote: "체계적인 행정 지원으로 학생회 활동을 뒷받침하겠습니다.",
   },
 ];
 
 // 학생회 조직도 데이터
 const departments = [
   {
-    name: "총무부",
-    description: "학생회비 관리 및 재정 운영, 회계 담당",
-    members: 4,
+    name: "학생회장단",
+    description: "학생회를 대표하고 전체적인 운영과 방향성을 결정",
+    members: 2,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -72,15 +80,16 @@ const departments = [
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
         />
       </svg>
     ),
+    memberList: "회장: 신태일(21학번), 부회장: 강재한(20학번)",
   },
   {
-    name: "기획부",
-    description: "학생회 주요 행사 기획 및 운영 담당",
-    members: 5,
+    name: "문화기획국",
+    description: "다양한 문화 행사 기획 및 운영",
+    members: 6,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -97,11 +106,13 @@ const departments = [
         />
       </svg>
     ),
+    memberList:
+      "국장: 김혜은(25학번), 국원: 전동훈(21학번), 이현호(22학번), 현승민(22학번), 황보원(25학번), 허민(25학번)",
   },
   {
-    name: "홍보부",
-    description: "학생회 활동 홍보 및 소통 창구 역할",
-    members: 3,
+    name: "재정사무국",
+    description: "학생회비 관리 및 재정 운영, 회계 담당",
+    members: 6,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -114,38 +125,17 @@ const departments = [
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
         />
       </svg>
     ),
+    memberList:
+      "국장: 서호영(20학번), 총무: 손정훈(23학번), 국원: 이나연(24학번), 홍지수(23학번), 우영지(25학번), 김도훈(25학번)",
   },
   {
-    name: "학술부",
-    description: "학술 행사 및 스터디 운영 지원",
-    members: 3,
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path d="M12 14l9-5-9-5-9 5 9 5z" />
-        <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"
-        />
-      </svg>
-    ),
-  },
-  {
-    name: "복지부",
+    name: "학생복지국",
     description: "학생 복지 향상 및 편의 시설 관리",
-    members: 3,
+    members: 5,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -162,11 +152,13 @@ const departments = [
         />
       </svg>
     ),
+    memberList:
+      "국장: 윤대한(21학번), 국원: 서완준(21학번), 박영주(21학번), 이지혜(25학번), 최지우(25학번)",
   },
   {
-    name: "대외협력부",
-    description: "타 학과 및 외부 기관과의 협력 관계 구축",
-    members: 2,
+    name: "소통홍보국",
+    description: "학생회 활동 홍보 및 소통 창구 역할",
+    members: 4,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -179,10 +171,12 @@ const departments = [
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+          d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
         />
       </svg>
     ),
+    memberList:
+      "국장: 이연지(22학번), 국원: 설대연(25학번), 김현지(25학번), 박준이(21학번)",
   },
 ];
 
@@ -277,7 +271,7 @@ export function AboutMembers() {
             학생회 조직도
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {departments.map((dept, index) => (
               <div
                 key={index}
@@ -292,7 +286,10 @@ export function AboutMembers() {
                 <p className="text-gray-600 mb-4 flex-grow">
                   {dept.description}
                 </p>
-                <div className="text-sm text-gray-500 flex items-center">
+                <div className="text-sm text-gray-700 mt-2">
+                  <p className="font-medium">{dept.memberList}</p>
+                </div>
+                <div className="text-sm text-gray-500 flex items-center mt-3">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4 mr-1"
