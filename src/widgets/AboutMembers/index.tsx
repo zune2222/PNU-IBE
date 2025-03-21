@@ -257,7 +257,9 @@ export function AboutMembers() {
                     {member.grade}
                   </span>
                 </div>
-                <p className="text-gray-700 italic">"{member.quote}"</p>
+                <p className="text-gray-700 italic">
+                  &quot;{member.quote}&quot;
+                </p>
               </div>
             </motion.div>
           ))}

@@ -20,13 +20,16 @@ export function Header() {
       setIsScrolled(window.scrollY > 0);
     };
 
+    // 페이지 로드 시 즉시 스크롤 상태 확인
+    handleScroll();
+
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
-  // about 페이지이거나 notice 페이지이거나 스크롤된 상태면 배경색을 적용
+  // 특정 페이지에서는 항상 배경색 적용
   const shouldShowBackground =
     isScrolled || isAboutPage || isNoticePage || isEventsPage || isRentalPage;
 
@@ -43,12 +46,12 @@ export function Header() {
             <Image
               src="/logo.png"
               alt="부산대학교 정보의생명공학대학 학생회 로고"
-              width={40}
-              height={40}
-              className="h-auto w-auto"
+              width={30}
+              height={30}
+              className="h-8 w-8 object-contain"
             />
             <span
-              className={`ml-2 font-bold text-xl transition-colors duration-300 ${
+              className={`ml-2 font-bold text-lg transition-colors duration-300 ${
                 shouldShowBackground ? "text-dark" : "text-white"
               }`}
             >

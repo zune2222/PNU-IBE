@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export function AboutHero() {
   return (
-    <section className="relative pt-28 pb-20 md:pt-36 md:pb-24 overflow-hidden bg-gradient-to-b from-gray-50 to-white">
+    <section className="relative pt-32 pb-20 md:pt-40 md:pb-24 overflow-hidden bg-gradient-to-b from-gray-50 to-white">
       {/* 배경 요소 */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-primary to-secondary"></div>
       <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-primary/5 blur-3xl"></div>
@@ -27,8 +27,8 @@ export function AboutHero() {
               </h1>
 
               <p className="text-lg text-gray-600 mb-8 max-w-xl leading-relaxed">
-                부산대학교 정보의생명공학대학 제2대 학생회 '정의'는 모든
-                학우들의 권익을 대변하고, 더 나은 대학 생활을 만들기 위해
+                부산대학교 정보의생명공학대학 제2대 학생회 &apos;정의&apos;는
+                모든 학우들의 권익을 대변하고, 더 나은 대학 생활을 만들기 위해
                 활동하고 있습니다. 학생들의 목소리에 귀 기울이며, 함께 성장하는
                 공동체를 지향합니다.
               </p>

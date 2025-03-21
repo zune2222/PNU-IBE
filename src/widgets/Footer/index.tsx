@@ -114,7 +114,7 @@ export function Footer() {
                 alt="부산대학교 정보의생명공학대학 학생회 로고"
                 width={48}
                 height={48}
-                className="h-auto w-auto"
+                className="h-12 w-12"
               />
               <span className="ml-3 text-xl font-bold text-white">
                 정보의생명공학대학 학생회
