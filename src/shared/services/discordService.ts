@@ -26,12 +26,6 @@ interface DiscordField {
   inline?: boolean;
 }
 
-interface DiscordEmbedField {
-  name: string;
-  value: string;
-  inline?: boolean;
-}
-
 interface DiscordWebhookPayload {
   content?: string;
   embeds: DiscordEmbed[];
@@ -60,31 +54,21 @@ const COLORS = {
   WARNING: 0xff9900, // 주황색 - 새 신청, 반납 신청
   ERROR: 0xff0000, // 빨간색 - 연체, 거부
   INFO: 0x0099ff, // 파란색 - 일반 정보
+  RENTAL: 0x3b82f6, // 파란색 - 즉시 대여
 };
 
 // PNU IBE 로고 URL (실제 로고로 교체 가능)
 const PNU_IBE_LOGO = "https://via.placeholder.com/100x100.png?text=PNU+IBE";
 
 class DiscordService {
-  private webhookUrl: string;
-
-  constructor() {
-    // 환경 변수에서 디스코드 웹훅 URL을 가져옵니다
-    this.webhookUrl = process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL || "";
-
-    if (!this.webhookUrl) {
-      console.warn("디스코드 웹훅 URL이 설정되지 않았습니다.");
-    }
-  }
-
   private async sendMessage(message: DiscordMessage): Promise<boolean> {
-    if (!this.webhookUrl) {
+    if (!DISCORD_WEBHOOK_URL) {
       console.warn("Discord Webhook URL이 설정되지 않았습니다.");
       return false;
     }
 
     try {
-      const response = await fetch(this.webhookUrl, {
+      const response = await fetch(DISCORD_WEBHOOK_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,9 +88,58 @@ class DiscordService {
     }
   }
 
+  // 즉시 대여 완료 알림 (새로운 플로우용)
+  async notifyInstantRental(data: RentalNotificationData): Promise<boolean> {
+    const embed: DiscordEmbed = {
+      title: "🔔 즉시 대여 완료",
+      description: `**${data.studentName}** 학생이 물품을 즉시 대여했습니다.`,
+      color: COLORS.RENTAL,
+      fields: [
+        {
+          name: "👤 학생 정보",
+          value: `**이름:** ${data.studentName}\n**학번:** ${data.studentId}\n**학과:** ${data.department}\n**연락처:** ${data.phoneNumber}`,
+          inline: true,
+        },
+        {
+          name: "📦 물품 정보",
+          value: `**물품명:** ${data.itemName}\n**카테고리:** ${
+            data.itemCategory
+          }\n**위치:** ${
+            data.campus === "yangsan" ? "양산캠퍼스" : "장전캠퍼스"
+          } ${data.location}`,
+          inline: true,
+        },
+        {
+          name: "📅 대여 기간",
+          value: `**대여일:** ${data.rentDate}\n**반납 예정일:** ${data.dueDate}`,
+          inline: false,
+        },
+        {
+          name: "🔗 관리",
+          value: `**대여 ID:** \`${data.rentalId}\``,
+          inline: false,
+        },
+      ],
+      timestamp: new Date().toISOString(),
+      footer: {
+        text: "PNU IBE 물품 대여 시스템",
+      },
+      thumbnail: {
+        url: PNU_IBE_LOGO,
+      },
+    };
+
+    const message: DiscordMessage = {
+      content: "📱 새로운 즉시 대여가 완료되었습니다!",
+      embeds: [embed],
+    };
+
+    return await this.sendMessage(message);
+  }
+
   // 대여 신청 알림 전송
   async sendRentalNotification(data: RentalNotificationData): Promise<boolean> {
-    if (!this.webhookUrl) {
+    if (!DISCORD_WEBHOOK_URL) {
       console.warn(
         "디스코드 웹훅 URL이 설정되지 않아 알림을 보낼 수 없습니다."
       );
@@ -155,7 +188,7 @@ class DiscordService {
         embeds: [embed],
       };
 
-      const response = await fetch(this.webhookUrl, {
+      const response = await fetch(DISCORD_WEBHOOK_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -186,7 +219,7 @@ class DiscordService {
     rentalId: string;
     isOnTime: boolean;
   }): Promise<boolean> {
-    if (!this.webhookUrl) {
+    if (!DISCORD_WEBHOOK_URL) {
       console.warn(
         "디스코드 웹훅 URL이 설정되지 않아 알림을 보낼 수 없습니다."
       );
@@ -225,7 +258,7 @@ class DiscordService {
         embeds: [embed],
       };
 
-      const response = await fetch(this.webhookUrl, {
+      const response = await fetch(DISCORD_WEBHOOK_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -257,7 +290,7 @@ class DiscordService {
     phoneNumber: string;
     rentalId: string;
   }): Promise<boolean> {
-    if (!this.webhookUrl) {
+    if (!DISCORD_WEBHOOK_URL) {
       console.warn(
         "디스코드 웹훅 URL이 설정되지 않아 알림을 보낼 수 없습니다."
       );
@@ -297,7 +330,7 @@ class DiscordService {
         embeds: [embed],
       };
 
-      const response = await fetch(this.webhookUrl, {
+      const response = await fetch(DISCORD_WEBHOOK_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
