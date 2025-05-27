@@ -13,6 +13,8 @@ const historyData = [
       "학과 간 교류 프로그램 확대",
       "동아리 지원 체계 개선",
     ],
+    color: "from-blue-500 to-cyan-500",
+    bgColor: "from-blue-400/20 to-cyan-400/20",
   },
   {
     year: "2024",
@@ -24,63 +26,68 @@ const historyData = [
       "학생 복지 프로그램 도입",
       "단과대학 교류 행사 개최",
     ],
+    color: "from-purple-500 to-violet-500",
+    bgColor: "from-purple-400/20 to-violet-400/20",
   },
 ];
 
 export function AboutHistory() {
   return (
-    <section className="py-20 bg-gray-50 relative overflow-hidden">
-      {/* 배경 요소 */}
-      <div className="absolute -right-20 bottom-0 w-64 h-64 rounded-full bg-primary/5 blur-3xl"></div>
-      <div className="absolute -left-20 top-40 w-80 h-80 rounded-full bg-secondary/5 blur-3xl"></div>
-
-      <div className="container-custom relative">
-        <div className="text-center mb-16">
-          <motion.span
+    <section className="relative py-20 sm:py-24 bg-white overflow-hidden">
+      <div className="container-custom relative z-10">
+        <div className="text-center mb-16 sm:mb-20">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="inline-block px-4 py-1 rounded-full bg-primary/10 text-primary font-medium text-sm mb-4"
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-lg border border-white/30 shadow-lg mb-6"
           >
-            연혁
-          </motion.span>
+            <div className="w-2 h-2 bg-gradient-to-r from-primary to-secondary rounded-full animate-pulse"></div>
+            <span className="text-primary font-semibold text-sm korean-text">
+              연혁
+            </span>
+          </motion.div>
 
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl md:text-4xl font-bold text-dark mb-6"
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight korean-text"
           >
-            학생회 <span className="text-primary">발자취</span>
+            학생회{" "}
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              발자취
+            </span>
           </motion.h2>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-gray-600 max-w-2xl mx-auto"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed korean-text px-4"
           >
-            정보의생명공학대학 학생회가 걸어온 길과 이루어낸 성과들을
-            소개합니다.
+            정보의생명공학대학 학생회가 걸어온 길과
+            <br className="hidden sm:block" />
+            이루어낸 성과들을 소개합니다.
           </motion.p>
         </div>
 
         {/* 타임라인 */}
-        <div className="relative">
-          {/* 중앙 선 */}
-          {/* <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gray-200 hidden md:block"></div> */}
+        <div className="relative mb-16 sm:mb-20">
+          {/* 중앙 선 - 데스크톱에서만 표시 */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gradient-to-b from-primary/30 to-secondary/30 hidden md:block"></div>
 
-          <div className="space-y-12">
+          <div className="space-y-8 sm:space-y-12">
             {historyData.map((item, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 * index }}
+                transition={{ duration: 0.6, delay: 0.1 * index }}
                 className="relative"
               >
                 <div
@@ -88,55 +95,92 @@ export function AboutHistory() {
                     index % 2 === 0 ? "" : "md:flex-row-reverse"
                   }`}
                 >
-                  {/* 년도 표시 - 모바일에서는 항상 위에 표시 */}
-                  <div className="mb-4 md:mb-0 md:w-1/2 flex md:justify-center md:items-center">
+                  {/* 년도 표시 */}
+                  <div className="mb-6 md:mb-0 md:w-1/2 flex md:justify-center md:items-center">
                     <div
                       className={`
-                      text-center px-4 py-2 rounded-full bg-white shadow-lg text-dark font-bold text-xl
+                      relative px-6 py-3 rounded-2xl bg-gradient-to-r ${item.color} text-white font-bold text-lg sm:text-xl shadow-lg
                       md:absolute md:left-1/2 md:transform md:-translate-x-1/2 md:z-10
-                      flex items-center
+                      flex items-center justify-center min-w-[100px]
                     `}
                     >
-                      <span>{item.year}</span>
+                      <span className="korean-text">{item.year}</span>
+                      {/* 중앙 점 표시 - 데스크톱에서만 */}
+                      <div className="hidden md:block absolute inset-0 rounded-2xl border-4 border-white shadow-xl"></div>
                     </div>
                   </div>
 
                   {/* 내용 */}
                   <div
-                    className={`md:w-1/2 ${
-                      index % 2 === 0 ? "md:pr-12" : "md:pl-12"
+                    className={`md:w-1/2 w-full ${
+                      index % 2 === 0 ? "md:pr-8 lg:pr-12" : "md:pl-8 lg:pl-12"
                     }`}
                   >
-                    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                      <h3 className="text-xl font-bold text-dark mb-3">
-                        {item.title}
-                      </h3>
-                      <p className="text-gray-600 mb-4">{item.description}</p>
-
-                      <div className="space-y-2">
-                        <h4 className="font-medium text-dark">주요 성과:</h4>
-                        <ul className="space-y-1">
-                          {item.achievements.map((achievement, i) => (
-                            <li key={i} className="flex items-start">
-                              <svg
-                                className="h-5 w-5 text-primary flex-shrink-0 mr-2 mt-0.5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                              <span>{achievement}</span>
-                            </li>
-                          ))}
-                        </ul>
+                    <motion.div
+                      whileHover={{
+                        y: -3,
+                        transition: { duration: 0.3 },
+                      }}
+                      className="group relative bg-white/80 backdrop-blur-sm p-6 sm:p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl transition-all duration-300"
+                    >
+                      {/* 배경 그라디언트 효과 */}
+                      <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                        <div
+                          className={`absolute w-24 h-24 -top-12 -right-12 bg-gradient-to-br ${item.bgColor} rounded-full blur-2xl group-hover:blur-xl transition-all duration-500`}
+                        ></div>
                       </div>
-                    </div>
+
+                      <div className="relative">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 korean-text leading-tight">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 leading-relaxed korean-text">
+                          {item.description}
+                        </p>
+
+                        <div className="space-y-3 sm:space-y-4">
+                          <h4 className="font-semibold text-gray-900 text-sm sm:text-base korean-text flex items-center">
+                            <div
+                              className={`w-2 h-2 rounded-full bg-gradient-to-r ${item.color} mr-2`}
+                            ></div>
+                            주요 성과
+                          </h4>
+                          <ul className="space-y-2 sm:space-y-3">
+                            {item.achievements.map((achievement, i) => (
+                              <motion.li
+                                key={i}
+                                initial={{ opacity: 0, x: -10 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.4, delay: 0.1 * i }}
+                                className="flex items-start"
+                              >
+                                <div
+                                  className={`h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-gradient-to-r ${item.color} flex-shrink-0 mr-3 mt-0.5 flex items-center justify-center`}
+                                >
+                                  <svg
+                                    className="h-2 w-2 sm:h-3 sm:w-3 text-white"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={3}
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                </div>
+                                <span className="text-sm sm:text-base text-gray-700 korean-text leading-relaxed">
+                                  {achievement}
+                                </span>
+                              </motion.li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </motion.div>
                   </div>
                 </div>
               </motion.div>
@@ -145,25 +189,27 @@ export function AboutHistory() {
         </div>
 
         {/* CTA 버튼 */}
-        <div className="text-center mt-16">
+        <div className="text-center">
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="inline-flex items-center bg-primary text-white py-3 px-6 rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg"
+            transition={{ duration: 0.6, delay: 0.4 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-flex items-center bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 sm:px-8 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 shadow-md korean-text"
           >
             전체 연혁 보기
             <svg
-              className="ml-2 h-5 w-5"
+              className="ml-2 h-4 w-4 sm:h-5 sm:w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              strokeWidth={2}
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2"
                 d="M14 5l7 7m0 0l-7 7m7-7H3"
               />
             </svg>
