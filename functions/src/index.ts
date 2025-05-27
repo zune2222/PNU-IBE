@@ -61,13 +61,15 @@ async function performOCR(imageBuffer: Buffer): Promise<string> {
   // 현재는 mock 데이터 반환
   logger.info(`Mock OCR 처리 - 이미지 크기: ${imageBuffer.length} bytes`);
 
-  // 실제 OCR 구현을 위한 샘플 텍스트
+  // 사용자가 요청한 특정 학생증 정보 반환
   const mockText = `
+    모바일 학생증
     부산대학교 PUSAN NATIONAL UNIVERSITY
-    학생증 Student ID Card
-    이름: 홍길동
-    학번: 202012345
-    학과: 정보컴퓨터공학부
+    학번: 202155556
+    이름: 박준이
+    상태: 재학
+    생년월일: 20020624
+    소속: 정보의생명공학대학
     캠퍼스: 양산
   `;
 
@@ -84,7 +86,10 @@ export const extractStudentIdInfo = onCall(
       "http://localhost:3000",
       "https://pnu-ibe.web.app",
       "https://pnu-ibe.firebaseapp.com",
+      // 모든 출처 허용 (테스트용, 프로덕션에서는 제거하고 특정 도메인만 허용하는 것이 좋습니다)
+      "*",
     ],
+    region: "asia-northeast3", // 서울 리전으로 통일
   },
   async (request) => {
     try {
@@ -228,9 +233,11 @@ function parseStudentInfo(
 
   // 3. 학과/전공 추출
   const departmentPatterns = [
+    /(정보의생명공학대학)/gi, // 정보의생명공학대학 패턴 추가
     /(정보.*학과|정보.*전공|컴퓨터.*학과|컴퓨터.*전공)/gi,
     /(산업.*학과|산업.*전공|기계.*학과|기계.*전공)/gi,
     /(전기.*학과|전기.*전공|전자.*학과|전자.*전공)/gi,
+    /소속[\s:]*([가-힣]+)/gi, // 소속 패턴 추가
     /학과[\s:]*([가-힣]+)/gi,
     /전공[\s:]*([가-힣]+)/gi,
     /과[\s:]*([가-힣]+)/gi,
@@ -241,6 +248,18 @@ function parseStudentInfo(
     if (match) {
       department = match[1] || match[0];
       confidence += 0.15;
+      break;
+    }
+  }
+
+  // 생년월일 추출 (8자리 숫자)
+  const birthDatePatterns = [/생년월일[\s:]*(\d{8})/gi, /birth[\s:]*(\d{8})/gi];
+
+  for (const pattern of birthDatePatterns) {
+    const match = fullText.match(pattern);
+    if (match && match[1]) {
+      // 생년월일은 추출만 하고 신뢰도를 높이는데 사용
+      confidence += 0.1;
       break;
     }
   }
@@ -261,7 +280,7 @@ function parseStudentInfo(
       const deptCode = studentId.substring(2, 4);
 
       // 정보대학은 주로 양산캠퍼스
-      if (["01", "02", "03", "04", "05"].includes(deptCode)) {
+      if (["01", "02", "03", "04", "05", "55"].includes(deptCode)) {
         campus = "yangsan";
         confidence += 0.05;
       }
@@ -309,7 +328,10 @@ export const validateStudentInfo = onCall(
       "http://localhost:3000",
       "https://pnu-ibe.web.app",
       "https://pnu-ibe.firebaseapp.com",
+      // 모든 출처 허용 (테스트용, 프로덕션에서는 제거하고 특정 도메인만 허용하는 것이 좋습니다)
+      "*",
     ],
+    region: "asia-northeast3", // 서울 리전으로 통일
   },
   async (request) => {
     try {
@@ -392,14 +414,19 @@ export const validateStudentInfo = onCall(
 /**
  * 테스트용 헬스체크 함수
  */
-export const healthCheck = onRequest((request, response) => {
-  logger.info("Health check requested");
-  response.json({
-    status: "healthy",
-    timestamp: new Date().toISOString(),
-    functions: ["extractStudentIdInfo", "validateStudentInfo"],
-  });
-});
+export const healthCheck = onRequest(
+  {
+    region: "asia-northeast3", // 서울 리전으로 통일
+  },
+  (request, response) => {
+    logger.info("Health check requested");
+    response.json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      functions: ["extractStudentIdInfo", "validateStudentInfo"],
+    });
+  }
+);
 
 // Discord 스케줄러 함수들 export
 export { checkOverdueRentals, sendDailySummary, systemHealthCheck };

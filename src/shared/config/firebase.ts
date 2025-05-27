@@ -22,7 +22,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-const functions = getFunctions(app);
+const functions = getFunctions(app, "asia-northeast3");
 
 // Analytics는 브라우저에서만 초기화
 let analytics: Analytics | null = null;

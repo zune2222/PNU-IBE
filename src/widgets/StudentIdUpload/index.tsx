@@ -70,15 +70,15 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
           department: result.studentInfo.department || "",
           campus: result.studentInfo.campus || "yangsan",
         });
+        // 수동 입력 모드는 비활성화
+        setShowManualInput(false);
       } else {
-        // OCR 실패 시 수동 입력 모드 활성화
-        setShowManualInput(true);
+        // OCR 실패 시 수동 입력 모드는 활성화하지 않고 에러만 표시
         onError?.(result.error || "학생증 정보를 인식할 수 없습니다.");
       }
     } catch (error) {
       console.error("OCR 처리 오류:", error);
       onError?.("OCR 처리 중 오류가 발생했습니다.");
-      setShowManualInput(true);
     } finally {
       setIsLoading(false);
     }
@@ -145,16 +145,18 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">학생증 인증</h2>
+    <div className="w-full max-w-md mx-auto px-3 sm:px-6">
+      <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 text-center">
+          학생증 인증
+        </h2>
 
         {/* 파일 업로드 영역 */}
         {!selectedFile && (
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-            <div className="mb-4">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-5 sm:p-8 text-center">
+            <div className="mb-3">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400"
                 stroke="currentColor"
                 fill="none"
                 viewBox="0 0 48 48"
@@ -167,20 +169,21 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                 />
               </svg>
             </div>
-            <p className="text-lg font-medium text-gray-900 mb-2">
+            <p className="text-base sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2">
               학생증 사진을 업로드하세요
             </p>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
               JPG, PNG, WebP 파일 (최대 10MB)
             </p>
             <label className="cursor-pointer">
-              <span className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                파일 선택
+              <span className="mt-2 block w-full rounded-md border border-gray-300 py-3 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 text-center shadow-sm">
+                카메라/갤러리에서 선택
               </span>
               <input
                 type="file"
                 className="sr-only"
                 accept="image/*"
+                capture="environment"
                 onChange={handleFileSelect}
               />
             </label>
@@ -189,41 +192,68 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
         {/* 선택된 파일 미리보기 */}
         {selectedFile && previewUrl && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">
+          <div className="mb-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900">
                 업로드된 학생증
               </h3>
               <button
                 onClick={handleRemoveFile}
-                className="text-red-600 hover:text-red-800"
+                className="text-red-600 hover:text-red-800 py-1 px-2 text-sm rounded-md border border-transparent hover:border-red-200"
               >
-                제거
+                다시 찍기
               </button>
             </div>
             <div className="relative">
               <img
                 src={previewUrl}
                 alt="학생증 미리보기"
-                className="w-full h-64 object-contain bg-gray-100 rounded-lg"
+                className="w-full h-48 sm:h-64 object-contain bg-gray-100 rounded-lg"
               />
             </div>
-            <div className="mt-4">
-              <p className="text-sm text-gray-600 mb-2">
-                파일명: {selectedFile.name}
+            <div className="mt-3 text-xs sm:text-sm text-gray-600 flex justify-between">
+              <p>
+                파일명:{" "}
+                {selectedFile.name.length > 20
+                  ? selectedFile.name.substring(0, 20) + "..."
+                  : selectedFile.name}
               </p>
-              <p className="text-sm text-gray-600">
-                크기: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-              </p>
+              <p>크기: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
             </div>
 
             {!ocrResult && !showManualInput && (
               <button
                 onClick={handleOcrProcess}
                 disabled={isLoading}
-                className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="mt-4 w-full bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 disabled:opacity-50 shadow-sm font-medium text-base"
               >
-                {isLoading ? "처리 중..." : "학생 정보 추출"}
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    처리 중...
+                  </div>
+                ) : (
+                  "학생 정보 추출하기"
+                )}
               </button>
             )}
           </div>
@@ -231,14 +261,14 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
         {/* OCR 결과 */}
         {ocrResult && (
-          <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <div className="mb-5">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3">
               추출된 정보
             </h3>
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
               {ocrResult.success && ocrResult.studentInfo ? (
-                <div className="space-y-2">
-                  <div className="flex justify-between">
+                <div className="space-y-2 text-sm sm:text-base">
+                  <div className="flex justify-between items-center">
                     <span className="font-medium">인식 신뢰도:</span>
                     <span
                       className={ocrService.getConfidenceColor(
@@ -251,49 +281,94 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                       ({Math.round(ocrResult.studentInfo.confidence * 100)}%)
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="font-medium">학번:</span>
                     <span>
                       {ocrResult.studentInfo.studentId || "인식 실패"}
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="font-medium">이름:</span>
                     <span>{ocrResult.studentInfo.name || "인식 실패"}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="font-medium">학과:</span>
                     <span>
                       {ocrResult.studentInfo.department || "인식 실패"}
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="font-medium">캠퍼스:</span>
                     <span>{ocrResult.studentInfo.campus || "인식 실패"}</span>
                   </div>
                 </div>
               ) : (
-                <div className="text-red-600">
+                <div className="text-red-600 text-sm sm:text-base">
                   <p>{ocrResult.error}</p>
                 </div>
               )}
             </div>
+
+            {/* OCR 성공 시 저장 버튼 또는 실패 시 다시 시도 버튼 */}
+            {ocrResult.success && ocrResult.studentInfo ? (
+              <button
+                onClick={handleValidateAndSave}
+                disabled={isLoading}
+                className="mt-4 w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 disabled:opacity-50 shadow-sm font-medium text-base"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    처리 중...
+                  </div>
+                ) : (
+                  "정보 검증 및 저장"
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={handleRemoveFile}
+                className="mt-4 w-full bg-red-600 text-white px-4 py-3 rounded-md hover:bg-red-700 disabled:opacity-50 shadow-sm font-medium text-base"
+              >
+                다시 시도하기
+              </button>
+            )}
           </div>
         )}
 
-        {/* 수동 입력 또는 정보 수정 폼 */}
-        {(showManualInput || ocrResult) && (
-          <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              {ocrResult ? "정보 확인/수정" : "수동 입력"}
+        {/* 수동 입력 폼 - OCR 결과가 없고 수동 입력 모드가 활성화된 경우에만 표시 */}
+        {showManualInput && !ocrResult && (
+          <div className="mb-5">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3">
+              수동 입력
             </h3>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   학번 *
                 </label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   value={manualInput.studentId}
                   onChange={(e) =>
                     setManualInput({
@@ -301,7 +376,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                       studentId: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                   placeholder="예: 202012345"
                 />
               </div>
@@ -315,7 +390,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                   onChange={(e) =>
                     setManualInput({ ...manualInput, name: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                   placeholder="홍길동"
                 />
               </div>
@@ -332,7 +407,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                       department: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                   placeholder="정보컴퓨터공학부"
                 />
               </div>
@@ -348,7 +423,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                       campus: e.target.value as "yangsan" | "jangjeom",
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                 >
                   <option value="yangsan">양산캠퍼스</option>
                   <option value="jangjeom">장전캠퍼스</option>
@@ -361,15 +436,41 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
               disabled={
                 isLoading || !manualInput.studentId || !manualInput.name
               }
-              className="mt-4 w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+              className="mt-4 w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 disabled:opacity-50 shadow-sm font-medium text-base"
             >
-              {isLoading ? "처리 중..." : "정보 검증 및 저장"}
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  처리 중...
+                </div>
+              ) : (
+                "정보 검증 및 저장"
+              )}
             </button>
           </div>
         )}
 
         {/* 안내 메시지 */}
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-md">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg
@@ -385,12 +486,12 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm text-blue-700">
+              <p className="text-xs sm:text-sm text-blue-700">
                 <strong>안내사항:</strong>
                 <br />
-                • 학생증이 명확하게 보이도록 촬영해주세요
+                • 모바일 학생증의 정보가 모두 보이도록 캡쳐해주세요
                 <br />
-                • 조명이 밝은 곳에서 촬영하면 인식률이 높아집니다
+                • 화면 확대나 너무 작은 크기의 캡쳐는 인식률이 낮아집니다
                 <br />
                 • OCR 인식이 실패하면 수동으로 정보를 입력할 수 있습니다
                 <br />• 입력된 정보는 학사 시스템과 대조하여 검증됩니다
