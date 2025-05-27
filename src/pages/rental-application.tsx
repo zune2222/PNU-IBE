@@ -10,6 +10,7 @@ import {
   FirestoreRentalItem,
   FirestoreUser,
 } from "../shared/services/firestore";
+import { StudentIdInfo } from "../shared/services/ocrService";
 
 export default function RentalApplication() {
   const { user, loading } = useAuth();
@@ -23,6 +24,8 @@ export default function RentalApplication() {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"verify" | "select" | "apply">("verify");
+  const [verifiedStudentInfo, setVerifiedStudentInfo] =
+    useState<StudentIdInfo | null>(null);
 
   // 대여 신청 폼 상태
   const [applicationForm, setApplicationForm] = useState({
@@ -34,13 +37,6 @@ export default function RentalApplication() {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [successMessage, setSuccessMessage] = useState("");
-
-  // 권한 확인
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/auth/login");
-    }
-  }, [user, loading, router]);
 
   // 사용자 정보 확인
   useEffect(() => {
@@ -87,12 +83,22 @@ export default function RentalApplication() {
     }
   };
 
-  const handleStudentIdSuccess = () => {
+  const handleStudentIdSuccess = (studentInfoData: StudentIdInfo) => {
     setSuccessMessage("학생증 인증이 완료되었습니다!");
-    setTimeout(() => {
-      setStep("select");
-      checkUserStatus();
-    }, 2000);
+    setVerifiedStudentInfo(studentInfoData);
+
+    // 로그인한 사용자인 경우 다음 단계로 이동
+    if (user) {
+      setTimeout(() => {
+        setStep("select");
+        checkUserStatus();
+      }, 2000);
+    } else {
+      // 비로그인 사용자인 경우 로그인 유도 메시지 표시
+      setTimeout(() => {
+        setSuccessMessage("로그인하시면 물품을 대여할 수 있습니다.");
+      }, 2000);
+    }
   };
 
   const handleStudentIdError = (error: string) => {
@@ -100,6 +106,12 @@ export default function RentalApplication() {
   };
 
   const handleItemSelect = (item: FirestoreRentalItem) => {
+    if (!user) {
+      // 로그인하지 않은 경우 로그인 페이지로 안내
+      router.push("/auth/login?redirect=/rental-application");
+      return;
+    }
+
     setSelectedItem(item);
     setStep("apply");
   };
@@ -209,10 +221,6 @@ export default function RentalApplication() {
         <div className="text-lg">로딩 중...</div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (

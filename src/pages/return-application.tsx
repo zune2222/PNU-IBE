@@ -34,19 +34,15 @@ export default function ReturnApplication() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [successMessage, setSuccessMessage] = useState("");
 
-  // 권한 확인
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/auth/login");
-    }
-  }, [user, loading, router]);
-
   // 대여 중인 물품 로드
   useEffect(() => {
     if (user) {
       loadCurrentRentals();
+    } else if (!loading) {
+      // 로그인하지 않은 경우
+      setErrors({ auth: "물품 반납은 로그인 후 이용 가능합니다." });
     }
-  }, [user]);
+  }, [user, loading]);
 
   const loadCurrentRentals = async () => {
     if (!user) return;
@@ -114,6 +110,11 @@ export default function ReturnApplication() {
   };
 
   const handleSubmitReturn = async () => {
+    if (!user) {
+      router.push("/auth/login?redirect=/return-application");
+      return;
+    }
+
     if (!selectedRental || !validatePhotos()) {
       return;
     }

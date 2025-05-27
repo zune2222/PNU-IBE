@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { useAuth } from "../../shared/contexts/AuthContext";
 import {
   ocrService,
   OcrResult,
   StudentIdInfo,
 } from "../../shared/services/ocrService";
-import { userService } from "../../shared/services/firestore";
 
 interface StudentIdUploadProps {
   onSuccess?: (studentInfo: StudentIdInfo) => void;
@@ -16,7 +14,6 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
   onSuccess,
   onError,
 }) => {
-  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -54,13 +51,14 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
   // OCR 처리 실행
   const handleOcrProcess = async () => {
-    if (!selectedFile || !user) return;
+    if (!selectedFile) return;
 
     setIsLoading(true);
     try {
+      const tempId = `temp_${Date.now()}`;
       const result = await ocrService.extractStudentIdInfo(
         selectedFile,
-        user.uid
+        tempId
       );
       setOcrResult(result);
 
@@ -88,8 +86,6 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
   // 학생 정보 검증 및 저장
   const handleValidateAndSave = async () => {
-    if (!user) return;
-
     const { studentId, name, department, campus } = manualInput;
 
     if (!studentId || !name) {
@@ -99,11 +95,12 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
     setIsLoading(true);
     try {
-      // 1. 학생 정보 검증
+      // 학생 정보 검증
+      const tempId = `temp_${Date.now()}`;
       const validation = await ocrService.validateStudentInfo(
         studentId,
         name,
-        user.uid
+        tempId
       );
 
       if (!validation.valid) {
@@ -111,24 +108,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
         return;
       }
 
-      // 2. 학생 정보 저장
-      const userInfo = {
-        uid: user.uid,
-        email: user.email || "",
-        name,
-        studentId,
-        phone: "", // 기본값
-        campus,
-        department: department || "",
-        role: "student" as const,
-        isActive: true,
-        penaltyPoints: 0,
-        studentIdVerified: true, // 올바른 필드명
-      };
-
-      await userService.createUser(userInfo);
-
-      // 3. 성공 콜백 호출
+      // 성공 콜백 호출
       const studentInfo: StudentIdInfo = {
         studentId,
         name,
@@ -163,14 +143,6 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       campus: "yangsan",
     });
   };
-
-  if (!user) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">로그인이 필요합니다.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
