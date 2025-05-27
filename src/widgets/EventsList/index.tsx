@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { eventService, FirestoreEvent } from "../../shared/services/firestore";
 import {
   getCategoryColor,
   getStatusBadgeStyle,
   getStatusText,
 } from "../../shared/data/eventsData";
+import { useEvents } from "../../shared/services/hooks";
 
 // 카테고리 목록
 const categories = ["전체", "학술", "체육", "문화", "취업"];
@@ -19,28 +19,7 @@ export function EventsList() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [selectedStatus, setSelectedStatus] = useState("전체");
   const [searchTerm, setSearchTerm] = useState("");
-  const [events, setEvents] = useState<FirestoreEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Firestore에서 행사 데이터 로드
-  useEffect(() => {
-    const loadEvents = async () => {
-      try {
-        setLoading(true);
-        const eventsData = await eventService.getAll();
-        setEvents(eventsData);
-        setError(null);
-      } catch (err) {
-        console.error("행사 로드 실패:", err);
-        setError("행사 정보를 불러오는데 실패했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadEvents();
-  }, []);
+  const { data: events = [], isLoading: loading, error } = useEvents();
 
   // 필터링된 이벤트 목록
   const filteredEvents = events.filter((event) => {
@@ -104,7 +83,9 @@ export function EventsList() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2 korean-text">
                 데이터 로드 실패
               </h3>
-              <p className="text-gray-600 korean-text mb-4">{error}</p>
+              <p className="text-gray-600 korean-text mb-4">
+                행사 정보를 불러오는데 실패했습니다.
+              </p>
               <button
                 onClick={() => window.location.reload()}
                 className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors korean-text"

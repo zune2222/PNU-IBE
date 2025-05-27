@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import {
-  rentalService,
-  FirestoreRentalItem,
-} from "../../shared/services/firestore";
+import { FirestoreRentalItem } from "../../shared/services/firestore";
+import { useRentalItems } from "../../shared/services/hooks";
 
 // 카테고리 목록
 const categories = ["전체", "전자기기", "가구", "생활용품", "스포츠"];
@@ -16,28 +14,7 @@ export function RentalList() {
     null
   );
   const [showRentalForm, setShowRentalForm] = useState(false);
-  const [rentals, setRentals] = useState<FirestoreRentalItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Firestore에서 대여물품 데이터 로드
-  useEffect(() => {
-    const loadRentals = async () => {
-      try {
-        setLoading(true);
-        const rentalsData = await rentalService.getAll();
-        setRentals(rentalsData);
-        setError(null);
-      } catch (err) {
-        console.error("대여물품 로드 실패:", err);
-        setError("대여물품 정보를 불러오는데 실패했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadRentals();
-  }, []);
+  const { data: rentals = [], isLoading: loading, error } = useRentalItems();
 
   // 필터링된 물품 목록
   const filteredItems = rentals.filter((item) => {
@@ -274,13 +251,13 @@ export function RentalList() {
   // 로딩 상태
   if (loading) {
     return (
-      <section className="py-16 bg-gray-50">
-        <div className="container-custom">
-          <div className="flex justify-center items-center py-20">
+      <section className="bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 py-16 md:py-24">
+        <div className="container-custom px-6 py-20">
+          <div className="flex justify-center items-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-gray-600 korean-text">
-                대여물품 정보를 불러오는 중...
+                대여 물품 정보를 불러오는 중...
               </p>
             </div>
           </div>
@@ -292,10 +269,10 @@ export function RentalList() {
   // 에러 상태
   if (error) {
     return (
-      <section className="py-16 bg-gray-50">
-        <div className="container-custom">
-          <div className="flex justify-center items-center py-20">
-            <div className="text-center bg-white rounded-2xl shadow-lg p-8">
+      <section className="bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 py-16 md:py-24">
+        <div className="container-custom px-6 py-20">
+          <div className="flex justify-center items-center">
+            <div className="text-center bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-8">
               <svg
                 className="mx-auto h-12 w-12 text-red-500 mb-4"
                 fill="none"
@@ -312,7 +289,9 @@ export function RentalList() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2 korean-text">
                 데이터 로드 실패
               </h3>
-              <p className="text-gray-600 korean-text mb-4">{error}</p>
+              <p className="text-gray-600 korean-text mb-4">
+                대여 물품 정보를 불러오는데 실패했습니다.
+              </p>
               <button
                 onClick={() => window.location.reload()}
                 className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors korean-text"

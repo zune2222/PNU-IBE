@@ -1,7 +1,20 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useNotices, useImportantNotices } from "../../shared/services/hooks";
 
 export function NoticeHero() {
+  const { data: notices = [] } = useNotices();
+  const { data: importantNotices = [] } = useImportantNotices();
+
+  // 긴급 공지 수
+  const urgentCount = importantNotices.length;
+
+  // 일반 공지 수 (전체 - 중요)
+  const regularCount = notices.length - urgentCount;
+
+  // 전체 공지 수
+  const totalCount = notices.length;
+
   return (
     <section className="relative min-h-screen flex items-center pt-20 pb-20 overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50">
       {/* 개선된 배경 요소들 */}
@@ -81,7 +94,7 @@ export function NoticeHero() {
                 </div>
                 <div className="text-left sm:text-center flex-1 sm:flex-none">
                   <div className="text-xl sm:text-2xl md:text-3xl font-bold text-dark korean-text mb-0 sm:mb-1">
-                    5
+                    {urgentCount}
                   </div>
                   <div className="text-sm sm:text-base text-gray-600 korean-text">
                     긴급 공지
@@ -110,7 +123,7 @@ export function NoticeHero() {
                 </div>
                 <div className="text-left sm:text-center flex-1 sm:flex-none">
                   <div className="text-xl sm:text-2xl md:text-3xl font-bold text-dark korean-text mb-0 sm:mb-1">
-                    23
+                    {regularCount}
                   </div>
                   <div className="text-sm sm:text-base text-gray-600 korean-text">
                     일반 공지
@@ -139,7 +152,7 @@ export function NoticeHero() {
                 </div>
                 <div className="text-left sm:text-center flex-1 sm:flex-none">
                   <div className="text-xl sm:text-2xl md:text-3xl font-bold text-dark korean-text mb-0 sm:mb-1">
-                    156
+                    {totalCount}
                   </div>
                   <div className="text-sm sm:text-base text-gray-600 korean-text">
                     전체 공지

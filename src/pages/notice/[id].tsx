@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
@@ -6,94 +6,68 @@ import { motion } from "framer-motion";
 import { Header } from "../../widgets/Header";
 import { Footer } from "../../widgets/Footer";
 import { event as gaEvent } from "../../shared/lib/analytics";
-import {
-  noticeService,
-  FirestoreNotice,
-} from "../../shared/services/firestore";
+import { noticeService } from "../../shared/services/firestore";
 import { getCategoryColor } from "../../shared/data/noticeData";
+import { useQuery } from "@tanstack/react-query";
 
 export default function NoticeDetail() {
   const router = useRouter();
   const { id } = router.query;
 
-  const [notice, setNotice] = useState<FirestoreNotice | null>(null);
-  const [relatedNotices, setRelatedNotices] = useState<FirestoreNotice[]>([]);
-  const [recentNotices, setRecentNotices] = useState<FirestoreNotice[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // 공지사항 상세 조회 쿼리
+  const noticeQuery = useQuery({
+    queryKey: ["notice", id],
+    queryFn: () =>
+      id && typeof id === "string" ? noticeService.getById(id) : null,
+    enabled: !!id && typeof id === "string",
+  });
 
-  // 데이터 로드
-  useEffect(() => {
-    if (!id || typeof id !== "string") return;
+  // 모든 공지사항 조회 쿼리
+  const allNoticesQuery = useQuery({
+    queryKey: ["notices"],
+    queryFn: () => noticeService.getAll(),
+    enabled: !!noticeQuery.data, // 공지사항 상세가 로드된 후 실행
+  });
 
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // 관련 공지와 최근 공지 계산
+  const relatedNotices =
+    allNoticesQuery.data
+      ?.filter(
+        (item) => item.id !== id && item.category === noticeQuery.data?.category
+      )
+      .slice(0, 3) || [];
 
-        // 해당 공지사항 가져오기
-        const noticeData = await noticeService.getById(id);
-
-        if (!noticeData) {
-          setError("공지사항을 찾을 수 없습니다.");
-          return;
-        }
-
-        setNotice(noticeData);
-
-        // 모든 공지사항 가져오기
-        const allNotices = await noticeService.getAll();
-
-        // 관련 공지 (같은 카테고리, 현재 공지 제외)
-        const related = allNotices
-          .filter(
-            (item) =>
-              item.id !== noticeData.id && item.category === noticeData.category
-          )
-          .slice(0, 3);
-        setRelatedNotices(related);
-
-        // 최근 공지 (현재 공지 제외, 날짜순 정렬)
-        const recent = allNotices
-          .filter((item) => item.id !== noticeData.id)
-          .sort((a, b) => {
-            const dateA =
-              a.createdAt &&
-              typeof a.createdAt === "object" &&
-              "toDate" in a.createdAt
-                ? (a.createdAt as { toDate: () => Date }).toDate()
-                : new Date(a.createdAt as string | number | Date);
-            const dateB =
-              b.createdAt &&
-              typeof b.createdAt === "object" &&
-              "toDate" in b.createdAt
-                ? (b.createdAt as { toDate: () => Date }).toDate()
-                : new Date(b.createdAt as string | number | Date);
-            return dateB.getTime() - dateA.getTime();
-          })
-          .slice(0, 3);
-        setRecentNotices(recent);
-      } catch (err) {
-        console.error("공지사항 로드 실패:", err);
-        setError("공지사항을 불러오는데 실패했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [id]);
+  const recentNotices =
+    allNoticesQuery.data
+      ?.filter((item) => item.id !== id)
+      .sort((a, b) => {
+        const dateA =
+          a.createdAt &&
+          typeof a.createdAt === "object" &&
+          "toDate" in a.createdAt
+            ? (a.createdAt as { toDate: () => Date }).toDate()
+            : new Date(a.createdAt as string | number | Date);
+        const dateB =
+          b.createdAt &&
+          typeof b.createdAt === "object" &&
+          "toDate" in b.createdAt
+            ? (b.createdAt as { toDate: () => Date }).toDate()
+            : new Date(b.createdAt as string | number | Date);
+        return dateB.getTime() - dateA.getTime();
+      })
+      .slice(0, 3) || [];
 
   // GA 이벤트 트래킹
-  useEffect(() => {
-    if (notice) {
+  React.useEffect(() => {
+    if (noticeQuery.data && id && typeof id === "string") {
       gaEvent({
         action: "view_notice",
         category: "notices",
-        label: `${notice.id} - ${notice.title}`,
+        label: `${noticeQuery.data.id} - ${noticeQuery.data.title}`,
       });
+      noticeService.incrementViews(id).catch(console.error);
     }
-  }, [notice]);
+  }, [noticeQuery.data, id]);
 
   // 날짜 포맷팅 함수
   const formatDate = (timestamp: unknown) => {
@@ -133,7 +107,7 @@ export default function NoticeDetail() {
   };
 
   // 로딩 상태
-  if (loading) {
+  if (noticeQuery.isPending) {
     return (
       <>
         <Head>
@@ -156,7 +130,7 @@ export default function NoticeDetail() {
   }
 
   // 에러 상태
-  if (error || !notice) {
+  if (noticeQuery.isError || !noticeQuery.data) {
     return (
       <>
         <Head>
@@ -184,7 +158,9 @@ export default function NoticeDetail() {
                 공지를 찾을 수 없습니다
               </h2>
               <p className="text-gray-500 mb-6 korean-text">
-                {error || "요청하신 공지사항이 존재하지 않거나 삭제되었습니다."}
+                {noticeQuery.error instanceof Error
+                  ? noticeQuery.error.message
+                  : "요청하신 공지사항이 존재하지 않거나 삭제되었습니다."}
               </p>
               <Link
                 href="/notice"
@@ -199,6 +175,8 @@ export default function NoticeDetail() {
       </>
     );
   }
+
+  const notice = noticeQuery.data;
 
   return (
     <>

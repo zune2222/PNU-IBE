@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
@@ -12,57 +12,55 @@ import {
   getStatusBadgeStyle,
   getStatusText,
 } from "../../shared/data/eventsData";
+import { useQuery } from "@tanstack/react-query";
 
-export default function EventDetail() {
+// 직렬화된 이벤트 타입 (Timestamp가 문자열로 변환됨)
+interface SerializedEvent
+  extends Omit<FirestoreEvent, "createdAt" | "updatedAt"> {
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface EventDetailProps {
+  initialEvent?: SerializedEvent;
+  initialRelatedEvents?: SerializedEvent[];
+}
+
+export default function EventDetail({
+  initialEvent,
+  initialRelatedEvents = [],
+}: EventDetailProps) {
   const router = useRouter();
   const { id } = router.query;
-
-  const [event, setEvent] = useState<FirestoreEvent | null>(null);
-  const [relatedEvents, setRelatedEvents] = useState<FirestoreEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // 데이터 로드
-  useEffect(() => {
-    if (!id || typeof id !== "string") return;
+  // 이벤트 상세 조회 쿼리 (초기 데이터가 있으면 사용)
+  const eventQuery = useQuery({
+    queryKey: ["event", id],
+    queryFn: () =>
+      id && typeof id === "string" ? eventService.getById(id) : null,
+    enabled: !!id && typeof id === "string" && !initialEvent,
+  });
 
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // 모든 이벤트 조회 쿼리 (초기 관련 이벤트가 있으면 사용)
+  const allEventsQuery = useQuery({
+    queryKey: ["events"],
+    queryFn: () => eventService.getAll(),
+    enabled: !!eventQuery.data && initialRelatedEvents.length === 0,
+  });
 
-        // 해당 행사 가져오기
-        const eventData = await eventService.getById(id);
+  // 현재 이벤트 데이터 (초기 데이터가 있으면 사용, 없으면 쿼리 결과 사용)
+  const event = initialEvent || eventQuery.data;
 
-        if (!eventData) {
-          setError("행사 정보를 찾을 수 없습니다.");
-          return;
-        }
-
-        setEvent(eventData);
-
-        // 모든 행사 가져오기
-        const allEvents = await eventService.getAll();
-
-        // 관련 행사 (같은 카테고리, 현재 행사 제외)
-        const related = allEvents
-          .filter(
-            (item) =>
-              item.id !== eventData.id && item.category === eventData.category
+  // 관련 이벤트 계산 (초기 데이터가 있으면 사용, 없으면 계산)
+  const relatedEvents =
+    initialRelatedEvents.length > 0
+      ? initialRelatedEvents
+      : allEventsQuery.data
+          ?.filter(
+            (item) => item.id !== id && item.category === event?.category
           )
-          .slice(0, 3);
-        setRelatedEvents(related);
-      } catch (err) {
-        console.error("행사 로드 실패:", err);
-        setError("행사 정보를 불러오는데 실패했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [id]);
+          .slice(0, 3) || [];
 
   const handleRegister = () => {
     setIsRegistering(true);
@@ -79,7 +77,7 @@ export default function EventDetail() {
   };
 
   // 로딩 상태
-  if (loading) {
+  if (!initialEvent && eventQuery.isPending) {
     return (
       <>
         <Head>
@@ -102,7 +100,7 @@ export default function EventDetail() {
   }
 
   // 에러 상태
-  if (error || !event) {
+  if (!initialEvent && (eventQuery.isError || !event)) {
     return (
       <>
         <Head>
@@ -130,8 +128,40 @@ export default function EventDetail() {
                 행사 정보를 찾을 수 없습니다
               </h2>
               <p className="text-gray-500 mb-6 korean-text">
-                {error ||
-                  "요청하신 행사 정보가 존재하지 않거나 삭제되었습니다."}
+                {eventQuery.error instanceof Error
+                  ? eventQuery.error.message
+                  : "요청하신 행사 정보가 존재하지 않거나 삭제되었습니다."}
+              </p>
+              <Link
+                href="/events"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 transition-colors korean-text"
+              >
+                행사 목록으로 돌아가기
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  // 이벤트가 존재하지 않으면 에러 처리
+  if (!event) {
+    return (
+      <>
+        <Head>
+          <title>행사 정보 - 부산대학교 정보의생명공학대학 학생회</title>
+        </Head>
+        <Header />
+        <main className="pt-28 pb-16">
+          <div className="container-custom py-20">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-700 mb-2 korean-text">
+                행사 정보를 찾을 수 없습니다
+              </h2>
+              <p className="text-gray-500 mb-6 korean-text">
+                요청하신 행사 정보가 존재하지 않거나 삭제되었습니다.
               </p>
               <Link
                 href="/events"
@@ -635,4 +665,73 @@ export default function EventDetail() {
       <Footer />
     </>
   );
+}
+
+// Static Site Generation을 위한 설정
+export async function getStaticPaths() {
+  try {
+    // 모든 이벤트를 가져와서 ID 목록 생성
+    const events = await eventService.getAll();
+
+    const paths = events.map((event) => ({
+      params: { id: event.id },
+    }));
+
+    return {
+      paths,
+      fallback: false, // 정적 export를 위해 false로 설정
+    };
+  } catch (error) {
+    console.error("Error generating static paths:", error);
+    return {
+      paths: [],
+      fallback: false,
+    };
+  }
+}
+
+export async function getStaticProps({ params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+
+    // 특정 이벤트 데이터 가져오기
+    const event = await eventService.getById(id);
+
+    if (!event) {
+      return {
+        notFound: true,
+      };
+    }
+
+    // 모든 이벤트 가져와서 관련 이벤트 찾기
+    const allEvents = await eventService.getAll();
+    const relatedEvents = allEvents
+      .filter((item) => item.id !== id && item.category === event.category)
+      .slice(0, 3);
+
+    // Firestore Timestamp를 문자열로 변환
+    const serializableEvent = {
+      ...event,
+      createdAt: event.createdAt.toDate().toISOString(),
+      updatedAt: event.updatedAt.toDate().toISOString(),
+    };
+
+    const serializableRelatedEvents = relatedEvents.map((relatedEvent) => ({
+      ...relatedEvent,
+      createdAt: relatedEvent.createdAt.toDate().toISOString(),
+      updatedAt: relatedEvent.updatedAt.toDate().toISOString(),
+    }));
+
+    return {
+      props: {
+        initialEvent: serializableEvent,
+        initialRelatedEvents: serializableRelatedEvents,
+      },
+    };
+  } catch (error) {
+    console.error("Error in getStaticProps:", error);
+    return {
+      notFound: true,
+    };
+  }
 }

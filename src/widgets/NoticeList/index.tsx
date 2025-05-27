@@ -1,43 +1,44 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { event as gaEvent } from "../../shared/lib/analytics";
-import {
-  noticeService,
-  FirestoreNotice,
-} from "../../shared/services/firestore";
+import { FirestoreNotice } from "../../shared/services/firestore";
 import { getCategoryColor } from "../../shared/data/noticeData";
+import { useNotices } from "../../shared/services/hooks";
 
 export function NoticeList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("전체");
-  const [notices, setNotices] = useState<FirestoreNotice[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: notices = [], isLoading: loading, error } = useNotices();
   const itemsPerPage = 5;
 
-  // Firestore에서 공지사항 데이터 로드
-  useEffect(() => {
-    const loadNotices = async () => {
-      try {
-        setLoading(true);
-        const noticesData = await noticeService.getAll();
-        setNotices(noticesData);
-        setError(null);
-      } catch (err) {
-        console.error("공지사항 로드 실패:", err);
-        setError("공지사항을 불러오는데 실패했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // 중요 공지를 먼저 정렬하고 나머지는 날짜순으로 정렬
+  const sortedNotices = React.useMemo(() => {
+    return [...notices].sort((a, b) => {
+      // 중요 공지를 먼저 보여줌
+      if (a.important && !b.important) return -1;
+      if (!a.important && b.important) return 1;
 
-    loadNotices();
-  }, []);
+      // 둘 다 중요 공지이거나 둘 다 일반 공지일 경우 날짜순으로 정렬
+      const dateA =
+        a.createdAt &&
+        typeof a.createdAt === "object" &&
+        "toDate" in a.createdAt
+          ? (a.createdAt as { toDate: () => Date }).toDate()
+          : new Date(a.createdAt as string | number | Date);
+      const dateB =
+        b.createdAt &&
+        typeof b.createdAt === "object" &&
+        "toDate" in b.createdAt
+          ? (b.createdAt as { toDate: () => Date }).toDate()
+          : new Date(b.createdAt as string | number | Date);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [notices]);
 
   // 검색 및 필터링된 공지사항
-  const filteredNotices = notices.filter((notice) => {
+  const filteredNotices = sortedNotices.filter((notice) => {
     const matchesSearch =
       notice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       notice.preview.toLowerCase().includes(searchTerm.toLowerCase());
@@ -151,7 +152,9 @@ export function NoticeList() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2 korean-text">
                 데이터 로드 실패
               </h3>
-              <p className="text-gray-600 korean-text mb-4">{error}</p>
+              <p className="text-gray-600 korean-text mb-4">
+                공지사항을 불러오는데 실패했습니다.
+              </p>
               <button
                 onClick={() => window.location.reload()}
                 className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors korean-text"
@@ -269,225 +272,117 @@ export function NoticeList() {
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-5 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider w-24 korean-text"
+                      className="px-6 py-5 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider w-20 korean-text"
                     >
-                      조회수
+                      조회
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white/50 backdrop-blur-sm divide-y divide-gray-200/30">
-                  {currentItems.map((notice, index) => {
-                    // 전체 목록에서의 실제 순서 번호 계산
-                    const displayNumber =
-                      (currentPage - 1) * itemsPerPage + index + 1;
-
-                    return (
-                      <motion.tr
-                        key={notice.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                        whileHover={{ y: -2 }}
-                        className="hover:bg-white/80 cursor-pointer group transition-all duration-300"
-                      >
-                        <td className="px-6 py-6 whitespace-nowrap text-center relative">
-                          <div className="relative">
-                            <span
-                              className={`inline-flex items-center justify-center h-10 w-10 rounded-full text-sm font-semibold transition-all duration-300 ${
-                                notice.important
-                                  ? "bg-gradient-to-br from-red-500 to-pink-500 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110"
-                                  : "bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 group-hover:from-primary/20 group-hover:to-secondary/20 group-hover:text-primary group-hover:scale-110"
-                              }`}
-                            >
-                              {displayNumber}
-                            </span>
-                            {notice.important && (
-                              <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-6">
-                          <div>
-                            <Link
-                              href={`/notice/${notice.id}`}
-                              className="text-gray-900 font-semibold hover:text-primary transition-colors line-clamp-1 text-lg korean-text group-hover:text-primary"
-                              onClick={() => handleNoticeClick(notice)}
-                            >
-                              {notice.important && (
-                                <span className="inline-block mr-2 text-red-500 font-bold">
-                                  [중요]
+                <tbody className="bg-white divide-y divide-gray-200/50">
+                  {currentItems.map((notice) => (
+                    <tr
+                      key={notice.id}
+                      className="hover:bg-blue-50/50 transition-colors cursor-pointer"
+                    >
+                      <Link href={`/notice/${notice.id}`} legacyBehavior>
+                        <a
+                          className="contents"
+                          onClick={() => handleNoticeClick(notice)}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-center">
+                              {notice.important ? (
+                                <span className="inline-flex items-center justify-center w-8 h-8 bg-red-100 rounded-full text-red-700 font-bold text-xs korean-text">
+                                  중요
+                                </span>
+                              ) : (
+                                <span className="text-gray-500 korean-text">
+                                  {filteredNotices.indexOf(notice) + 1}
                                 </span>
                               )}
-                              {notice.title}
-                            </Link>
-                            <p className="mt-2 text-sm text-gray-500 line-clamp-1 korean-text">
-                              {notice.preview}
-                            </p>
-                          </div>
-                        </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-center">
-                          <span
-                            className={`px-3 py-1.5 text-xs font-semibold rounded-full backdrop-blur-sm ${getCategoryColor(
-                              notice.category
-                            )} group-hover:scale-105 transition-transform duration-300`}
-                          >
-                            {notice.category}
-                          </span>
-                        </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-sm text-gray-500 text-center korean-text">
-                          {formatDate(notice.createdAt)}
-                        </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-sm text-gray-500 text-center">
-                          <div className="flex items-center justify-center group-hover:text-primary transition-colors duration-300">
-                            <svg
-                              className="w-4 h-4 mr-1 text-gray-400 group-hover:text-primary transition-colors duration-300"
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <div className="text-sm font-medium text-gray-900 korean-text">
+                                {notice.title}
+                              </div>
+                              <div className="mt-1 text-xs text-gray-500 line-clamp-1 korean-text">
+                                {notice.preview}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+                                notice.category
+                              )}`}
                             >
-                              <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
-                              <path
-                                fillRule="evenodd"
-                                d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                            <span className="korean-text">{notice.views}</span>
-                          </div>
-                        </td>
-                      </motion.tr>
-                    );
-                  })}
+                              {notice.category}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 korean-text">
+                            {formatDate(notice.createdAt)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 korean-text">
+                            {notice.views}
+                          </td>
+                        </a>
+                      </Link>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
 
           {/* 모바일 카드 뷰 */}
-          <div className="md:hidden space-y-4 sm:space-y-6">
-            {currentItems.map((notice, index) => {
-              // 전체 목록에서의 실제 순서 번호 계산
-              const displayNumber =
-                (currentPage - 1) * itemsPerPage + index + 1;
-
-              return (
+          <div className="md:hidden space-y-4">
+            {currentItems.map((notice) => (
+              <Link
+                key={notice.id}
+                href={`/notice/${notice.id}`}
+                className="block"
+                onClick={() => handleNoticeClick(notice)}
+              >
                 <motion.div
-                  key={notice.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-5 sm:p-6 hover:shadow-xl transition-all duration-300 group mx-2 sm:mx-0"
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-white/50 p-4 transition-all"
                 >
-                  <div className="flex items-start gap-4">
-                    {/* 번호 아이콘 */}
-                    <div className="flex-shrink-0 relative">
-                      <span
-                        className={`inline-flex items-center justify-center h-14 w-14 rounded-2xl text-base font-bold transition-all duration-300 ${
-                          notice.important
-                            ? "bg-gradient-to-br from-red-500 to-pink-500 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110"
-                            : "bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 group-hover:from-primary/20 group-hover:to-secondary/20 group-hover:text-primary group-hover:scale-110"
-                        }`}
-                      >
-                        {displayNumber}
+                  <div className="flex items-center mb-2 gap-2">
+                    {notice.important ? (
+                      <span className="inline-flex items-center justify-center w-8 h-8 bg-red-100 rounded-full text-red-700 font-bold text-xs korean-text">
+                        중요
                       </span>
-                      {notice.important && (
-                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
-                      )}
-                    </div>
-
-                    {/* 콘텐츠 */}
-                    <div className="flex-1 min-w-0">
-                      {/* 제목과 카테고리 */}
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <Link
-                          href={`/notice/${notice.id}`}
-                          className="text-gray-900 font-bold hover:text-primary transition-colors text-lg korean-text group-hover:text-primary flex-1 leading-tight"
-                          onClick={() => handleNoticeClick(notice)}
-                        >
-                          {notice.important && (
-                            <span className="inline-block mr-2 text-red-500 font-bold">
-                              [중요]
-                            </span>
-                          )}
-                          <span className="line-clamp-2">{notice.title}</span>
-                        </Link>
-                        <span
-                          className={`px-3 py-1.5 text-xs font-semibold rounded-full backdrop-blur-sm flex-shrink-0 ${getCategoryColor(
-                            notice.category
-                          )} group-hover:scale-105 transition-transform duration-300`}
-                        >
-                          {notice.category}
-                        </span>
-                      </div>
-
-                      {/* 미리보기 */}
-                      <p className="text-sm text-gray-600 line-clamp-2 korean-text mb-4 leading-relaxed">
-                        {notice.preview}
-                      </p>
-
-                      {/* 하단 정보 */}
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <span className="korean-text font-medium">
-                          {formatDate(notice.createdAt)}
-                        </span>
-                        <div className="flex items-center group-hover:text-primary transition-colors duration-300">
-                          <svg
-                            className="w-4 h-4 mr-1.5 text-gray-400 group-hover:text-primary transition-colors duration-300"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
-                            <path
-                              fillRule="evenodd"
-                              d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          <span className="korean-text font-medium">
-                            {notice.views}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    ) : (
+                      <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-gray-700 font-medium text-xs korean-text">
+                        {filteredNotices.indexOf(notice) + 1}
+                      </span>
+                    )}
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ml-2 ${getCategoryColor(
+                        notice.category
+                      )}`}
+                    >
+                      {notice.category}
+                    </span>
+                    <span className="ml-auto text-xs text-gray-500 korean-text">
+                      {formatDate(notice.createdAt)}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-medium text-gray-900 mb-1 korean-text">
+                    {notice.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 line-clamp-1 korean-text">
+                    {notice.preview}
+                  </p>
+                  <div className="mt-2 text-xs text-gray-500 korean-text">
+                    조회: {notice.views}
                   </div>
                 </motion.div>
-              );
-            })}
+              </Link>
+            ))}
           </div>
-
-          {/* 검색 결과가 없을 때 */}
-          {filteredNotices.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4 }}
-              className="text-center py-12 sm:py-16"
-            >
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-8 sm:p-12 max-w-md mx-auto">
-                <svg
-                  className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mb-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 korean-text">
-                  검색 결과가 없습니다
-                </h3>
-                <p className="text-sm sm:text-base text-gray-500 korean-text">
-                  다른 검색어나 카테고리를 시도해보세요.
-                </p>
-              </div>
-            </motion.div>
-          )}
         </motion.div>
 
         {/* 페이지네이션 */}
@@ -496,67 +391,74 @@ export function NoticeList() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="flex justify-center mb-8"
+            className="flex justify-center mt-10"
           >
-            <nav className="inline-flex items-center gap-2 rounded-2xl shadow-lg bg-white/90 backdrop-blur-sm border border-white/60 p-3">
+            <nav className="inline-flex shadow-sm rounded-lg overflow-hidden">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-100/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:text-primary disabled:hover:text-gray-500"
+                className={`px-4 py-2 text-sm font-medium korean-text ${
+                  currentPage === 1
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-white text-gray-700 hover:bg-blue-50 transition-colors"
+                }`}
               >
-                <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                이전
               </button>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const pageNumber =
+                  currentPage > 3
+                    ? currentPage - 2 + i < totalPages
+                      ? currentPage - 2 + i
+                      : totalPages - 4 + i
+                    : i + 1;
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
+                // 표시할 페이지의 범위 조정 (너무 많은 페이지가 있을 경우)
+                if (totalPages > 5) {
+                  if (currentPage <= 3) {
+                    // 1, 2, 3, 4, 5를 보여줌
+                    if (i >= 5) return null;
+                  } else if (currentPage >= totalPages - 2) {
+                    // 마지막 5개 페이지를 보여줌
+                    const pageToShow = totalPages - 4 + i;
+                    if (pageToShow <= 0) return null;
+                    return pageToShow;
+                  } else {
+                    // 현재 페이지를 중심으로 -2 ~ +2를 보여줌
+                    return currentPage - 2 + i;
+                  }
+                }
+
+                return pageNumber;
+              })
+                .filter(Boolean)
+                .map((pageNum) => (
                   <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`relative inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl text-sm sm:text-base font-semibold transition-all duration-300 korean-text ${
-                      currentPage === page
-                        ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md hover:shadow-lg transform hover:scale-105"
-                        : "text-gray-600 hover:bg-gray-100/80 hover:text-primary"
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum as number)}
+                    className={`px-4 py-2 text-sm font-medium korean-text ${
+                      currentPage === pageNum
+                        ? "bg-blue-600 text-white"
+                        : "bg-white text-gray-700 hover:bg-blue-50 transition-colors"
                     }`}
                   >
-                    {page}
+                    {pageNum}
                   </button>
-                )
-              )}
-
+                ))}
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="relative inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-100/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:text-primary disabled:hover:text-gray-500"
+                className={`px-4 py-2 text-sm font-medium korean-text ${
+                  currentPage === totalPages
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-white text-gray-700 hover:bg-blue-50 transition-colors"
+                }`}
               >
-                <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                다음
               </button>
             </nav>
           </motion.div>
         )}
-
-        {/* 글쓰기 버튼 */}
       </div>
     </section>
   );

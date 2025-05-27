@@ -673,6 +673,24 @@ export default function AdminDashboard() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
+                        콘텐츠 (HTML 가능)
+                      </label>
+                      <textarea
+                        rows={10}
+                        value={eventForm.content}
+                        onChange={(e) =>
+                          setEventForm({
+                            ...eventForm,
+                            content: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="행사 상세 내용 (HTML 태그 사용 가능)"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         이미지
                       </label>
                       <input
