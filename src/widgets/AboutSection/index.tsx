@@ -112,10 +112,10 @@ export function AboutSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-dark mb-4 sm:mb-6 tracking-tight px-4"
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-dark mb-4 sm:mb-6 tracking-wide px-4 korean-text"
           >
             학생회{" "}
-            <span className="text-primary bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
               &ldquo;정의&rdquo;
             </span>
             가 <br className="sm:hidden" />
@@ -127,7 +127,7 @@ export function AboutSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-gray-600 max-w-2xl mx-auto text-base sm:text-lg px-4"
+            className="text-gray-600 max-w-2xl mx-auto text-base sm:text-lg px-4 korean-text leading-relaxed"
           >
             정보의생명공학대학 학생들의 더 나은 대학 생활을 위해 다음과 같은
             핵심 가치를 추구합니다.
@@ -168,11 +168,11 @@ export function AboutSection() {
                     <div className="scale-75 sm:scale-100">{value.icon}</div>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-bold text-dark mb-3 sm:mb-4 leading-tight">
+                  <h3 className="text-xl sm:text-2xl font-bold text-dark mb-3 sm:mb-4 leading-tight korean-text">
                     {value.title}
                   </h3>
 
-                  <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
+                  <p className="text-gray-700 text-sm sm:text-base leading-relaxed korean-text">
                     {value.description}
                   </p>
                 </div>

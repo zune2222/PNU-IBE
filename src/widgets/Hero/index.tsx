@@ -139,8 +139,8 @@ export function Hero() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="w-full md:w-1/2 text-center md:text-left"
           >
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 text-white tracking-tight">
-              <span className="block text-xl sm:text-2xl md:text-3xl font-medium mb-2 text-tertiary opacity-90">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 text-white tracking-wide korean-text">
+              <span className="block text-xl sm:text-2xl md:text-3xl font-semibold mb-2 text-tertiary opacity-90 korean-text">
                 부산대학교
               </span>
               정보의생명공학대학
@@ -153,7 +153,7 @@ export function Hero() {
                 <div className="absolute w-[200px] h-[200px] -bottom-[100px] -right-[100px] bg-purple-400/30 rounded-full blur-3xl"></div>
               </div>
 
-              <p className="relative text-lg md:text-xl mb-10 text-white p-6 rounded-3xl bg-white/15 backdrop-blur-lg border border-white/25 shadow-2xl hover:bg-white/20 transition-all duration-500 drop-shadow-md">
+              <p className="relative text-lg md:text-xl mb-10 text-white p-6 rounded-3xl bg-white/15 backdrop-blur-lg border border-white/25 shadow-2xl hover:bg-white/20 transition-all duration-500 drop-shadow-md korean-text leading-relaxed">
                 부산대학교 정보의생명공학대학 제2대 학생회 정의는 학생들의
                 행복한 대학 생활과 미래를 위한 든든한 디딤돌이 되겠습니다.
               </p>
@@ -163,14 +163,14 @@ export function Hero() {
               <Button
                 variant="secondary"
                 size="lg"
-                className="shadow-xl hover:shadow-secondary/20 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 font-semibold px-8 rounded-full"
+                className="shadow-xl hover:shadow-secondary/20 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 font-semibold px-8 rounded-full korean-text"
               >
                 학생회 소개
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="border-2 border-white text-white hover:bg-white/10 backdrop-blur-md font-semibold rounded-full hover:-translate-y-1 transition-all duration-300 px-8"
+                className="border-2 border-white text-white hover:bg-white/10 backdrop-blur-md font-semibold rounded-full hover:-translate-y-1 transition-all duration-300 px-8 korean-text"
               >
                 공지사항 보기
               </Button>

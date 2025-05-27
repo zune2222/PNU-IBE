@@ -46,7 +46,7 @@ export function EventsSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-dark mb-4 sm:mb-6 tracking-tight px-4"
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-dark mb-4 sm:mb-6 tracking-wide px-4 korean-text"
           >
             다가오는{" "}
             <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
@@ -59,7 +59,7 @@ export function EventsSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-gray-600 max-w-2xl mx-auto text-base sm:text-lg px-4"
+            className="text-gray-600 max-w-2xl mx-auto text-base sm:text-lg px-4 korean-text leading-relaxed"
           >
             정보의생명공학대학 학생회에서 준비한 다양한 행사에 참여해보세요.
           </motion.p>
@@ -116,11 +116,11 @@ export function EventsSection() {
                   </div>
                 </div>
 
-                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 group-hover:translate-x-2 transition-transform duration-300 drop-shadow-lg">
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 group-hover:translate-x-2 transition-transform duration-300 drop-shadow-lg korean-text">
                   {featuredEvent.title}
                 </h3>
 
-                <div className="mb-6 flex items-center bg-white/10 backdrop-blur-md rounded-full px-3 py-2 border border-white/20 w-fit">
+                <div className="mb-6 flex items-center bg-white/10 backdrop-blur-md rounded-full px-3 py-1 border border-white/20">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4 mr-2"
@@ -141,10 +141,12 @@ export function EventsSection() {
                       d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                     />
                   </svg>
-                  <span className="text-sm">{featuredEvent.location}</span>
+                  <span className="text-sm korean-text">
+                    {featuredEvent.location}
+                  </span>
                 </div>
 
-                <p className="text-base sm:text-lg text-white/90 mb-8 max-w-3xl drop-shadow-md">
+                <p className="text-base sm:text-lg text-white/90 mb-8 max-w-3xl drop-shadow-md korean-text leading-relaxed">
                   {featuredEvent.description}
                 </p>
 
@@ -209,11 +211,11 @@ export function EventsSection() {
                     </div>
                   </div>
 
-                  <h3 className="text-lg sm:text-xl font-bold text-dark mb-3 group-hover:text-primary transition-colors leading-tight">
+                  <h3 className="text-lg sm:text-xl font-bold text-dark mb-3 group-hover:text-primary transition-colors leading-tight korean-text">
                     {event.title}
                   </h3>
 
-                  <p className="text-gray-600 text-sm mb-4 flex items-center bg-white/20 backdrop-blur-md rounded-full px-3 py-1 border border-white/20 w-fit">
+                  <p className="text-gray-600 text-sm mb-4 flex items-center bg-white/20 backdrop-blur-md rounded-full px-3 py-1 border border-white/20 w-fit korean-text">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 mr-1 text-gray-500"
@@ -237,7 +239,7 @@ export function EventsSection() {
                     {event.location}
                   </p>
 
-                  <p className="text-gray-700 text-sm sm:text-base mb-6 line-clamp-3 leading-relaxed">
+                  <p className="text-gray-700 text-sm sm:text-base mb-6 line-clamp-3 leading-relaxed korean-text">
                     {event.description}
                   </p>
 

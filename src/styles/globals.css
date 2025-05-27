@@ -72,16 +72,34 @@
   --tertiary: #add8e6;
   --highlight: #87ceeb;
   --dark: #485493;
-  --font-pretendard: "Pretendard", sans-serif;
 }
 
 @layer base {
+  * {
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+      Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+      "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji",
+      "Segoe UI Symbol", sans-serif;
+  }
+
   html {
-    font-family: var(--font-pretendard);
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+      Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+      "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji",
+      "Segoe UI Symbol", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
     @apply text-gray-800 bg-gray-50;
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+      Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+      "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji",
+      "Segoe UI Symbol", sans-serif;
+    letter-spacing: 0.025em;
+    line-height: 1.6;
   }
 
   h1,
@@ -90,8 +108,24 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-pretendard);
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+      Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+      "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji",
+      "Segoe UI Symbol", sans-serif;
     @apply font-bold;
+    letter-spacing: 0.025em;
+    line-height: 1.3;
+  }
+
+  p {
+    letter-spacing: 0.025em;
+    line-height: 1.6;
+  }
+
+  /* 한글 최적화 */
+  .korean-text {
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
 }
 
@@ -102,13 +136,51 @@
 
   .btn-primary {
     @apply bg-primary text-white py-2 px-6 rounded-md shadow-md transition-all hover:shadow-lg hover:bg-opacity-90;
+    font-family: "Pretendard", sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.025em;
   }
 
   .btn-secondary {
     @apply bg-secondary text-white py-2 px-6 rounded-md shadow-md transition-all hover:shadow-lg hover:bg-opacity-90;
+    font-family: "Pretendard", sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.025em;
   }
 
   .btn-outline {
     @apply border border-primary text-primary py-2 px-6 rounded-md shadow-md transition-all hover:bg-primary hover:text-white;
+    font-family: "Pretendard", sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+  }
+
+  /* 타이포그래피 유틸리티 클래스 */
+  .text-display {
+    font-family: "Pretendard", sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.025em;
+    line-height: 1.1;
+  }
+
+  .text-heading {
+    font-family: "Pretendard", sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+    line-height: 1.3;
+  }
+
+  .text-body {
+    font-family: "Pretendard", sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.025em;
+    line-height: 1.6;
+  }
+
+  .text-caption {
+    font-family: "Pretendard", sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    line-height: 1.5;
   }
 }
