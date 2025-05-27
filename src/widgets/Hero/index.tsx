@@ -139,20 +139,25 @@ export function Hero() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="w-full md:w-1/2 text-center md:text-left"
           >
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 text-white tracking-tight">
-              <span className="block text-2xl md:text-3xl font-medium mb-2 text-tertiary opacity-90">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 text-white tracking-tight">
+              <span className="block text-xl sm:text-2xl md:text-3xl font-medium mb-2 text-tertiary opacity-90">
                 부산대학교
               </span>
               정보의생명공학대학
-              <span className="block mt-2 text-highlight drop-shadow-md">
-                학생회 &ldquo;정의&rdquo;
-              </span>
             </h1>
 
-            <p className="text-lg md:text-xl mb-10 text-white/90 max-w-xl">
-              부산대학교 정보의생명공학대학 제2대 학생회 정의는 학생들의 행복한
-              대학 생활과 미래를 위한 든든한 디딤돌이 되겠습니다.
-            </p>
+            <div className="relative max-w-xl">
+              {/* 배경 그라디언트 효과 */}
+              <div className="absolute inset-0 rounded-3xl overflow-hidden">
+                <div className="absolute w-[200px] h-[200px] -top-[100px] -left-[100px] bg-blue-400/30 rounded-full blur-3xl"></div>
+                <div className="absolute w-[200px] h-[200px] -bottom-[100px] -right-[100px] bg-purple-400/30 rounded-full blur-3xl"></div>
+              </div>
+
+              <p className="relative text-lg md:text-xl mb-10 text-white p-6 rounded-3xl bg-white/15 backdrop-blur-lg border border-white/25 shadow-2xl hover:bg-white/20 transition-all duration-500 drop-shadow-md">
+                부산대학교 정보의생명공학대학 제2대 학생회 정의는 학생들의
+                행복한 대학 생활과 미래를 위한 든든한 디딤돌이 되겠습니다.
+              </p>
+            </div>
 
             <div className="flex flex-wrap gap-5 justify-center md:justify-start">
               <Button
@@ -182,58 +187,63 @@ export function Hero() {
             <div className="perspective-1000 w-full mx-auto max-w-md">
               <motion.div
                 animate={{
-                  rotateY: [0, 5, 0, -5, 0],
-                  rotateX: [0, 5, 0, -5, 0],
+                  rotateY: [0, 3, 0, -3, 0],
+                  rotateX: [0, 2, 0, -2, 0],
                 }}
                 transition={{
-                  duration: 10,
+                  duration: 12,
                   ease: "easeInOut",
                   repeat: Infinity,
                   repeatType: "mirror",
                 }}
-                className="relative w-full aspect-square rounded-2xl shadow-2xl bg-gradient-to-br from-primary to-dark p-1"
+                className="relative w-full aspect-square rounded-3xl shadow-2xl bg-white/10 backdrop-blur-lg border border-white/20 p-1 hover:bg-white/15 transition-all duration-500"
                 style={{ transformStyle: "preserve-3d" }}
               >
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-dark to-primary opacity-70 backdrop-blur-md"></div>
-                <div className="absolute inset-0 rounded-2xl overflow-hidden">
-                  <div className="absolute w-[500px] h-[500px] -top-[250px] -left-[250px] bg-primary/30 rounded-full blur-3xl"></div>
-                  <div className="absolute w-[500px] h-[500px] -bottom-[250px] -right-[250px] bg-highlight/30 rounded-full blur-3xl"></div>
+                {/* 글래스모피즘 오버레이 */}
+                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-xl"></div>
+
+                {/* 배경 그라디언트 효과 */}
+                <div className="absolute inset-0 rounded-3xl overflow-hidden">
+                  <div className="absolute w-[300px] h-[300px] -top-[150px] -left-[150px] bg-blue-400/20 rounded-full blur-3xl"></div>
+                  <div className="absolute w-[300px] h-[300px] -bottom-[150px] -right-[150px] bg-purple-400/20 rounded-full blur-3xl"></div>
                 </div>
 
-                <div className="relative w-full h-full flex flex-col items-center justify-center text-white p-10 text-center">
+                <div className="relative w-full h-full flex flex-col items-center justify-center text-white p-6 sm:p-8 md:p-10 text-center">
                   <motion.div
-                    className="w-32 h-32 mb-6 rounded-full bg-white flex items-center justify-center overflow-hidden relative border-4 border-white shadow-[0_0_30px_rgba(255,255,255,0.6)]"
+                    className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 mb-4 sm:mb-6 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center overflow-hidden relative border-2 border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                     whileHover={{ scale: 1.05 }}
                     animate={{
                       boxShadow: [
-                        "0 0 15px rgba(255,255,255,0.4)",
-                        "0 0 30px rgba(255,255,255,0.7)",
-                        "0 0 15px rgba(255,255,255,0.4)",
+                        "0 0 10px rgba(255,255,255,0.3)",
+                        "0 0 25px rgba(255,255,255,0.5)",
+                        "0 0 10px rgba(255,255,255,0.3)",
                       ],
                     }}
                     transition={{
                       boxShadow: {
-                        duration: 2,
+                        duration: 3,
                         repeat: Infinity,
                         repeatType: "reverse",
                       },
                     }}
                   >
-                    <div className="absolute inset-0 bg-white"></div>
                     <Image
                       src="/logo.png"
                       alt="부산대학교 정보의생명공학대학 학생회 로고"
-                      width={85}
-                      height={85}
-                      className="z-10 relative"
+                      width={65}
+                      height={65}
+                      className="z-10 relative w-auto h-auto max-w-[60%] max-h-[60%] sm:max-w-[70%] sm:max-h-[70%]"
                     />
                   </motion.div>
-                  <h3 className="text-3xl font-bold mb-4">
+
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-slate-700 drop-shadow-lg">
                     정보의생명공학대학
                   </h3>
-                  <p className="text-lg text-white/80 mb-8">
+
+                  <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-6 sm:mb-8 font-medium drop-shadow-md">
                     학문과 기술의 융합
                   </p>
+
                   <div className="flex flex-wrap gap-2 justify-center">
                     {["정보", "융합", "미래", "혁신", "생명"].map(
                       (keyword, i) => (
@@ -242,7 +252,7 @@ export function Hero() {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.5 + i * 0.1 }}
-                          className="px-3 py-1 rounded-full text-sm bg-white/10 backdrop-blur-md"
+                          className="px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm bg-white/25 backdrop-blur-md border border-white/30 text-slate-700 font-medium shadow-lg hover:bg-white/35 transition-all duration-300"
                         >
                           {keyword}
                         </motion.span>
