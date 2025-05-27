@@ -1,4 +1,3 @@
-
 # 📚 PNU IBE 학생회 웹사이트
 
 <div align="center">
@@ -12,7 +11,6 @@
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
   [![Website](https://img.shields.io/badge/웹사이트-red?style=for-the-badge&logo=web&logoColor=white)](https://pnu-ibe.web.app/)
 </div>
-
 
 ## 🌟 소개
 
@@ -30,13 +28,15 @@ PNU IBE 학생회 웹사이트는 부산대학교 정보의생명공학대학 �
 - **📢 공지사항**: 중요 공지 및 알림 게시판
 - **📱 반응형 디자인**: 모든 디바이스에서 최적화된 사용자 경험 제공
 
-## 🛠️ 기술 스택
+## 🚀 기술 스택
 
-- **프론트엔드**: Next.js, React, TypeScript, Tailwind CSS, Framer Motion
-- **데이터 관리**: 정적 데이터 파일 (JSON/TypeScript)
-- **배포**: Vercel/Netlify
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS
+- **Animation**: Framer Motion
+- **Backend**: Firebase (Firestore, Storage, Auth)
+- **Deployment**: Firebase Hosting
 
-## 🚀 설치 및 실행
+## 📦 설치 및 실행
 
 ```bash
 # 저장소 클론
@@ -49,14 +49,92 @@ npm install
 # 개발 서버 실행
 npm run dev
 
-# 프로덕션 빌드
+# 빌드
 npm run build
 
 # 프로덕션 서버 실행
 npm start
 ```
 
-## 📂 프로젝트 구조
+## 🔥 Firebase 설정
+
+### 1. 환경 변수 설정
+
+`.env.local` 파일을 생성하고 Firebase 설정을 추가하세요:
+
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
+
+### 2. Firestore 보안 규칙 배포
+
+```bash
+firebase deploy --only firestore:rules
+```
+
+### 3. Storage 보안 규칙 배포
+
+```bash
+firebase deploy --only storage
+```
+
+## 👨‍💼 어드민 기능
+
+### 어드민 계정 설정
+
+`src/shared/services/auth.ts` 파일에서 어드민 이메일을 설정하세요:
+
+```typescript
+const ADMIN_EMAILS = [
+  "admin@pnu-ibe.com",
+  "president@pnu-ibe.com",
+  "vice@pnu-ibe.com",
+];
+```
+
+### 어드민 페이지 접근
+
+1. **로그인**: `/admin/login`
+2. **대시보드**: `/admin/dashboard`
+3. **Firebase 테스트**: `/admin/test-firebase`
+
+### 어드민 기능
+
+- ✅ **공지사항 관리**: 추가, 수정, 삭제
+- ✅ **행사 관리**: 추가, 수정, 삭제 (이미지 업로드 포함)
+- ✅ **이미지 업로드**: Firebase Storage 연동
+- ✅ **실시간 데이터**: Firestore 실시간 동기화
+
+## 📊 데이터 마이그레이션
+
+기존 정적 데이터를 Firestore로 마이그레이션하려면:
+
+1. `/admin/test-firebase` 페이지 접속
+2. 브라우저 콘솔에서 다음 명령어 실행:
+
+```javascript
+// 모든 데이터 마이그레이션
+migrateData.all();
+
+// 개별 마이그레이션
+migrateData.notices(); // 공지사항만
+migrateData.events(); // 행사만
+migrateData.rentals(); // 대여물품만
+```
+
+## 🔒 보안
+
+- **Firestore**: 어드민만 쓰기 권한, 모든 사용자 읽기 권한
+- **Storage**: 어드민만 업로드 권한, 모든 사용자 읽기 권한
+- **Auth**: 이메일 기반 어드민 권한 관리
+
+## 📁 프로젝트 구조
 
 ```
 pnu-ibe/

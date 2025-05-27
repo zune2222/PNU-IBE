@@ -5,10 +5,14 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "export": "next build && next export",
+    "deploy": "npm run export && firebase deploy --only hosting",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.77.2",
+    "@tanstack/react-query-devtools": "^5.77.2",
     "firebase": "^11.4.0",
     "next": "15.2.3",
     "react": "^19.0.0",

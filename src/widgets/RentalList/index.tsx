@@ -1,33 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-
-// 대여 가능한 물품 타입 정의
-interface RentalItem {
-  id: number;
-  name: string;
-  category: string;
-  image: string;
-  totalQuantity: number;
-  availableQuantity: number;
-  deposit: number;
-  description: string;
-}
-
-// 더미 대여 물품 데이터
-const rentalItems: RentalItem[] = [
-  {
-    id: 1,
-    name: "회장님",
-    category: "전자기기",
-    image: "/images/rental/laptop.jpg",
-    totalQuantity: 5,
-    availableQuantity: 3,
-    deposit: 500000000000,
-    description:
-      "학생회에서 대여 가능한 인력입니다. 대여가 가능할지는 잘 모르겠습니다.",
-  },
-];
+import {
+  rentalService,
+  FirestoreRentalItem,
+} from "../../shared/services/firestore";
 
 // 카테고리 목록
 const categories = ["전체", "전자기기", "가구", "생활용품", "스포츠"];
@@ -35,11 +12,35 @@ const categories = ["전체", "전자기기", "가구", "생활용품", "스포�
 export function RentalList() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItem, setSelectedItem] = useState<RentalItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<FirestoreRentalItem | null>(
+    null
+  );
   const [showRentalForm, setShowRentalForm] = useState(false);
+  const [rentals, setRentals] = useState<FirestoreRentalItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Firestore에서 대여물품 데이터 로드
+  useEffect(() => {
+    const loadRentals = async () => {
+      try {
+        setLoading(true);
+        const rentalsData = await rentalService.getAll();
+        setRentals(rentalsData);
+        setError(null);
+      } catch (err) {
+        console.error("대여물품 로드 실패:", err);
+        setError("대여물품 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRentals();
+  }, []);
 
   // 필터링된 물품 목록
-  const filteredItems = rentalItems.filter((item) => {
+  const filteredItems = rentals.filter((item) => {
     const categoryMatch =
       selectedCategory === "전체" || item.category === selectedCategory;
     const searchMatch =
@@ -54,7 +55,6 @@ export function RentalList() {
     const [name, setName] = useState("");
     const [studentId, setStudentId] = useState("");
     const [phone, setPhone] = useState("");
-    const [quantity, setQuantity] = useState(1);
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [purpose, setPurpose] = useState("");
@@ -72,7 +72,6 @@ export function RentalList() {
       setName("");
       setStudentId("");
       setPhone("");
-      setQuantity(1);
       setStartDate("");
       setEndDate("");
       setPurpose("");
@@ -123,8 +122,11 @@ export function RentalList() {
                 <div>
                   <h4 className="text-lg font-medium">{selectedItem.name}</h4>
                   <p className="text-sm text-gray-500">
-                    {selectedItem.availableQuantity}개 대여 가능 / 보증금{" "}
-                    {selectedItem.deposit.toLocaleString()}원
+                    {selectedItem.available ? "대여 가능" : "대여 불가"} -{" "}
+                    {selectedItem.condition}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    연락처: {selectedItem.contact}
                   </p>
                 </div>
               </div>
@@ -185,31 +187,7 @@ export function RentalList() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label
-                      htmlFor="quantity"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      수량
-                    </label>
-                    <select
-                      id="quantity"
-                      required
-                      value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      {Array.from(
-                        { length: selectedItem.availableQuantity },
-                        (_, i) => i + 1
-                      ).map((num) => (
-                        <option key={num} value={num}>
-                          {num}개
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label
                       htmlFor="startDate"
@@ -264,10 +242,9 @@ export function RentalList() {
 
                 <div className="pt-2">
                   <p className="text-sm text-gray-500 mb-4">
-                    * 대여 시 보증금 {selectedItem.deposit.toLocaleString()}원이
-                    필요하며, 반납 시 환불됩니다. <br />
+                    * 대여 전 학생회 담당자와 연락 후 진행됩니다. <br />
                     * 대여는 최대 7일까지 가능합니다. <br />* 파손 또는 분실 시
-                    보증금에서 차감될 수 있습니다.
+                    배상 책임이 있습니다.
                   </p>
 
                   <div className="flex justify-end space-x-3">
@@ -293,6 +270,61 @@ export function RentalList() {
       </motion.div>
     );
   };
+
+  // 로딩 상태
+  if (loading) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="container-custom">
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600 korean-text">
+                대여물품 정보를 불러오는 중...
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="container-custom">
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center bg-white rounded-2xl shadow-lg p-8">
+              <svg
+                className="mx-auto h-12 w-12 text-red-500 mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 korean-text">
+                데이터 로드 실패
+              </h3>
+              <p className="text-gray-600 korean-text mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors korean-text"
+              >
+                다시 시도
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-gray-50">
@@ -382,12 +414,12 @@ export function RentalList() {
                     <span
                       className={`inline-block px-3 py-1 text-xs font-medium rounded-full 
                       ${
-                        item.availableQuantity > 0
+                        item.available
                           ? "bg-green-100 text-green-700"
                           : "bg-red-100 text-red-700"
                       }`}
                     >
-                      {item.availableQuantity > 0 ? "대여 가능" : "대여 불가"}
+                      {item.available ? "대여 가능" : "대여 불가"}
                     </span>
                   </div>
                 </div>
@@ -397,7 +429,7 @@ export function RentalList() {
                       {item.category}
                     </span>
                     <span className="text-sm text-gray-500">
-                      {item.availableQuantity}/{item.totalQuantity}개
+                      상태: {item.condition}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold mb-2">{item.name}</h3>
@@ -406,22 +438,20 @@ export function RentalList() {
                   </p>
                   <div className="mt-4 flex items-center justify-between">
                     <span className="text-gray-600">
-                      보증금:{" "}
-                      <span className="font-semibold">
-                        {item.deposit.toLocaleString()}원
-                      </span>
+                      장소:{" "}
+                      <span className="font-semibold">{item.location}</span>
                     </span>
                     <button
                       onClick={() => {
-                        if (item.availableQuantity > 0) {
+                        if (item.available) {
                           setSelectedItem(item);
                           setShowRentalForm(true);
                         }
                       }}
-                      disabled={item.availableQuantity === 0}
+                      disabled={!item.available}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
                         ${
-                          item.availableQuantity > 0
+                          item.available
                             ? "bg-indigo-600 hover:bg-indigo-700 text-white"
                             : "bg-gray-200 text-gray-400 cursor-not-allowed"
                         }`}

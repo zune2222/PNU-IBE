@@ -96,6 +96,31 @@ const departments = [
     bgColor: "from-blue-400/20 to-cyan-400/20",
   },
   {
+    name: "소통홍보국",
+    description: "학생회 활동 홍보 및 소통 창구 역할",
+    members: 4,
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-5 w-5 sm:h-6 sm:w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+        />
+      </svg>
+    ),
+    memberList:
+      "국장: 이연지(22학번), 국원: 설대연(25학번), 김현지(25학번), 박준이(21학번)",
+    color: "from-violet-500 to-purple-500",
+    bgColor: "from-violet-400/20 to-purple-400/20",
+  },
+  {
     name: "문화기획국",
     description: "다양한 문화 행사 기획 및 운영",
     members: 6,
@@ -169,31 +194,6 @@ const departments = [
       "국장: 윤대한(21학번), 국원: 서완준(21학번), 박영주(21학번), 이지혜(25학번), 최지우(25학번)",
     color: "from-orange-500 to-amber-500",
     bgColor: "from-orange-400/20 to-amber-400/20",
-  },
-  {
-    name: "소통홍보국",
-    description: "학생회 활동 홍보 및 소통 창구 역할",
-    members: 4,
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5 sm:h-6 sm:w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
-        />
-      </svg>
-    ),
-    memberList:
-      "국장: 이연지(22학번), 국원: 설대연(25학번), 김현지(25학번), 박준이(21학번)",
-    color: "from-violet-500 to-purple-500",
-    bgColor: "from-violet-400/20 to-purple-400/20",
   },
 ];
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 
 // 학생회 가치 데이터
@@ -230,7 +230,7 @@ function Stat({ number, label }: { number: string; label: string }) {
   const [hasStarted, setHasStarted] = useState(false);
   const elementRef = useRef<HTMLDivElement>(null);
 
-  const startCountAnimation = () => {
+  const startCountAnimation = useCallback(() => {
     if (hasStarted) return;
     setHasStarted(true);
 
@@ -268,7 +268,7 @@ function Stat({ number, label }: { number: string; label: string }) {
     };
 
     requestAnimationFrame(animate);
-  };
+  }, [hasStarted, number]);
 
   useEffect(() => {
     const element = elementRef.current;
@@ -296,7 +296,11 @@ function Stat({ number, label }: { number: string; label: string }) {
     return () => {
       observer.disconnect();
     };
-  }, [hasStarted]);
+  }, [hasStarted, startCountAnimation]);
+
+  useEffect(() => {
+    startCountAnimation();
+  }, [startCountAnimation]);
 
   return (
     <div className="text-center" ref={elementRef}>

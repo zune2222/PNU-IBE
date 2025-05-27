@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 어드민 이메일 목록
+    function isAdmin() {
+      return request.auth != null && 
+             request.auth.token.email in [
+               "admin@pnu-ibe.com",
+               "president@pnu-ibe.com", 
+               "vice@pnu-ibe.com"
+             ];
+    }
+    
+    // 공지사항 컬렉션
+    match /notices/{document} {
+      // 모든 사용자가 읽기 가능
+      allow read: if true;
+      // 어드민만 쓰기 가능
+      allow write: if isAdmin();
+    }
+    
+    // 행사 컬렉션
+    match /events/{document} {
+      // 모든 사용자가 읽기 가능
+      allow read: if true;
+      // 어드민만 쓰기 가능
+      allow write: if isAdmin();
+    }
+    
+    // 대여 물품 컬렉션
+    match /rentals/{document} {
+      // 모든 사용자가 읽기 가능
+      allow read: if true;
+      // 어드민만 쓰기 가능
+      allow write: if isAdmin();
+    }
+    
+    // 기본적으로 모든 접근 거부
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 

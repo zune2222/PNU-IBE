@@ -3,6 +3,19 @@ import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { GoogleAnalytics, pageview } from "../shared/lib/analytics";
+import { AuthProvider } from "../shared/contexts/AuthContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+// React Query 클라이언트 생성
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1분
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -23,9 +36,16 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router.events]);
 
   return (
-    <main className="font-pretendard">
-      <GoogleAnalytics />
-      <Component {...pageProps} />
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <main className="font-pretendard">
+          <GoogleAnalytics />
+          <Component {...pageProps} />
+        </main>
+      </AuthProvider>
+      {process.env.NODE_ENV === "development" && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
+    </QueryClientProvider>
   );
 }
