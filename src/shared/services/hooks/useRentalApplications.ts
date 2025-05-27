@@ -109,69 +109,103 @@ export const useUpdateRentalApplicationStatus = () => {
   });
 };
 
-// 대여 신청 승인 훅
-export const useApproveRentalApplication = () => {
+// 즉시 대여 처리 훅
+export const useProcessRental = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, approvedBy }: { id: string; approvedBy: string }) =>
-      rentalApplicationService.approveApplication(id, approvedBy),
-    onSuccess: (_, { id }) => {
+    mutationFn: (
+      applicationData: Omit<
+        FirestoreRentalApplication,
+        "id" | "createdAt" | "updatedAt"
+      >
+    ) => rentalApplicationService.processRental(applicationData),
+    onSuccess: () => {
       // 관련 쿼리들 갱신
-      queryClient.invalidateQueries({ queryKey: ["rentalApplications", id] });
       queryClient.invalidateQueries({ queryKey: ["rentalApplications"] });
       queryClient.invalidateQueries({
-        queryKey: ["rentalApplications", "status", "pending"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["rentalApplications", "status", "approved"],
+        queryKey: ["rentalApplications", "status", "rented"],
       });
     },
   });
 };
 
-// 대여 신청 거부 훅
-export const useRejectRentalApplication = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
-      rentalApplicationService.rejectApplication(id, reason),
-    onSuccess: (_, { id }) => {
-      // 관련 쿼리들 갱신
-      queryClient.invalidateQueries({ queryKey: ["rentalApplications", id] });
-      queryClient.invalidateQueries({ queryKey: ["rentalApplications"] });
-      queryClient.invalidateQueries({
-        queryKey: ["rentalApplications", "status", "pending"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["rentalApplications", "status", "rejected"],
-      });
-    },
-  });
-};
-
-// 연체 처리 훅
-export const useMarkAsOverdue = () => {
+// 반납 처리 훅
+export const useProcessReturn = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({
       id,
-      overdueDays,
-      penaltyPoints,
+      returnPhotos,
+      rating,
+      feedback,
     }: {
       id: string;
-      overdueDays: number;
-      penaltyPoints: number;
+      returnPhotos: {
+        returnItemConditionPhotoUrl: string;
+        returnLockboxSecuredPhotoUrl: string;
+      };
+      rating?: number;
+      feedback?: string;
     }) =>
-      rentalApplicationService.markAsOverdue(id, overdueDays, penaltyPoints),
+      rentalApplicationService.processReturn(
+        id,
+        returnPhotos,
+        rating,
+        feedback
+      ),
     onSuccess: (_, { id }) => {
       // 관련 쿼리들 갱신
       queryClient.invalidateQueries({ queryKey: ["rentalApplications", id] });
       queryClient.invalidateQueries({ queryKey: ["rentalApplications"] });
       queryClient.invalidateQueries({
-        queryKey: ["rentalApplications", "status", "overdue"],
+        queryKey: ["rentalApplications", "status", "rented"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["rentalApplications", "status", "returned"],
+      });
+    },
+  });
+};
+
+// 분실 처리 훅
+export const useMarkAsLost = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      rentalApplicationService.markAsLost(id, reason),
+    onSuccess: (_, { id }) => {
+      // 관련 쿼리들 갱신
+      queryClient.invalidateQueries({ queryKey: ["rentalApplications", id] });
+      queryClient.invalidateQueries({ queryKey: ["rentalApplications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["rentalApplications", "status", "rented"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["rentalApplications", "status", "lost"],
+      });
+    },
+  });
+};
+
+// 파손 처리 훅
+export const useMarkAsDamaged = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      rentalApplicationService.markAsDamaged(id, reason),
+    onSuccess: (_, { id }) => {
+      // 관련 쿼리들 갱신
+      queryClient.invalidateQueries({ queryKey: ["rentalApplications", id] });
+      queryClient.invalidateQueries({ queryKey: ["rentalApplications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["rentalApplications", "status", "rented"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["rentalApplications", "status", "damaged"],
       });
     },
   });

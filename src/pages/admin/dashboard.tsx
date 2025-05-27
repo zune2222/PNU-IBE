@@ -25,7 +25,7 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<
-    "overview" | "notices" | "events" | "rentals" | "lockboxes"
+    "overview" | "notices" | "events" | "rentals" | "lockboxes" | "items"
   >("overview");
   const [notices, setNotices] = useState<FirestoreNotice[]>([]);
   const [events, setEvents] = useState<FirestoreEvent[]>([]);
@@ -48,6 +48,8 @@ export default function AdminDashboard() {
     pendingApplications: 0,
     activeRentals: 0,
     overdueRentals: 0,
+    totalItems: 0,
+    availableItems: 0,
     popularItems: [] as { name: string; count: number }[],
     recentActivities: [] as {
       type: string;
@@ -96,6 +98,30 @@ export default function AdminDashboard() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
+
+  // 물품 관리 폼 상태
+  const [itemForm, setItemForm] = useState({
+    id: "",
+    name: "",
+    category: "",
+    description: "",
+    image: "",
+    condition: "양호" as string,
+    location: "",
+    contact: "",
+    campus: "yangsan" as "yangsan" | "jangjeom",
+    uniqueId: "",
+    status: "available" as
+      | "available"
+      | "rented"
+      | "maintenance"
+      | "lost"
+      | "damaged",
+  });
+
+  const [selectedItemImage, setSelectedItemImage] = useState<File | null>(null);
+  const [itemUploadProgress, setItemUploadProgress] = useState(0);
+  const [isEditingItem, setIsEditingItem] = useState(false);
 
   // 권한 확인 및 리다이렉트
   useEffect(() => {
@@ -159,11 +185,7 @@ export default function AdminDashboard() {
       setRentalItems(itemsMap);
 
       // 대시보드 통계 계산
-      calculateDashboardStats(
-        rentalApplicationsData,
-        usersData,
-        rentalItemsData
-      );
+      calculateDashboardStats(rentalApplicationsData, rentalItemsData);
     } catch (error) {
       console.error("데이터 로드 오류:", error);
     } finally {
@@ -173,25 +195,24 @@ export default function AdminDashboard() {
 
   const calculateDashboardStats = (
     applications: FirestoreRentalApplication[],
-    users: FirestoreUser[],
     items: FirestoreRentalItem[]
   ) => {
     const now = new Date();
 
     // 기본 통계
-    const totalUsers = users.length;
+    const totalUsers = Object.values(users).length;
     const totalApplications = applications.length;
     const pendingApplications = applications.filter(
-      (app) => app.status === "pending"
+      (app) => app.status === "rented"
     ).length;
     const activeRentals = applications.filter(
-      (app) => app.status === "picked_up"
+      (app) => app.status === "rented"
     ).length;
 
     // 연체 계산
     const overdueRentals = applications.filter((app) => {
-      if (app.status !== "picked_up") return false;
-      const endDate = new Date(app.endDate);
+      if (app.status !== "rented") return false;
+      const endDate = new Date(app.dueDate);
       return now > endDate;
     }).length;
 
@@ -214,7 +235,6 @@ export default function AdminDashboard() {
       .sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis())
       .slice(0, 10)
       .map((app) => {
-        const user = users.find((u) => u.uid === app.userId);
         const item = items.find((i) => i.id === app.itemId);
 
         let type = "";
@@ -222,37 +242,44 @@ export default function AdminDashboard() {
         let status: "info" | "warning" | "error" | "success" = "info";
 
         switch (app.status) {
-          case "pending":
-            type = "신규 신청";
-            message = `${user?.name || "알 수 없음"}님이 ${
+          case "rented":
+            type = "대여 시작";
+            message = `${app.studentName}님이 ${
               item?.name || "물품"
-            }을 신청했습니다`;
+            }을 대여했습니다`;
             status = "info";
             break;
-          case "approved":
-            type = "승인 완료";
-            message = `${user?.name || "알 수 없음"}님의 ${
+          case "returned":
+            type = "반납 완료";
+            message = `${app.studentName}님의 ${
               item?.name || "물품"
-            } 신청이 승인되었습니다`;
+            } 반납이 완료되었습니다`;
             status = "success";
-            break;
-          case "return_requested":
-            type = "반납 신청";
-            message = `${user?.name || "알 수 없음"}님이 ${
-              item?.name || "물품"
-            } 반납을 신청했습니다`;
-            status = "warning";
             break;
           case "overdue":
             type = "연체 발생";
-            message = `${user?.name || "알 수 없음"}님의 ${
+            message = `${app.studentName}님의 ${
               item?.name || "물품"
             }이 연체되었습니다`;
             status = "error";
             break;
+          case "lost":
+            type = "분실 신고";
+            message = `${app.studentName}님의 ${
+              item?.name || "물품"
+            }이 분실되었습니다`;
+            status = "error";
+            break;
+          case "damaged":
+            type = "파손 신고";
+            message = `${app.studentName}님의 ${
+              item?.name || "물품"
+            }이 파손되었습니다`;
+            status = "warning";
+            break;
           default:
             type = "기타";
-            message = `${user?.name || "알 수 없음"}님의 활동`;
+            message = `${app.studentName}님의 활동`;
             status = "info";
         }
 
@@ -270,6 +297,9 @@ export default function AdminDashboard() {
       pendingApplications,
       activeRentals,
       overdueRentals,
+      totalItems: items.length,
+      availableItems: items.filter((item) => item.status === "available")
+        .length,
       popularItems,
       recentActivities,
     });
@@ -501,6 +531,125 @@ export default function AdminDashboard() {
     }
   };
 
+  // 물품 관리 함수들
+  const handleItemSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!itemForm.name || !itemForm.category || !itemForm.description) {
+      alert("필수 정보를 모두 입력해주세요.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      let imageUrl = itemForm.image;
+
+      // 이미지 업로드
+      if (selectedItemImage) {
+        const uploadResult = await storageService.uploadRentalImage(
+          selectedItemImage
+        );
+        imageUrl = uploadResult.url;
+        setItemUploadProgress(100);
+      }
+
+      if (isEditingItem && itemForm.id) {
+        // 물품 수정
+        await rentalItemService.update(itemForm.id, {
+          name: itemForm.name,
+          category: itemForm.category,
+          description: itemForm.description,
+          image: imageUrl,
+          condition: itemForm.condition,
+          location: itemForm.location,
+          contact: itemForm.contact,
+          campus: itemForm.campus,
+          uniqueId: itemForm.uniqueId,
+          status: itemForm.status,
+        });
+        alert("물품이 수정되었습니다.");
+      } else {
+        // 물품 추가
+        await rentalItemService.add({
+          name: itemForm.name,
+          category: itemForm.category,
+          description: itemForm.description,
+          image: imageUrl,
+          condition: itemForm.condition,
+          location: itemForm.location,
+          contact: itemForm.contact,
+          campus: itemForm.campus,
+          uniqueId: itemForm.uniqueId,
+          status: itemForm.status,
+          totalRentCount: 0,
+        });
+        alert("물품이 추가되었습니다.");
+      }
+
+      resetItemForm();
+      loadData();
+    } catch (error) {
+      console.error("물품 처리 오류:", error);
+      alert("물품 처리에 실패했습니다.");
+    } finally {
+      setIsLoading(false);
+      setItemUploadProgress(0);
+    }
+  };
+
+  const editItem = (item: FirestoreRentalItem) => {
+    setItemForm({
+      id: item.id || "",
+      name: item.name,
+      category: item.category,
+      description: item.description,
+      image: item.image,
+      condition: item.condition as "excellent" | "good" | "fair" | "poor",
+      location: item.location,
+      contact: item.contact,
+      campus: item.campus,
+      uniqueId: item.uniqueId,
+      status: item.status,
+    });
+    setIsEditingItem(true);
+    setSelectedItemImage(null);
+  };
+
+  const deleteItem = async (id: string) => {
+    if (!confirm("정말로 이 물품을 삭제하시겠습니까?")) return;
+
+    setIsLoading(true);
+    try {
+      await rentalItemService.delete(id);
+      alert("물품이 삭제되었습니다.");
+      loadData();
+    } catch (error) {
+      console.error("물품 삭제 오류:", error);
+      alert("물품 삭제에 실패했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetItemForm = () => {
+    setItemForm({
+      id: "",
+      name: "",
+      category: "",
+      description: "",
+      image: "",
+      condition: "양호",
+      location: "",
+      contact: "",
+      campus: "yangsan",
+      uniqueId: "",
+      status: "available",
+    });
+    setIsEditingItem(false);
+    setSelectedItemImage(null);
+    setItemUploadProgress(0);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -596,6 +745,16 @@ export default function AdminDashboard() {
               >
                 보관함 관리
               </button>
+              <button
+                onClick={() => setActiveTab("items")}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "items"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                📦 물품 관리
+              </button>
             </nav>
           </div>
 
@@ -603,7 +762,7 @@ export default function AdminDashboard() {
           {activeTab === "overview" && (
             <div className="space-y-6">
               {/* 주요 통계 카드 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -717,7 +876,11 @@ export default function AdminDashboard() {
                           대여 중
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {dashboardStats.activeRentals}
+                          {
+                            rentalApplications.filter(
+                              (app) => app.status === "rented"
+                            ).length
+                          }
                         </dd>
                       </dl>
                     </div>
@@ -748,6 +911,66 @@ export default function AdminDashboard() {
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
                           {dashboardStats.overdueRentals}
+                        </dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg
+                        className="h-8 w-8 text-orange-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                        />
+                      </svg>
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">
+                          전체 물품
+                        </dt>
+                        <dd className="text-lg font-medium text-gray-900">
+                          {dashboardStats.totalItems}
+                        </dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg
+                        className="h-8 w-8 text-teal-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">
+                          대여 가능
+                        </dt>
+                        <dd className="text-lg font-medium text-gray-900">
+                          {dashboardStats.availableItems}
                         </dd>
                       </dl>
                     </div>
@@ -920,6 +1143,25 @@ export default function AdminDashboard() {
                       />
                     </svg>
                     공지사항 작성
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("items")}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    <svg
+                      className="h-5 w-5 mr-2 text-orange-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                      />
+                    </svg>
+                    물품 관리
                   </button>
                   <button
                     onClick={() => window.open("/rental-status", "_blank")}
@@ -1211,73 +1453,59 @@ export default function AdminDashboard() {
           {/* 대여 관리 탭 */}
           {activeTab === "rentals" && (
             <div className="space-y-6">
-              {/* 대여 신청 목록 */}
+              {/* 대여 현황 관리 */}
               <div className="bg-white rounded-lg shadow">
                 <div className="p-6 border-b border-gray-200">
                   <h2 className="text-lg font-medium text-gray-900">
-                    대여 신청 관리
+                    대여 현황 관리
                   </h2>
                   <p className="text-sm text-gray-600 mt-1">
-                    학생들의 대여 신청을 승인하고 관리합니다
+                    현재 대여 중인 물품과 반납 처리를 관리합니다
                   </p>
                 </div>
 
                 {/* 필터 및 검색 */}
                 <div className="p-6 border-b border-gray-200 bg-gray-50">
                   <div className="flex flex-wrap gap-2">
-                    {[
-                      "pending",
-                      "approved",
-                      "picked_up",
-                      "return_requested",
-                      "returned",
-                      "overdue",
-                      "rejected",
-                    ].map((status) => (
-                      <button
-                        key={status}
-                        className={`px-3 py-1 text-xs rounded-full border ${
-                          status === "pending"
-                            ? "bg-yellow-100 text-yellow-800 border-yellow-200"
-                            : status === "approved"
-                            ? "bg-blue-100 text-blue-800 border-blue-200"
-                            : status === "picked_up"
-                            ? "bg-green-100 text-green-800 border-green-200"
-                            : status === "return_requested"
-                            ? "bg-orange-100 text-orange-800 border-orange-200"
+                    {["rented", "returned", "overdue", "lost", "damaged"].map(
+                      (status) => (
+                        <button
+                          key={status}
+                          className={`px-3 py-1 text-xs rounded-full border ${
+                            status === "rented"
+                              ? "bg-blue-100 text-blue-800 border-blue-200"
+                              : status === "returned"
+                              ? "bg-green-100 text-green-800 border-green-200"
+                              : status === "overdue"
+                              ? "bg-red-100 text-red-800 border-red-200"
+                              : status === "lost"
+                              ? "bg-gray-100 text-gray-800 border-gray-200"
+                              : "bg-orange-100 text-orange-800 border-orange-200"
+                          }`}
+                        >
+                          {status === "rented"
+                            ? "대여중"
                             : status === "returned"
-                            ? "bg-gray-100 text-gray-800 border-gray-200"
+                            ? "반납완료"
                             : status === "overdue"
-                            ? "bg-red-100 text-red-800 border-red-200"
-                            : "bg-red-100 text-red-800 border-red-200"
-                        }`}
-                      >
-                        {status === "pending"
-                          ? "대기"
-                          : status === "approved"
-                          ? "승인"
-                          : status === "picked_up"
-                          ? "수령완료"
-                          : status === "return_requested"
-                          ? "반납신청"
-                          : status === "returned"
-                          ? "반납완료"
-                          : status === "overdue"
-                          ? "연체"
-                          : "거부"}
-                        (
-                        {
-                          rentalApplications.filter(
-                            (app) => app.status === status
-                          ).length
-                        }
-                        )
-                      </button>
-                    ))}
+                            ? "연체"
+                            : status === "lost"
+                            ? "분실"
+                            : "파손"}
+                          (
+                          {
+                            rentalApplications.filter(
+                              (app) => app.status === status
+                            ).length
+                          }
+                          )
+                        </button>
+                      )
+                    )}
                   </div>
                 </div>
 
-                {/* 대여 신청 목록 */}
+                {/* 대여 목록 */}
                 <div className="divide-y divide-gray-200">
                   {isLoading ? (
                     <div className="p-6 text-center text-gray-500">
@@ -1285,11 +1513,10 @@ export default function AdminDashboard() {
                     </div>
                   ) : rentalApplications.length === 0 ? (
                     <div className="p-6 text-center text-gray-500">
-                      대여 신청이 없습니다.
+                      대여 기록이 없습니다.
                     </div>
                   ) : (
                     rentalApplications.map((application) => {
-                      const user = users[application.userId];
                       const item = rentalItems[application.itemId];
 
                       return (
@@ -1299,60 +1526,61 @@ export default function AdminDashboard() {
                               <div className="flex items-center space-x-3">
                                 <span
                                   className={`px-2 py-1 text-xs rounded-full ${
-                                    application.status === "pending"
-                                      ? "bg-yellow-100 text-yellow-800"
-                                      : application.status === "approved"
+                                    application.status === "rented"
                                       ? "bg-blue-100 text-blue-800"
-                                      : application.status === "picked_up"
-                                      ? "bg-green-100 text-green-800"
-                                      : application.status ===
-                                        "return_requested"
-                                      ? "bg-orange-100 text-orange-800"
                                       : application.status === "returned"
-                                      ? "bg-gray-100 text-gray-800"
+                                      ? "bg-green-100 text-green-800"
                                       : application.status === "overdue"
                                       ? "bg-red-100 text-red-800"
-                                      : "bg-red-100 text-red-800"
+                                      : application.status === "lost"
+                                      ? "bg-gray-100 text-gray-800"
+                                      : "bg-orange-100 text-orange-800"
                                   }`}
                                 >
-                                  {application.status === "pending"
-                                    ? "대기"
-                                    : application.status === "approved"
-                                    ? "승인"
-                                    : application.status === "picked_up"
-                                    ? "수령완료"
-                                    : application.status === "return_requested"
-                                    ? "반납신청"
+                                  {application.status === "rented"
+                                    ? "대여중"
                                     : application.status === "returned"
                                     ? "반납완료"
                                     : application.status === "overdue"
                                     ? "연체"
-                                    : "거부"}
+                                    : application.status === "lost"
+                                    ? "분실"
+                                    : "파손"}
                                 </span>
                                 <h3 className="text-sm font-medium text-gray-900">
                                   {item?.name || "물품 정보 없음"}
                                 </h3>
+                                <span className="text-xs text-gray-500">
+                                  #{application.itemUniqueId}
+                                </span>
                               </div>
 
                               <div className="mt-2 text-sm text-gray-600">
                                 <p>
-                                  <strong>신청자:</strong>{" "}
-                                  {user?.name || "사용자 정보 없음"} (
-                                  {user?.studentId || "학번 정보 없음"})
+                                  <strong>대여자:</strong>{" "}
+                                  {application.studentName} (
+                                  {application.studentId})
                                 </p>
                                 <p>
-                                  <strong>대여 기간:</strong>{" "}
-                                  {application.startDate} ~{" "}
-                                  {application.endDate}
+                                  <strong>휴대폰:</strong>{" "}
+                                  {application.phoneNumber}
+                                </p>
+                                <p>
+                                  <strong>대여일:</strong>{" "}
+                                  {application.rentDate}
+                                </p>
+                                <p>
+                                  <strong>반납 예정일:</strong>{" "}
+                                  {application.dueDate}
                                 </p>
                                 <p>
                                   <strong>대여 목적:</strong>{" "}
                                   {application.purpose}
                                 </p>
-                                {application.rejectedReason && (
-                                  <p className="text-red-600">
-                                    <strong>거부 사유:</strong>{" "}
-                                    {application.rejectedReason}
+                                {application.actualReturnDate && (
+                                  <p>
+                                    <strong>실제 반납일:</strong>{" "}
+                                    {application.actualReturnDate}
                                   </p>
                                 )}
                                 {application.overdueDays &&
@@ -1362,10 +1590,23 @@ export default function AdminDashboard() {
                                       {application.overdueDays}일
                                     </p>
                                   )}
+                                {(application.lostReason ||
+                                  application.damageReason) && (
+                                  <p className="text-red-600">
+                                    <strong>
+                                      {application.status === "lost"
+                                        ? "분실"
+                                        : "파손"}{" "}
+                                      사유:
+                                    </strong>{" "}
+                                    {application.lostReason ||
+                                      application.damageReason}
+                                  </p>
+                                )}
                               </div>
 
                               <div className="mt-3 text-xs text-gray-400">
-                                신청일:{" "}
+                                대여 시작:{" "}
                                 {application.createdAt
                                   ?.toDate()
                                   .toLocaleString()}
@@ -1373,74 +1614,20 @@ export default function AdminDashboard() {
                             </div>
 
                             <div className="flex space-x-2 ml-4">
-                              {application.status === "pending" && (
+                              {application.status === "rented" && (
                                 <>
                                   <button
                                     onClick={async () => {
                                       try {
-                                        await rentalApplicationService.approveApplication(
+                                        await rentalApplicationService.processReturn(
                                           application.id!,
-                                          user?.uid || "admin"
-                                        );
-                                        loadData();
-                                        alert("대여 신청이 승인되었습니다.");
-                                      } catch (error) {
-                                        console.error("승인 오류:", error);
-                                        alert(
-                                          "승인 처리 중 오류가 발생했습니다."
-                                        );
-                                      }
-                                    }}
-                                    className="bg-green-600 text-white px-3 py-1 text-xs rounded hover:bg-green-700"
-                                  >
-                                    승인
-                                  </button>
-                                  <button
-                                    onClick={async () => {
-                                      const reason =
-                                        prompt("거부 사유를 입력해주세요:");
-                                      if (reason) {
-                                        try {
-                                          await rentalApplicationService.rejectApplication(
-                                            application.id!,
-                                            reason
-                                          );
-                                          loadData();
-                                          alert("대여 신청이 거부되었습니다.");
-                                        } catch (error) {
-                                          console.error("거부 오류:", error);
-                                          alert(
-                                            "거부 처리 중 오류가 발생했습니다."
-                                          );
-                                        }
-                                      }
-                                    }}
-                                    className="bg-red-600 text-white px-3 py-1 text-xs rounded hover:bg-red-700"
-                                  >
-                                    거부
-                                  </button>
-                                </>
-                              )}
-
-                              {application.status === "return_requested" && (
-                                <>
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        await rentalApplicationService.updateStatus(
-                                          application.id!,
-                                          "returned",
                                           {
-                                            actualReturnDate: new Date()
-                                              .toISOString()
-                                              .split("T")[0],
+                                            returnItemConditionPhotoUrl: "", // TODO: 반납 사진 처리
+                                            returnLockboxSecuredPhotoUrl: "",
                                           }
                                         );
-                                        await rentalItemService.returnItem(
-                                          application.itemId
-                                        );
                                         loadData();
-                                        alert("반납이 처리되었습니다.");
+                                        alert("반납 처리가 완료되었습니다.");
                                       } catch (error) {
                                         console.error("반납 처리 오류:", error);
                                         alert(
@@ -1448,48 +1635,38 @@ export default function AdminDashboard() {
                                         );
                                       }
                                     }}
-                                    className="bg-blue-600 text-white px-3 py-1 text-xs rounded hover:bg-blue-700"
+                                    className="bg-green-600 text-white px-3 py-1 text-xs rounded hover:bg-green-700"
                                   >
-                                    반납 확인
+                                    반납 처리
                                   </button>
-                                  {/* 반납 관련 사진들 */}
-                                  <div className="flex flex-col gap-1">
-                                    {application.preReturnPhotoUrl && (
-                                      <a
-                                        href={application.preReturnPhotoUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-green-600 hover:text-green-800 text-xs"
-                                      >
-                                        물품상태 보기
-                                      </a>
-                                    )}
-                                    {application.postReturnLockboxPhotoUrl && (
-                                      <a
-                                        href={
-                                          application.postReturnLockboxPhotoUrl
+                                  <button
+                                    onClick={async () => {
+                                      const reason =
+                                        prompt("분실 사유를 입력해주세요:");
+                                      if (reason) {
+                                        try {
+                                          await rentalApplicationService.markAsLost(
+                                            application.id!,
+                                            reason
+                                          );
+                                          loadData();
+                                          alert("분실 처리가 완료되었습니다.");
+                                        } catch (error) {
+                                          console.error(
+                                            "분실 처리 오류:",
+                                            error
+                                          );
+                                          alert(
+                                            "분실 처리 중 오류가 발생했습니다."
+                                          );
                                         }
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-purple-600 hover:text-purple-800 text-xs"
-                                      >
-                                        보관함 보기
-                                      </a>
-                                    )}
-                                  </div>
+                                      }
+                                    }}
+                                    className="bg-red-600 text-white px-3 py-1 text-xs rounded hover:bg-red-700"
+                                  >
+                                    분실 처리
+                                  </button>
                                 </>
-                              )}
-
-                              {/* 학생증 보기 (모든 상태에서 표시) */}
-                              {application.studentIdPhotoUrl && (
-                                <a
-                                  href={application.studentIdPhotoUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-800 text-xs"
-                                >
-                                  학생증 보기
-                                </a>
                               )}
                             </div>
                           </div>
@@ -1501,7 +1678,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* 대여 통계 */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -1522,42 +1699,12 @@ export default function AdminDashboard() {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          전체 신청
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {rentalApplications.length}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <svg
-                        className="h-8 w-8 text-yellow-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          대기 중
+                          현재 대여 중
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
                           {
                             rentalApplications.filter(
-                              (app) => app.status === "pending"
+                              (app) => app.status === "rented"
                             ).length
                           }
                         </dd>
@@ -1586,12 +1733,12 @@ export default function AdminDashboard() {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          대여 중
+                          반납 완료
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
                           {
                             rentalApplications.filter(
-                              (app) => app.status === "picked_up"
+                              (app) => app.status === "returned"
                             ).length
                           }
                         </dd>
@@ -2114,6 +2261,377 @@ export default function AdminDashboard() {
                                 </p>
                                 <p>변경자: {lockbox.lastChangedBy}</p>
                               </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 물품 관리 */}
+          {activeTab === "items" && (
+            <div className="mt-6">
+              <div className="grid lg:grid-cols-2 gap-8">
+                {/* 물품 추가/수정 폼 */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h2 className="text-lg font-medium mb-4">
+                    {isEditingItem ? "물품 수정" : "물품 추가"}
+                  </h2>
+
+                  <form onSubmit={handleItemSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          물품명 *
+                        </label>
+                        <input
+                          type="text"
+                          value={itemForm.name}
+                          onChange={(e) =>
+                            setItemForm({ ...itemForm, name: e.target.value })
+                          }
+                          placeholder="우산, 충전기 등"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          카테고리 *
+                        </label>
+                        <select
+                          value={itemForm.category}
+                          onChange={(e) =>
+                            setItemForm({
+                              ...itemForm,
+                              category: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        >
+                          <option value="">카테고리 선택</option>
+                          <option value="우산">우산</option>
+                          <option value="충전기">충전기</option>
+                          <option value="C타입선">C타입선</option>
+                          <option value="8핀선">8핀선</option>
+                          <option value="HDMI케이블">HDMI케이블</option>
+                          <option value="멀티허브">멀티허브</option>
+                          <option value="기타">기타</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        설명 *
+                      </label>
+                      <textarea
+                        value={itemForm.description}
+                        onChange={(e) =>
+                          setItemForm({
+                            ...itemForm,
+                            description: e.target.value,
+                          })
+                        }
+                        placeholder="물품에 대한 상세 설명을 입력하세요"
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          캠퍼스
+                        </label>
+                        <select
+                          value={itemForm.campus}
+                          onChange={(e) =>
+                            setItemForm({
+                              ...itemForm,
+                              campus: e.target.value as "yangsan" | "jangjeom",
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="yangsan">양산캠퍼스</option>
+                          <option value="jangjeom">장전캠퍼스</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          상태
+                        </label>
+                        <select
+                          value={itemForm.condition}
+                          onChange={(e) =>
+                            setItemForm({
+                              ...itemForm,
+                              condition: e.target.value as
+                                | "excellent"
+                                | "good"
+                                | "fair"
+                                | "poor",
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="excellent">매우 좋음</option>
+                          <option value="good">좋음</option>
+                          <option value="fair">보통</option>
+                          <option value="poor">나쁨</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          위치
+                        </label>
+                        <input
+                          type="text"
+                          value={itemForm.location}
+                          onChange={(e) =>
+                            setItemForm({
+                              ...itemForm,
+                              location: e.target.value,
+                            })
+                          }
+                          placeholder="정보대학 학생회실"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          연락처
+                        </label>
+                        <input
+                          type="text"
+                          value={itemForm.contact}
+                          onChange={(e) =>
+                            setItemForm({
+                              ...itemForm,
+                              contact: e.target.value,
+                            })
+                          }
+                          placeholder="관리자 연락처"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          고유 ID *
+                        </label>
+                        <input
+                          type="text"
+                          value={itemForm.uniqueId}
+                          onChange={(e) =>
+                            setItemForm({
+                              ...itemForm,
+                              uniqueId: e.target.value,
+                            })
+                          }
+                          placeholder="스티커에 적힌 고유 번호"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          상태
+                        </label>
+                        <select
+                          value={itemForm.status}
+                          onChange={(e) =>
+                            setItemForm({
+                              ...itemForm,
+                              status: e.target.value as
+                                | "available"
+                                | "rented"
+                                | "maintenance"
+                                | "lost"
+                                | "damaged",
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="available">대여 가능</option>
+                          <option value="rented">대여 중</option>
+                          <option value="maintenance">정비 중</option>
+                          <option value="lost">분실</option>
+                          <option value="damaged">파손</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        물품 이미지
+                      </label>
+                      <input
+                        type="file"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setSelectedItemImage(file);
+                          }
+                        }}
+                        accept="image/*"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {itemUploadProgress > 0 && itemUploadProgress < 100 && (
+                        <div className="mt-2">
+                          <div className="bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${itemUploadProgress}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {itemForm.image && (
+                        <div className="mt-2">
+                          <img
+                            src={itemForm.image}
+                            alt="물품 이미지"
+                            className="w-32 h-32 object-cover rounded-lg border"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex space-x-3">
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {isLoading
+                          ? "저장 중..."
+                          : isEditingItem
+                          ? "수정"
+                          : "추가"}
+                      </button>
+                      {isEditingItem && (
+                        <button
+                          type="button"
+                          onClick={resetItemForm}
+                          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                        >
+                          취소
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+
+                {/* 물품 목록 */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h2 className="text-lg font-medium mb-4">물품 목록</h2>
+
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {Object.values(rentalItems).length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        등록된 물품이 없습니다.
+                      </div>
+                    ) : (
+                      Object.values(rentalItems).map((item) => (
+                        <div
+                          key={item.id}
+                          className="border border-gray-200 rounded-lg p-4"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3">
+                                {item.image && (
+                                  <img
+                                    src={item.image}
+                                    alt={item.name}
+                                    className="w-12 h-12 object-cover rounded-lg"
+                                  />
+                                )}
+                                <div>
+                                  <h3 className="font-medium text-gray-900">
+                                    {item.name}
+                                  </h3>
+                                  <p className="text-sm text-gray-600">
+                                    {item.category} •{" "}
+                                    {item.campus === "yangsan"
+                                      ? "양산"
+                                      : "장전"}
+                                  </p>
+                                </div>
+                              </div>
+                              <p className="text-sm text-gray-500 mt-2">
+                                {item.description}
+                              </p>
+                              <div className="flex items-center space-x-4 mt-2">
+                                <span className="text-sm text-gray-600">
+                                  고유 ID: {item.uniqueId}
+                                </span>
+                                <span
+                                  className={`inline-block px-2 py-1 text-xs rounded ${
+                                    item.condition === "양호"
+                                      ? "bg-green-100 text-green-800"
+                                      : item.condition === "보통"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : item.condition === "불량"
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-blue-100 text-blue-800"
+                                  }`}
+                                >
+                                  {item.condition}
+                                </span>
+                                <span
+                                  className={`inline-block px-2 py-1 text-xs rounded ${
+                                    item.status === "available"
+                                      ? "bg-green-100 text-green-800"
+                                      : item.status === "rented"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : item.status === "maintenance"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {item.status === "available"
+                                    ? "대여 가능"
+                                    : item.status === "rented"
+                                    ? "대여 중"
+                                    : item.status === "maintenance"
+                                    ? "정비 중"
+                                    : item.status === "lost"
+                                    ? "분실"
+                                    : "파손"}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex space-x-2 ml-4">
+                              <button
+                                onClick={() => editItem(item)}
+                                className="text-blue-600 hover:text-blue-800 text-sm"
+                              >
+                                수정
+                              </button>
+                              <button
+                                onClick={() => deleteItem(item.id!)}
+                                className="text-red-600 hover:text-red-800 text-sm"
+                              >
+                                삭제
+                              </button>
                             </div>
                           </div>
                         </div>

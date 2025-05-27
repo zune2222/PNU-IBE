@@ -52,7 +52,7 @@ export default function ReturnApplication() {
       // 현재 사용자의 대여 중인 물품들 조회
       const userRentals = await rentalApplicationService.getByUserId(user.uid);
       const activeRentals = userRentals.filter(
-        (rental) => rental.status === "picked_up"
+        (rental) => rental.status === "rented"
       );
 
       setCurrentRentals(activeRentals);
@@ -126,10 +126,9 @@ export default function ReturnApplication() {
       // 1. 반납 신청 상태 업데이트
       await rentalApplicationService.updateStatus(
         selectedRental.id!,
-        "return_requested",
+        "returned",
         {
-          preReturnPhotoUrl: photos.itemPhoto,
-          postReturnLockboxPhotoUrl: photos.lockboxPhoto,
+          actualReturnDate: new Date().toISOString().split("T")[0],
         }
       );
 
@@ -181,13 +180,13 @@ export default function ReturnApplication() {
 
   const isOverdue = (rental: FirestoreRentalApplication) => {
     const today = new Date();
-    const endDate = new Date(rental.endDate);
+    const endDate = new Date(rental.dueDate);
     return today > endDate;
   };
 
-  const getDaysOverdue = (rental: FirestoreRentalApplication) => {
+  const getOverdueDays = (rental: FirestoreRentalApplication) => {
     const today = new Date();
-    const endDate = new Date(rental.endDate);
+    const endDate = new Date(rental.dueDate);
     const diffTime = today.getTime() - endDate.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
@@ -409,7 +408,7 @@ export default function ReturnApplication() {
                     const item = rentalItems[rental.itemId];
                     const overdueStatus = isOverdue(rental);
                     const daysOverdue = overdueStatus
-                      ? getDaysOverdue(rental)
+                      ? getOverdueDays(rental)
                       : 0;
 
                     return (
@@ -442,7 +441,7 @@ export default function ReturnApplication() {
                             </p>
                             <div className="mt-2 text-sm text-gray-500">
                               <p>
-                                대여 기간: {rental.startDate} ~ {rental.endDate}
+                                대여 기간: {rental.rentDate} ~ {rental.dueDate}
                               </p>
                               <p>대여 목적: {rental.purpose}</p>
                             </div>
@@ -504,8 +503,8 @@ export default function ReturnApplication() {
                         "설명 없음"}
                     </p>
                     <p className="text-sm text-gray-500">
-                      대여 기간: {selectedRental.startDate} ~{" "}
-                      {selectedRental.endDate}
+                      대여 기간: {selectedRental.rentDate} ~{" "}
+                      {selectedRental.dueDate}
                     </p>
                   </div>
                 </div>

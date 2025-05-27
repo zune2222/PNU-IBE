@@ -142,19 +142,15 @@ export default function TestFirebase() {
           category: rental.category,
           description: rental.description,
           image: rental.image,
-          available: rental.available,
           condition: rental.condition,
+          status: rental.available
+            ? ("available" as const)
+            : ("maintenance" as const),
           location: rental.location,
           contact: rental.contact,
           campus: "yangsan" as const,
           uniqueId: `RENTAL_${String(i + 1).padStart(3, "0")}`,
-          totalQuantity: 1,
-          availableQuantity: rental.available ? 1 : 0,
-          rentalCount: 0,
-          rating: 0,
-          lastRentedAt: null,
-          tags: [rental.category],
-          notes: "",
+          totalRentCount: 0,
         };
 
         const id = await rentalItemService.add(firestoreRental);

@@ -1,12 +1,18 @@
 import React, { useState } from "react";
 import {
-  ocrService,
-  OcrResult,
   StudentIdInfo,
-} from "../../shared/services/ocrService";
+  OcrResult,
+} from "../../shared/services/clientOcrService";
+import { clientOcrService } from "../../shared/services/clientOcrService";
+
+// 확장된 학생 정보 인터페이스 (휴대폰 번호 포함)
+interface ExtendedStudentIdInfo extends StudentIdInfo {
+  phoneNumber: string;
+  studentIdPhotoFile?: File; // 학생증 사진 파일 추가
+}
 
 interface StudentIdUploadProps {
-  onSuccess?: (studentInfo: StudentIdInfo) => void;
+  onSuccess?: (studentInfo: ExtendedStudentIdInfo) => void;
   onError?: (error: string) => void;
 }
 
@@ -24,6 +30,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
     name: "",
     department: "",
     campus: "yangsan" as "yangsan" | "jangjeom",
+    phoneNumber: "",
   });
 
   // 파일 선택 처리
@@ -32,7 +39,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
     if (!file) return;
 
     // 파일 유효성 검사
-    const validation = ocrService.validateImageFile(file);
+    const validation = clientOcrService.validateImageFile(file);
     if (!validation.isValid) {
       onError?.(validation.error || "유효하지 않은 파일입니다.");
       return;
@@ -55,11 +62,8 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
     setIsLoading(true);
     try {
-      const tempId = `temp_${Date.now()}`;
-      const result = await ocrService.extractStudentIdInfo(
-        selectedFile,
-        tempId
-      );
+      // 클라이언트 OCR 사용
+      const result = await clientOcrService.extractStudentIdInfo(selectedFile);
       setOcrResult(result);
 
       if (result.success && result.studentInfo) {
@@ -68,7 +72,8 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
           studentId: result.studentInfo.studentId || "",
           name: result.studentInfo.name || "",
           department: result.studentInfo.department || "",
-          campus: result.studentInfo.campus || "yangsan",
+          campus: result.studentInfo.campus || "yangsan", // OCR에서 인식된 캠퍼스 값 사용
+          phoneNumber: "", // Assuming phoneNumber is not provided in the OCR result
         });
         // 수동 입력 모드는 비활성화
         setShowManualInput(false);
@@ -86,21 +91,31 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
   // 학생 정보 검증 및 저장
   const handleValidateAndSave = async () => {
-    const { studentId, name, department, campus } = manualInput;
+    const { studentId, name, department, campus, phoneNumber } = manualInput;
 
     if (!studentId || !name) {
       onError?.("학번과 이름은 필수 입력 항목입니다.");
       return;
     }
 
+    if (!phoneNumber) {
+      onError?.("휴대폰 번호는 필수 입력 항목입니다.");
+      return;
+    }
+
+    // 휴대폰 번호 형식 검증
+    const phoneRegex = /^010-?\d{4}-?\d{4}$/;
+    if (!phoneRegex.test(phoneNumber.replace(/[^0-9]/g, ""))) {
+      onError?.("올바른 휴대폰 번호 형식을 입력해주세요. (010-XXXX-XXXX)");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // 학생 정보 검증
-      const tempId = `temp_${Date.now()}`;
-      const validation = await ocrService.validateStudentInfo(
+      // 클라이언트에서 학생 정보 검증
+      const validation = await clientOcrService.validateStudentInfo(
         studentId,
-        name,
-        tempId
+        name
       );
 
       if (!validation.valid) {
@@ -109,13 +124,17 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       }
 
       // 성공 콜백 호출
-      const studentInfo: StudentIdInfo = {
+      const studentInfo: ExtendedStudentIdInfo = {
         studentId,
         name,
         department: department || null,
         campus,
         grade: null,
         confidence: ocrResult?.studentInfo?.confidence || 1.0,
+        phoneNumber: phoneNumber
+          .replace(/[^0-9]/g, "")
+          .replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3"),
+        studentIdPhotoFile: selectedFile || undefined,
       };
 
       onSuccess?.(studentInfo);
@@ -141,6 +160,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       name: "",
       department: "",
       campus: "yangsan",
+      phoneNumber: "",
     });
   };
 
@@ -175,18 +195,34 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
             <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
               JPG, PNG, WebP 파일 (최대 10MB)
             </p>
-            <label className="cursor-pointer">
-              <span className="mt-2 block w-full rounded-md border border-gray-300 py-3 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 text-center shadow-sm">
-                카메라/갤러리에서 선택
-              </span>
-              <input
-                type="file"
-                className="sr-only"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileSelect}
-              />
-            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              {/* 갤러리에서 선택 버튼 */}
+              <label className="cursor-pointer flex-1">
+                <span className="block w-full rounded-md border border-gray-300 py-3 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 text-center shadow-sm">
+                  갤러리에서 선택
+                </span>
+                <input
+                  type="file"
+                  className="sr-only"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                />
+              </label>
+
+              {/* 카메라로 촬영 버튼 */}
+              <label className="cursor-pointer flex-1">
+                <span className="block w-full rounded-md border border-gray-300 py-3 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 text-center shadow-sm">
+                  카메라로 촬영
+                </span>
+                <input
+                  type="file"
+                  className="sr-only"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileSelect}
+                />
+              </label>
+            </div>
           </div>
         )}
 
@@ -271,11 +307,11 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                   <div className="flex justify-between items-center">
                     <span className="font-medium">인식 신뢰도:</span>
                     <span
-                      className={ocrService.getConfidenceColor(
+                      className={clientOcrService.getConfidenceColor(
                         ocrResult.studentInfo.confidence
                       )}
                     >
-                      {ocrService.getConfidenceText(
+                      {clientOcrService.getConfidenceText(
                         ocrResult.studentInfo.confidence
                       )}{" "}
                       ({Math.round(ocrResult.studentInfo.confidence * 100)}%)
@@ -297,9 +333,45 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                       {ocrResult.studentInfo.department || "인식 실패"}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">캠퍼스:</span>
-                    <span>{ocrResult.studentInfo.campus || "인식 실패"}</span>
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-medium">캠퍼스:</span>
+                      <span className="text-sm text-blue-600">
+                        직접 선택 필요
+                      </span>
+                    </div>
+                    <select
+                      value={manualInput.campus}
+                      onChange={(e) =>
+                        setManualInput({
+                          ...manualInput,
+                          campus: e.target.value as "yangsan" | "jangjeom",
+                        })
+                      }
+                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
+                    >
+                      <option value="yangsan">양산캠퍼스</option>
+                      <option value="jangjeom">장전캠퍼스</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-medium">휴대폰 번호:</span>
+                      <span className="text-sm text-red-600">필수 입력</span>
+                    </div>
+                    <input
+                      type="tel"
+                      value={manualInput.phoneNumber}
+                      onChange={(e) =>
+                        setManualInput({
+                          ...manualInput,
+                          phoneNumber: e.target.value,
+                        })
+                      }
+                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="010-1234-5678"
+                      maxLength={13}
+                    />
                   </div>
                 </div>
               ) : (
@@ -429,12 +501,33 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                   <option value="jangjeom">장전캠퍼스</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  휴대폰 번호:
+                </label>
+                <input
+                  type="tel"
+                  value={manualInput.phoneNumber}
+                  onChange={(e) =>
+                    setManualInput({
+                      ...manualInput,
+                      phoneNumber: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                  placeholder="010-1234-5678"
+                  maxLength={13}
+                />
+              </div>
             </div>
 
             <button
               onClick={handleValidateAndSave}
               disabled={
-                isLoading || !manualInput.studentId || !manualInput.name
+                isLoading ||
+                !manualInput.studentId ||
+                !manualInput.name ||
+                !manualInput.phoneNumber
               }
               className="mt-4 w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 disabled:opacity-50 shadow-sm font-medium text-base"
             >

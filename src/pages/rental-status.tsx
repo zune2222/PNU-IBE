@@ -78,20 +78,16 @@ export default function RentalStatus() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "approved":
+      case "rented":
         return "bg-blue-100 text-blue-800";
-      case "picked_up":
-        return "bg-green-100 text-green-800";
-      case "return_requested":
-        return "bg-orange-100 text-orange-800";
       case "returned":
-        return "bg-gray-100 text-gray-800";
+        return "bg-green-100 text-green-800";
       case "overdue":
         return "bg-red-100 text-red-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
+      case "lost":
+        return "bg-gray-100 text-gray-800";
+      case "damaged":
+        return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -99,51 +95,34 @@ export default function RentalStatus() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "pending":
-        return "승인 대기";
-      case "approved":
-        return "승인됨";
-      case "picked_up":
+      case "rented":
         return "대여 중";
-      case "return_requested":
-        return "반납 신청";
       case "returned":
         return "반납 완료";
       case "overdue":
         return "연체";
-      case "rejected":
-        return "거부됨";
+      case "lost":
+        return "분실";
+      case "damaged":
+        return "파손";
       default:
         return "알 수 없음";
     }
   };
 
-  const isOverdue = (rental: FirestoreRentalApplication) => {
-    const today = new Date();
-    const endDate = new Date(rental.endDate);
-    return rental.status === "picked_up" && today > endDate;
-  };
-
   const getDaysOverdue = (rental: FirestoreRentalApplication) => {
     const today = new Date();
-    const endDate = new Date(rental.endDate);
+    const endDate = new Date(rental.dueDate);
     const diffTime = today.getTime() - endDate.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  // 최근 신청 필터링
   const currentRentals = rentalApplications.filter(
-    (app) =>
-      app.status === "pending" ||
-      app.status === "approved" ||
-      app.status === "picked_up" ||
-      app.status === "return_requested"
+    (app) => app.status === "rented"
   );
-
-  const pastRentals = rentalApplications.filter(
-    (app) =>
-      app.status === "returned" ||
-      app.status === "rejected" ||
-      app.status === "overdue"
+  const recentReturns = rentalApplications.filter(
+    (app) => app.status === "returned"
   );
 
   return (
@@ -404,8 +383,9 @@ export default function RentalStatus() {
                             </dt>
                             <dd className="text-lg font-medium text-gray-900">
                               {
-                                currentRentals.filter((app) => isOverdue(app))
-                                  .length
+                                currentRentals.filter(
+                                  (app) => getDaysOverdue(app) > 0
+                                ).length
                               }
                             </dd>
                           </dl>
@@ -436,7 +416,7 @@ export default function RentalStatus() {
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                           }`}
                         >
-                          대여 이력 ({pastRentals.length})
+                          대여 이력 ({recentReturns.length})
                         </button>
                       </nav>
                     </div>
@@ -470,7 +450,7 @@ export default function RentalStatus() {
                           ) : (
                             currentRentals.map((rental) => {
                               const item = rentalItems[rental.itemId];
-                              const overdueStatus = isOverdue(rental);
+                              const overdueStatus = getDaysOverdue(rental) > 0;
                               const daysOverdue = overdueStatus
                                 ? getDaysOverdue(rental)
                                 : 0;
@@ -513,8 +493,8 @@ export default function RentalStatus() {
                                       </p>
                                       <div className="mt-2 text-sm text-gray-500">
                                         <p>
-                                          대여 기간: {rental.startDate} ~{" "}
-                                          {rental.endDate}
+                                          대여 기간: {rental.rentDate} ~{" "}
+                                          {rental.dueDate}
                                         </p>
                                         <p>대여 목적: {rental.purpose}</p>
                                       </div>
@@ -530,12 +510,12 @@ export default function RentalStatus() {
                       {/* 대여 이력 탭 */}
                       {activeTab === "history" && (
                         <div className="space-y-4">
-                          {pastRentals.length === 0 ? (
+                          {recentReturns.length === 0 ? (
                             <div className="text-center py-8 text-gray-500">
                               완료된 대여 기록이 없습니다.
                             </div>
                           ) : (
-                            pastRentals.map((rental) => {
+                            recentReturns.map((rental) => {
                               const item = rentalItems[rental.itemId];
 
                               return (
@@ -569,8 +549,8 @@ export default function RentalStatus() {
                                       </p>
                                       <div className="mt-2 text-sm text-gray-500">
                                         <p>
-                                          대여 기간: {rental.startDate} ~{" "}
-                                          {rental.endDate}
+                                          대여 기간: {rental.rentDate} ~{" "}
+                                          {rental.dueDate}
                                         </p>
                                         {rental.actualReturnDate && (
                                           <p>
@@ -579,11 +559,6 @@ export default function RentalStatus() {
                                           </p>
                                         )}
                                         <p>대여 목적: {rental.purpose}</p>
-                                        {rental.rejectedReason && (
-                                          <p className="text-red-600">
-                                            거부 사유: {rental.rejectedReason}
-                                          </p>
-                                        )}
                                       </div>
                                       <div className="mt-2 text-xs text-gray-400">
                                         신청일:{" "}

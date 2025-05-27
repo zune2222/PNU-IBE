@@ -29,9 +29,9 @@ export function RentalList() {
     // 상태 필터링
     const statusMatch =
       selectedStatus === "전체" ||
-      (selectedStatus === "대여 가능" && item.available) ||
-      (selectedStatus === "대여 중" && !item.available) ||
-      (selectedStatus === "점검 중" && item.condition === "점검 중");
+      (selectedStatus === "대여 가능" && item.status === "available") ||
+      (selectedStatus === "대여 중" && item.status === "rented") ||
+      (selectedStatus === "점검 중" && item.status === "maintenance");
 
     // 검색어 필터링
     const searchMatch =
@@ -113,8 +113,13 @@ export function RentalList() {
                 <div>
                   <h4 className="text-lg font-medium">{selectedItem.name}</h4>
                   <p className="text-sm text-gray-500">
-                    {selectedItem.available ? "대여 가능" : "대여 불가"} -{" "}
-                    {selectedItem.condition}
+                    {selectedItem.status === "available"
+                      ? "대여 가능"
+                      : "대여 불가"}{" "}
+                    -{" "}
+                    {selectedItem.status === "maintenance"
+                      ? "점검 중"
+                      : selectedItem.status}
                   </p>
                   <p className="text-sm text-gray-500">
                     연락처: {selectedItem.contact}
@@ -481,17 +486,19 @@ export function RentalList() {
                   <div className="absolute top-4 right-4 z-10">
                     <span
                       className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm korean-text ${
-                        item.available
+                        item.status === "available"
                           ? "bg-emerald-100/90 text-emerald-700 border border-emerald-200"
                           : "bg-red-100/90 text-red-700 border border-red-200"
                       }`}
                     >
                       <span
                         className={`w-2 h-2 rounded-full mr-2 ${
-                          item.available ? "bg-emerald-500" : "bg-red-500"
+                          item.status === "available"
+                            ? "bg-emerald-500"
+                            : "bg-red-500"
                         }`}
                       ></span>
-                      {item.available ? "대여 가능" : "대여 불가"}
+                      {item.status === "available" ? "대여 가능" : "대여 불가"}
                     </span>
                   </div>
 
@@ -512,7 +519,10 @@ export function RentalList() {
                     </h3>
                     <div className="flex items-center justify-between text-sm text-gray-500">
                       <span className="korean-text">
-                        상태: {item.condition}
+                        상태:{" "}
+                        {item.status === "maintenance"
+                          ? "점검 중"
+                          : item.status}
                       </span>
                       <span className="korean-text">위치: {item.location}</span>
                     </div>
@@ -527,21 +537,25 @@ export function RentalList() {
                   <div className="flex justify-end">
                     <motion.button
                       onClick={() => {
-                        if (item.available) {
+                        if (item.status === "available") {
                           setSelectedItem(item);
                           setShowRentalForm(true);
                         }
                       }}
-                      disabled={!item.available}
-                      whileHover={item.available ? { scale: 1.02 } : {}}
-                      whileTap={item.available ? { scale: 0.98 } : {}}
+                      disabled={item.status !== "available"}
+                      whileHover={
+                        item.status === "available" ? { scale: 1.02 } : {}
+                      }
+                      whileTap={
+                        item.status === "available" ? { scale: 0.98 } : {}
+                      }
                       className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 korean-text min-h-[44px] ${
-                        item.available
+                        item.status === "available"
                           ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
                           : "bg-gray-100 text-gray-400 cursor-not-allowed"
                       }`}
                     >
-                      {item.available ? "대여 신청" : "대여 불가"}
+                      {item.status === "available" ? "대여 신청" : "대여 불가"}
                     </motion.button>
                   </div>
                 </div>

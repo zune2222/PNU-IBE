@@ -7,7 +7,6 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  orderBy,
   limit,
   where,
   Timestamp,
@@ -49,21 +48,47 @@ export interface FirestoreEvent {
   updatedAt: Timestamp;
 }
 
-// 대여 물품 타입 (확장)
+// 물품 타입 (개별 물품 기준)
 export interface FirestoreRentalItem {
+  id?: string; // 컬렉션 문서 ID
+  uniqueId: string; // 물품 고유 ID (스티커/라벨에 적힌 번호)
+  name: string; // 물품명 (예: "우산")
+  category: string; // 카테고리
+  description: string; // 상세 설명
+  image: string; // 대표 이미지
+  condition: string; // 물품 상태 (양호, 보통, 불량)
+  status: "available" | "rented" | "maintenance" | "lost" | "damaged"; // 현재 상태
+  location: string; // 보관 위치
+  contact: string; // 담당자 연락처
+  campus: "yangsan" | "jangjeom"; // 캠퍼스 구분
+  lockboxPassword?: string; // 보관함 자물쇠 비밀번호
+
+  // 대여 정보
+  currentRentalId?: string; // 현재 대여 중인 신청 ID (있을 경우)
+  lastRentedDate?: string; // 마지막 대여일
+  totalRentCount: number; // 총 대여 횟수
+
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+// 물품 그룹 (같은 종류의 물품들을 묶어서 관리)
+export interface FirestoreItemGroup {
   id?: string;
-  name: string;
+  name: string; // 물품명 (예: "우산")
   category: string;
   description: string;
   image: string;
-  available: boolean;
-  condition: string;
+  campus: "yangsan" | "jangjeom";
   location: string;
   contact: string;
-  campus: "yangsan" | "jangjeom"; // 캠퍼스 구분
-  uniqueId: string; // 물품 고유 ID (스티커)
-  totalQuantity: number; // 전체 수량
-  availableQuantity: number; // 현재 대여 가능 수량
+
+  // 그룹 통계
+  totalCount: number; // 전체 개수
+  availableCount: number; // 대여 가능 개수
+  rentedCount: number; // 대여 중 개수
+  maintenanceCount: number; // 정비 중 개수
+
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -96,45 +121,47 @@ export interface FirestoreUser {
 // 사용자 역할
 export type UserRole = "student" | "admin" | "manager";
 
-// 대여 신청 상태
+// 대여 신청 상태 (셀프 서비스 방식)
 export type RentalStatus =
-  | "pending" // 신청됨 (학생증 확인 대기)
-  | "approved" // 승인됨 (비밀번호 안내)
-  | "picked_up" // 수령 완료
-  | "return_requested" // 반납 신청
+  | "rented" // 대여 중 (즉시 대여됨)
   | "returned" // 반납 완료
   | "overdue" // 연체
-  | "rejected" // 거부됨
-  | "cancelled"; // 취소됨
+  | "lost" // 분실
+  | "damaged"; // 파손
 
-// 대여 신청 타입
+// 대여 신청 타입 (셀프 서비스 방식)
 export interface FirestoreRentalApplication {
   id?: string;
   userId: string;
-  itemId: string;
-  itemUniqueId: string; // 실제 대여한 물품의 고유 ID
+  itemId: string; // 물품 그룹 ID
+  itemUniqueId: string; // 실제 대여한 개별 물품의 고유 ID
   status: RentalStatus;
-  startDate: string; // 대여 시작일
-  endDate: string; // 반납 예정일
+  rentDate: string; // 실제 대여일 (서버 시간 기준 자동 설정)
+  dueDate: string; // 반납 마감일 (대여일 + 24시간 자동 계산)
   actualReturnDate?: string; // 실제 반납일
   purpose: string; // 대여 목적
+
+  // 학생 정보 (학생증 인증 필수)
+  studentId: string;
+  studentName: string;
+  department: string;
+  campus: "yangsan" | "jangjeom";
+  phoneNumber: string; // 휴대폰 번호 (필수)
 
   // 학생증 정보
   studentIdPhotoUrl: string;
   studentIdVerified: boolean;
 
-  // 사진 업로드 관련
-  prePickupPhotoUrl?: string; // 수령 전 물품 사진
-  postPickupLockboxPhotoUrl?: string; // 수령 후 보관함 사진
-  preReturnPhotoUrl?: string; // 반납 전 물품 사진
-  postReturnLockboxPhotoUrl?: string; // 반납 후 보관함 사진
+  // 대여 시 촬영 사진들 (필수)
+  itemConditionPhotoUrl: string; // 물품 상태 확인 사진
+  itemLabelPhotoUrl: string; // 물품 라벨 확인 사진
+  lockboxSecuredPhotoUrl: string; // 자물쇠 잠금 확인 사진
 
-  // 관리자 확인
-  approvedBy?: string; // 승인한 관리자 ID
-  approvedAt?: Timestamp;
-  rejectedReason?: string; // 거부 사유
+  // 반납 시 촬영 사진들 (반납 시에만)
+  returnItemConditionPhotoUrl?: string; // 반납 시 물품 상태 사진
+  returnLockboxSecuredPhotoUrl?: string; // 반납 시 자물쇠 잠금 확인 사진
 
-  // 만족도 조사
+  // 만족도 조사 (반납 후 선택사항)
   rating?: number; // 1-5 점
   feedback?: string;
 
@@ -142,6 +169,10 @@ export interface FirestoreRentalApplication {
   overdueDays?: number;
   penaltyPoints?: number;
   lastOverdueCheck?: Date; // 마지막 연체 확인 시간
+
+  // 분실/파손 사유
+  lostReason?: string; // 분실 사유
+  damageReason?: string; // 파손 사유
 
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -223,14 +254,16 @@ export interface FirestoreNotificationSettings {
 export const noticeService = {
   // 모든 공지사항 가져오기
   async getAll(): Promise<FirestoreNotice[]> {
-    const q = query(collection(db, "notices"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const querySnapshot = await getDocs(collection(db, "notices"));
+    const notices = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreNotice)
+    );
+    return notices.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
     );
   },
 
@@ -292,20 +325,19 @@ export const noticeService = {
 
   // 중요 공지사항 가져오기
   async getImportant(): Promise<FirestoreNotice[]> {
-    const q = query(
-      collection(db, "notices"),
-      where("important", "==", true),
-      orderBy("createdAt", "desc"),
-      limit(5)
-    );
+    const q = query(collection(db, "notices"), where("important", "==", true));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const notices = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreNotice)
     );
+    // 클라이언트에서 정렬하고 제한
+    return notices
+      .sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis())
+      .slice(0, 5);
   },
 };
 
@@ -313,14 +345,16 @@ export const noticeService = {
 export const eventService = {
   // 모든 행사 가져오기
   async getAll(): Promise<FirestoreEvent[]> {
-    const q = query(collection(db, "events"), orderBy("date", "desc"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const querySnapshot = await getDocs(collection(db, "events"));
+    const events = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreEvent)
+    );
+    return events.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   },
 
@@ -368,36 +402,29 @@ export const eventService = {
 
   // 다가오는 행사 가져오기
   async getUpcoming(limitCount: number = 3): Promise<FirestoreEvent[]> {
-    const q = query(
-      collection(db, "events"),
-      where("status", "in", ["upcoming", "ongoing"]),
-      orderBy("date", "asc"),
-      limit(limitCount)
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as FirestoreEvent)
-    );
+    // 모든 행사를 가져온 후 클라이언트에서 필터링
+    const allEvents = await this.getAll();
+    return allEvents
+      .filter(
+        (event) => event.status === "upcoming" || event.status === "ongoing"
+      )
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, limitCount);
   },
 
   // 피처링된 행사 가져오기
   async getFeatured(): Promise<FirestoreEvent[]> {
-    const q = query(
-      collection(db, "events"),
-      where("featured", "==", true),
-      orderBy("date", "desc")
-    );
+    const q = query(collection(db, "events"), where("featured", "==", true));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const events = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreEvent)
+    );
+    return events.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   },
 };
@@ -406,15 +433,15 @@ export const eventService = {
 export const rentalItemService = {
   // 모든 대여 물품 가져오기
   async getAll(): Promise<FirestoreRentalItem[]> {
-    const q = query(collection(db, "rental_items"), orderBy("name", "asc"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const querySnapshot = await getDocs(collection(db, "rental_items"));
+    const items = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreRentalItem)
     );
+    return items.sort((a, b) => a.name.localeCompare(b.name));
   },
 
   // 특정 대여 물품 가져오기
@@ -481,34 +508,34 @@ export const rentalItemService = {
   async getAvailable(): Promise<FirestoreRentalItem[]> {
     const q = query(
       collection(db, "rental_items"),
-      where("availableQuantity", ">", 0),
-      orderBy("name", "asc")
+      where("status", "==", "available")
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const items = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreRentalItem)
     );
+    return items.sort((a, b) => a.name.localeCompare(b.name));
   },
 
   // 카테고리별 물품 가져오기
   async getByCategory(category: string): Promise<FirestoreRentalItem[]> {
     const q = query(
       collection(db, "rental_items"),
-      where("category", "==", category),
-      orderBy("name", "asc")
+      where("category", "==", category)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const items = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreRentalItem)
     );
+    return items.sort((a, b) => a.name.localeCompare(b.name));
   },
 
   // 캠퍼스별 물품 가져오기
@@ -517,17 +544,17 @@ export const rentalItemService = {
   ): Promise<FirestoreRentalItem[]> {
     const q = query(
       collection(db, "rental_items"),
-      where("campus", "==", campus),
-      orderBy("name", "asc")
+      where("campus", "==", campus)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const items = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreRentalItem)
     );
+    return items.sort((a, b) => a.name.localeCompare(b.name));
   },
 
   // 캠퍼스별 대여 가능한 물품 가져오기
@@ -537,69 +564,66 @@ export const rentalItemService = {
     const q = query(
       collection(db, "rental_items"),
       where("campus", "==", campus),
-      where("availableQuantity", ">", 0),
-      orderBy("name", "asc")
+      where("status", "==", "available")
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const items = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreRentalItem)
     );
+    return items.sort((a, b) => a.name.localeCompare(b.name));
   },
 
-  // 물품 대여 처리 (수량 감소)
-  async rentItem(id: string): Promise<boolean> {
-    const itemDoc = await getDoc(doc(db, "rental_items", id));
-    if (itemDoc.exists()) {
-      const currentQuantity = itemDoc.data().availableQuantity || 0;
-      if (currentQuantity > 0) {
-        await updateDoc(doc(db, "rental_items", id), {
-          availableQuantity: currentQuantity - 1,
-          available: currentQuantity - 1 > 0,
-          updatedAt: Timestamp.now(),
-        });
-        return true;
-      }
+  // 물품 대여 처리 (상태 변경)
+  async rentItem(itemId: string, rentalId: string): Promise<boolean> {
+    try {
+      const docRef = doc(db, "rental_items", itemId);
+      await updateDoc(docRef, {
+        status: "rented",
+        currentRentalId: rentalId,
+        lastRentedDate: new Date().toISOString().split("T")[0],
+        totalRentCount: (await getDoc(docRef)).data()?.totalRentCount || 0 + 1,
+        updatedAt: Timestamp.now(),
+      });
+      return true;
+    } catch (error) {
+      console.error("물품 대여 처리 오류:", error);
+      return false;
     }
-    return false;
   },
 
-  // 물품 반납 처리 (수량 증가)
-  async returnItem(id: string): Promise<boolean> {
-    const itemDoc = await getDoc(doc(db, "rental_items", id));
-    if (itemDoc.exists()) {
-      const currentQuantity = itemDoc.data().availableQuantity || 0;
-      const totalQuantity = itemDoc.data().totalQuantity || 0;
-
-      if (currentQuantity < totalQuantity) {
-        await updateDoc(doc(db, "rental_items", id), {
-          availableQuantity: currentQuantity + 1,
-          available: true,
-          updatedAt: Timestamp.now(),
-        });
-        return true;
-      }
+  // 물품 반납 처리 (상태 변경)
+  async returnItem(itemId: string): Promise<boolean> {
+    try {
+      const docRef = doc(db, "rental_items", itemId);
+      await updateDoc(docRef, {
+        status: "available",
+        currentRentalId: null,
+        updatedAt: Timestamp.now(),
+      });
+      return true;
+    } catch (error) {
+      console.error("물품 반납 처리 오류:", error);
+      return false;
     }
-    return false;
   },
 
   // 물품 상태 업데이트 (손상, 분실 등)
   async updateItemStatus(
     id: string,
-    condition: string,
-    availableQuantity?: number
+    status: "available" | "rented" | "maintenance" | "lost" | "damaged",
+    condition?: string
   ): Promise<void> {
     const updateData: Partial<FirestoreRentalItem> = {
-      condition,
+      status,
       updatedAt: Timestamp.now(),
     };
 
-    if (availableQuantity !== undefined) {
-      updateData.availableQuantity = availableQuantity;
-      updateData.available = availableQuantity > 0;
+    if (condition !== undefined) {
+      updateData.condition = condition;
     }
 
     const docRef = doc(db, "rental_items", id);
@@ -611,7 +635,7 @@ export const rentalItemService = {
     searchTerm: string,
     campus?: "yangsan" | "jangjeom"
   ): Promise<FirestoreRentalItem[]> {
-    // Firestore는 복잡한 텍스트 검색을 지원하지 않으므로 클라이언트 사이드에서 필터링
+    // 모든 아이템을 가져온 후 클라이언트에서 필터링
     let items: FirestoreRentalItem[];
 
     if (campus) {
@@ -641,12 +665,11 @@ export const rentalItemService = {
 
     const totalItems = allItems.length;
     const availableItems = allItems.filter(
-      (item) => item.availableQuantity > 0
+      (item) => item.status === "available"
     ).length;
-    const rentedItems = allItems.reduce(
-      (sum, item) => sum + (item.totalQuantity - item.availableQuantity),
-      0
-    );
+    const rentedItems = allItems.filter(
+      (item) => item.status === "rented"
+    ).length;
     const yangSanItems = allItems.filter(
       (item) => item.campus === "yangsan"
     ).length;
@@ -667,20 +690,9 @@ export const rentalItemService = {
   async getPopularItems(
     limitCount: number = 5
   ): Promise<FirestoreRentalItem[]> {
-    // 실제로는 대여 기록을 기반으로 계산해야 하지만, 여기서는 기본 구조만 제공
-    const q = query(
-      collection(db, "rental_items"),
-      orderBy("name", "asc"),
-      limit(limitCount)
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as FirestoreRentalItem)
-    );
+    // 모든 아이템을 가져온 후 제한
+    const allItems = await this.getAll();
+    return allItems.slice(0, limitCount);
   },
 };
 
@@ -766,14 +778,16 @@ export const userService = {
 
   // 모든 사용자 조회
   async getAllUsers(): Promise<FirestoreUser[]> {
-    const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const querySnapshot = await getDocs(collection(db, "users"));
+    const users = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreUser)
+    );
+    return users.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
     );
   },
 };
@@ -814,16 +828,19 @@ export const rentalApplicationService = {
   async getByUserId(userId: string): Promise<FirestoreRentalApplication[]> {
     const q = query(
       collection(db, "rental_applications"),
-      where("userId", "==", userId),
-      orderBy("createdAt", "desc")
+      where("userId", "==", userId)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const applications = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreRentalApplication)
+    );
+    // 클라이언트에서 정렬
+    return applications.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
     );
   },
 
@@ -833,16 +850,19 @@ export const rentalApplicationService = {
   ): Promise<FirestoreRentalApplication[]> {
     const q = query(
       collection(db, "rental_applications"),
-      where("status", "==", status),
-      orderBy("createdAt", "desc")
+      where("status", "==", status)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const applications = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreRentalApplication)
+    );
+    // 클라이언트에서 정렬
+    return applications.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
     );
   },
 
@@ -850,36 +870,17 @@ export const rentalApplicationService = {
   async getCurrentRentals(
     userId: string
   ): Promise<FirestoreRentalApplication[]> {
-    const q = query(
-      collection(db, "rental_applications"),
-      where("userId", "==", userId),
-      where("status", "in", ["approved", "picked_up"]),
-      orderBy("createdAt", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as FirestoreRentalApplication)
-    );
+    // 사용자별로 먼저 조회한 후 클라이언트에서 상태 필터링
+    const userApplications = await this.getByUserId(userId);
+    return userApplications.filter((app) => app.status === "rented");
   },
 
   // 현재 활성 대여 조회 (모든 사용자)
   async getActiveRentals(): Promise<FirestoreRentalApplication[]> {
-    const q = query(
-      collection(db, "rental_applications"),
-      where("status", "in", ["picked_up", "overdue"]),
-      orderBy("createdAt", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as FirestoreRentalApplication)
+    // 모든 신청을 가져온 후 클라이언트에서 필터링
+    const allApplications = await this.getAllApplications();
+    return allApplications.filter(
+      (app) => app.status === "rented" || app.status === "overdue"
     );
   },
 
@@ -887,16 +888,18 @@ export const rentalApplicationService = {
   async getOverdueRentals(): Promise<FirestoreRentalApplication[]> {
     const q = query(
       collection(db, "rental_applications"),
-      where("status", "==", "overdue"),
-      orderBy("createdAt", "desc")
+      where("status", "==", "overdue")
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const applications = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreRentalApplication)
+    );
+    return applications.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
     );
   },
 
@@ -904,20 +907,9 @@ export const rentalApplicationService = {
   async getUserOverdueRentals(
     userId: string
   ): Promise<FirestoreRentalApplication[]> {
-    const q = query(
-      collection(db, "rental_applications"),
-      where("userId", "==", userId),
-      where("status", "==", "overdue"),
-      orderBy("createdAt", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as FirestoreRentalApplication)
-    );
+    // 사용자별로 먼저 조회한 후 클라이언트에서 상태 필터링
+    const userApplications = await this.getByUserId(userId);
+    return userApplications.filter((app) => app.status === "overdue");
   },
 
   // 신청 상태 업데이트
@@ -934,25 +926,52 @@ export const rentalApplicationService = {
     });
   },
 
-  // 신청 승인
-  async approveApplication(id: string, approvedBy: string): Promise<void> {
-    const docRef = doc(db, "rental_applications", id);
-    await updateDoc(docRef, {
-      status: "approved",
-      approvedBy,
-      approvedAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
+  // 즉시 대여 처리 (셀프 서비스)
+  async processRental(
+    applicationData: Omit<
+      FirestoreRentalApplication,
+      "id" | "createdAt" | "updatedAt"
+    >
+  ): Promise<string> {
+    const now = Timestamp.now();
+    const docRef = await addDoc(collection(db, "rental_applications"), {
+      ...applicationData,
+      status: "rented",
+      createdAt: now,
+      updatedAt: now,
     });
+
+    // 물품의 상태를 대여 중으로 변경
+    await rentalItemService.rentItem(applicationData.itemUniqueId, docRef.id);
+
+    return docRef.id;
   },
 
-  // 신청 거부
-  async rejectApplication(id: string, reason: string): Promise<void> {
+  // 반납 처리
+  async processReturn(
+    id: string,
+    returnPhotos: {
+      returnItemConditionPhotoUrl: string;
+      returnLockboxSecuredPhotoUrl: string;
+    },
+    rating?: number,
+    feedback?: string
+  ): Promise<void> {
+    const rental = await this.getById(id);
+    if (!rental) throw new Error("대여 신청을 찾을 수 없습니다.");
+
     const docRef = doc(db, "rental_applications", id);
     await updateDoc(docRef, {
-      status: "rejected",
-      rejectedReason: reason,
+      status: "returned",
+      actualReturnDate: new Date().toISOString().split("T")[0],
+      ...returnPhotos,
+      rating,
+      feedback,
       updatedAt: Timestamp.now(),
     });
+
+    // 물품의 사용 가능 수량 증가
+    await rentalItemService.returnItem(rental.itemId);
   },
 
   // 연체 처리
@@ -966,23 +985,43 @@ export const rentalApplicationService = {
       status: "overdue",
       overdueDays,
       penaltyPoints,
+      lastOverdueCheck: new Date(),
+      updatedAt: Timestamp.now(),
+    });
+  },
+
+  // 분실 처리
+  async markAsLost(id: string, reason: string): Promise<void> {
+    const docRef = doc(db, "rental_applications", id);
+    await updateDoc(docRef, {
+      status: "lost",
+      lostReason: reason,
+      updatedAt: Timestamp.now(),
+    });
+  },
+
+  // 파손 처리
+  async markAsDamaged(id: string, reason: string): Promise<void> {
+    const docRef = doc(db, "rental_applications", id);
+    await updateDoc(docRef, {
+      status: "damaged",
+      damageReason: reason,
       updatedAt: Timestamp.now(),
     });
   },
 
   // 모든 신청 조회 (관리자용)
   async getAllApplications(): Promise<FirestoreRentalApplication[]> {
-    const q = query(
-      collection(db, "rental_applications"),
-      orderBy("createdAt", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const querySnapshot = await getDocs(collection(db, "rental_applications"));
+    const applications = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreRentalApplication)
+    );
+    return applications.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
     );
   },
 };
@@ -1004,33 +1043,34 @@ export const photoUploadService = {
   async getByRentalId(rentalId: string): Promise<FirestorePhotoUpload[]> {
     const q = query(
       collection(db, "photo_uploads"),
-      where("rentalId", "==", rentalId),
-      orderBy("createdAt", "desc")
+      where("rentalId", "==", rentalId)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const photos = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestorePhotoUpload)
+    );
+    return photos.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
     );
   },
 
   // 사진 타입별 조회
   async getByType(type: PhotoType): Promise<FirestorePhotoUpload[]> {
-    const q = query(
-      collection(db, "photo_uploads"),
-      where("type", "==", type),
-      orderBy("createdAt", "desc")
-    );
+    const q = query(collection(db, "photo_uploads"), where("type", "==", type));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const photos = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestorePhotoUpload)
+    );
+    return photos.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
     );
   },
 
@@ -1054,17 +1094,140 @@ export const photoUploadService = {
   async getUnverifiedPhotos(): Promise<FirestorePhotoUpload[]> {
     const q = query(
       collection(db, "photo_uploads"),
-      where("verified", "==", false),
-      orderBy("createdAt", "asc")
+      where("verified", "==", false)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const photos = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestorePhotoUpload)
     );
+    return photos.sort(
+      (a, b) => a.createdAt.toMillis() - b.createdAt.toMillis()
+    );
+  },
+};
+
+// 벌점 기록 서비스
+export const penaltyRecordService = {
+  // 벌점 기록 생성
+  async createPenaltyRecord(
+    penalty: Omit<FirestorePenaltyRecord, "id" | "createdAt">
+  ): Promise<string> {
+    const docRef = await addDoc(collection(db, "penalty_records"), {
+      ...penalty,
+      createdAt: Timestamp.now(),
+    });
+    return docRef.id;
+  },
+
+  // 벌점 기록 추가 (별칭)
+  async add(
+    penalty: Omit<FirestorePenaltyRecord, "id" | "createdAt">
+  ): Promise<string> {
+    return this.createPenaltyRecord(penalty);
+  },
+
+  // 사용자별 벌점 기록 조회
+  async getByUserId(userId: string): Promise<FirestorePenaltyRecord[]> {
+    const q = query(
+      collection(db, "penalty_records"),
+      where("userId", "==", userId)
+    );
+    const querySnapshot = await getDocs(q);
+    const penalties = querySnapshot.docs.map(
+      (doc) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+        } as FirestorePenaltyRecord)
+    );
+    return penalties.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
+    );
+  },
+
+  // 벌점 타입별 조회
+  async getByType(type: PenaltyType): Promise<FirestorePenaltyRecord[]> {
+    const q = query(
+      collection(db, "penalty_records"),
+      where("type", "==", type)
+    );
+    const querySnapshot = await getDocs(q);
+    const penalties = querySnapshot.docs.map(
+      (doc) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+        } as FirestorePenaltyRecord)
+    );
+    return penalties.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
+    );
+  },
+
+  // 모든 벌점 기록 조회
+  async getAllPenaltyRecords(): Promise<FirestorePenaltyRecord[]> {
+    const querySnapshot = await getDocs(collection(db, "penalty_records"));
+    const penalties = querySnapshot.docs.map(
+      (doc) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+        } as FirestorePenaltyRecord)
+    );
+    return penalties.sort(
+      (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
+    );
+  },
+};
+
+// 알림 설정 서비스
+export const notificationSettingsService = {
+  // 설정 업데이트
+  async updateSettings(
+    settings: Omit<
+      FirestoreNotificationSettings,
+      "id" | "createdAt" | "updatedAt"
+    >
+  ): Promise<string> {
+    const q = query(collection(db, "notification_settings"));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // 기존 설정 업데이트
+      const docRef = querySnapshot.docs[0].ref;
+      await updateDoc(docRef, {
+        ...settings,
+        updatedAt: Timestamp.now(),
+      });
+      return querySnapshot.docs[0].id;
+    } else {
+      // 새 설정 생성
+      const now = Timestamp.now();
+      const docRef = await addDoc(collection(db, "notification_settings"), {
+        ...settings,
+        createdAt: now,
+        updatedAt: now,
+      });
+      return docRef.id;
+    }
+  },
+
+  // 현재 설정 조회
+  async getSettings(): Promise<FirestoreNotificationSettings | null> {
+    const q = query(collection(db, "notification_settings"));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      return {
+        id: querySnapshot.docs[0].id,
+        ...querySnapshot.docs[0].data(),
+      } as FirestoreNotificationSettings;
+    }
+    return null;
   },
 };
 
@@ -1136,132 +1299,14 @@ export const lockboxPasswordService = {
 
   // 모든 보관함 비밀번호 조회
   async getAllPasswords(): Promise<FirestoreLockboxPassword[]> {
-    const q = query(collection(db, "lockbox_passwords"), orderBy("campus"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
+    const querySnapshot = await getDocs(collection(db, "lockbox_passwords"));
+    const passwords = querySnapshot.docs.map(
       (doc) =>
         ({
           id: doc.id,
           ...doc.data(),
         } as FirestoreLockboxPassword)
     );
-  },
-};
-
-// 벌점 기록 서비스
-export const penaltyRecordService = {
-  // 벌점 기록 생성
-  async createPenaltyRecord(
-    penalty: Omit<FirestorePenaltyRecord, "id" | "createdAt">
-  ): Promise<string> {
-    const docRef = await addDoc(collection(db, "penalty_records"), {
-      ...penalty,
-      createdAt: Timestamp.now(),
-    });
-    return docRef.id;
-  },
-
-  // 벌점 기록 추가 (별칭)
-  async add(
-    penalty: Omit<FirestorePenaltyRecord, "id" | "createdAt">
-  ): Promise<string> {
-    return this.createPenaltyRecord(penalty);
-  },
-
-  // 사용자별 벌점 기록 조회
-  async getByUserId(userId: string): Promise<FirestorePenaltyRecord[]> {
-    const q = query(
-      collection(db, "penalty_records"),
-      where("userId", "==", userId),
-      orderBy("createdAt", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as FirestorePenaltyRecord)
-    );
-  },
-
-  // 벌점 타입별 조회
-  async getByType(type: PenaltyType): Promise<FirestorePenaltyRecord[]> {
-    const q = query(
-      collection(db, "penalty_records"),
-      where("type", "==", type),
-      orderBy("createdAt", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as FirestorePenaltyRecord)
-    );
-  },
-
-  // 모든 벌점 기록 조회
-  async getAllPenaltyRecords(): Promise<FirestorePenaltyRecord[]> {
-    const q = query(
-      collection(db, "penalty_records"),
-      orderBy("createdAt", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as FirestorePenaltyRecord)
-    );
-  },
-};
-
-// 알림 설정 서비스
-export const notificationSettingsService = {
-  // 설정 업데이트
-  async updateSettings(
-    settings: Omit<
-      FirestoreNotificationSettings,
-      "id" | "createdAt" | "updatedAt"
-    >
-  ): Promise<string> {
-    const q = query(collection(db, "notification_settings"));
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      // 기존 설정 업데이트
-      const docRef = querySnapshot.docs[0].ref;
-      await updateDoc(docRef, {
-        ...settings,
-        updatedAt: Timestamp.now(),
-      });
-      return querySnapshot.docs[0].id;
-    } else {
-      // 새 설정 생성
-      const now = Timestamp.now();
-      const docRef = await addDoc(collection(db, "notification_settings"), {
-        ...settings,
-        createdAt: now,
-        updatedAt: now,
-      });
-      return docRef.id;
-    }
-  },
-
-  // 현재 설정 조회
-  async getSettings(): Promise<FirestoreNotificationSettings | null> {
-    const q = query(collection(db, "notification_settings"));
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      return {
-        id: querySnapshot.docs[0].id,
-        ...querySnapshot.docs[0].data(),
-      } as FirestoreNotificationSettings;
-    }
-    return null;
+    return passwords.sort((a, b) => a.campus.localeCompare(b.campus));
   },
 };

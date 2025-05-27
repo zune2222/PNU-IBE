@@ -3,8 +3,8 @@ import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import axios from "axios";
 
-// Discord Webhook URL (Functions 환경변수에서 가져오기)
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+// Discord Webhook URL (Firebase 환경 변수에서 가져오기)
+const DISCORD_WEBHOOK_URL = process.env.ENVIRONMENT_DISCORD_WEBHOOK_URL;
 
 // Discord 메시지 타입 정의
 interface DiscordMessage {

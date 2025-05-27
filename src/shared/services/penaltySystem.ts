@@ -69,11 +69,11 @@ class PenaltySystem {
           result.totalProcessed++;
 
           // 연체 여부 확인
-          const endDate = new Date(rental.endDate);
-          const timeDiff = today.getTime() - endDate.getTime();
+          const dueDate = new Date(rental.dueDate);
+          const timeDiff = today.getTime() - dueDate.getTime();
           const overdueDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
-          if (overdueDays > 0 && rental.status === "picked_up") {
+          if (overdueDays > 0 && rental.status === "rented") {
             // 사용자 및 물품 정보 조회
             const user = await userService.getByUid(rental.userId);
             const item = await rentalItemService.getById(rental.itemId);
@@ -126,7 +126,7 @@ class PenaltySystem {
                     userName: user.name,
                     studentId: user.studentId,
                     itemName: item.name,
-                    endDate: rental.endDate,
+                    endDate: rental.dueDate,
                     overdueDays,
                     penaltyPoints: additionalPenalty,
                   });

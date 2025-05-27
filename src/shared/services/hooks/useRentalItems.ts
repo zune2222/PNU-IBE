@@ -154,11 +154,12 @@ export const useRentItem = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => rentalItemService.rentItem(id),
-    onSuccess: (success, id) => {
+    mutationFn: ({ itemId, rentalId }: { itemId: string; rentalId: string }) =>
+      rentalItemService.rentItem(itemId, rentalId),
+    onSuccess: (success, { itemId }) => {
       if (success) {
         // 관련 쿼리들 갱신
-        queryClient.invalidateQueries({ queryKey: ["rentalItems", id] });
+        queryClient.invalidateQueries({ queryKey: ["rentalItems", itemId] });
         queryClient.invalidateQueries({ queryKey: ["rentalItems"] });
         queryClient.invalidateQueries({
           queryKey: ["rentalItems", "available"],
@@ -176,11 +177,11 @@ export const useReturnItem = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => rentalItemService.returnItem(id),
-    onSuccess: (success, id) => {
+    mutationFn: (itemId: string) => rentalItemService.returnItem(itemId),
+    onSuccess: (success, itemId) => {
       if (success) {
         // 관련 쿼리들 갱신
-        queryClient.invalidateQueries({ queryKey: ["rentalItems", id] });
+        queryClient.invalidateQueries({ queryKey: ["rentalItems", itemId] });
         queryClient.invalidateQueries({ queryKey: ["rentalItems"] });
         queryClient.invalidateQueries({
           queryKey: ["rentalItems", "available"],
@@ -200,13 +201,13 @@ export const useUpdateItemStatus = () => {
   return useMutation({
     mutationFn: ({
       id,
+      status,
       condition,
-      availableQuantity,
     }: {
       id: string;
-      condition: string;
-      availableQuantity?: number;
-    }) => rentalItemService.updateItemStatus(id, condition, availableQuantity),
+      status: "available" | "rented" | "maintenance" | "lost" | "damaged";
+      condition?: string;
+    }) => rentalItemService.updateItemStatus(id, status, condition),
     onSuccess: (_, { id }) => {
       // 관련 쿼리들 갱신
       queryClient.invalidateQueries({ queryKey: ["rentalItems", id] });
