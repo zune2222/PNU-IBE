@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Home, Package, Search, Calendar, User } from "lucide-react";
+import { Home, Users, Bell, Calendar, Package } from "lucide-react";
 
 interface MobileNavigationProps {
   className?: string;
@@ -20,28 +20,28 @@ export default function MobileNavigation({
       active: router.pathname === "/",
     },
     {
-      name: "대여",
-      href: "/rental",
-      icon: Package,
-      active: router.pathname === "/rental",
+      name: "학생회 소개",
+      href: "/about",
+      icon: Users,
+      active: router.pathname === "/about",
     },
     {
-      name: "현황",
-      href: "/rental-status",
-      icon: Search,
-      active: router.pathname === "/rental-status",
+      name: "공지사항",
+      href: "/notice",
+      icon: Bell,
+      active: router.pathname === "/notice",
     },
     {
-      name: "행사",
+      name: "행사정보",
       href: "/events",
       icon: Calendar,
-      active: router.pathname === "/events",
+      active: router.pathname.startsWith("/events"),
     },
     {
-      name: "내 정보",
-      href: "/profile",
-      icon: User,
-      active: router.pathname === "/profile",
+      name: "물품대여",
+      href: "/rental",
+      icon: Package,
+      active: router.pathname.startsWith("/rental"),
     },
   ];
 

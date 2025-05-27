@@ -15,6 +15,7 @@ export function Header() {
 
   const isNoticeDetailPage = pathname?.startsWith("/notice/");
   const isEventsDetailPage = pathname?.startsWith("/events/");
+  const isRentalPage = pathname === "/rental" || pathname === "/rental/";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,21 +47,25 @@ export function Header() {
 
   // 특정 페이지에서는 항상 배경색 적용
   const shouldShowBackground =
-    isScrolled || isAboutPage || isNoticeDetailPage || isEventsDetailPage;
+    isScrolled ||
+    isAboutPage ||
+    isNoticeDetailPage ||
+    isEventsDetailPage ||
+    isRentalPage;
 
-  // about 페이지에서는 항상 어두운 텍스트 색상 사용
+  // about 페이지 및 rental 페이지에서는 항상 어두운 텍스트 색상 사용
   const getTextColor = () => {
-    if (isAboutPage) return "text-gray-700";
+    if (isAboutPage || isRentalPage) return "text-gray-700";
     return shouldShowBackground ? "text-gray-700" : "text-white";
   };
 
   const getLogoTextColor = () => {
-    if (isAboutPage) return "text-dark";
+    if (isAboutPage || isRentalPage) return "text-dark";
     return shouldShowBackground ? "text-dark" : "text-white";
   };
 
   const getHoverColor = () => {
-    if (isAboutPage) return "hover:text-primary";
+    if (isAboutPage || isRentalPage) return "hover:text-primary";
     return shouldShowBackground ? "hover:text-primary" : "hover:text-tertiary";
   };
 
