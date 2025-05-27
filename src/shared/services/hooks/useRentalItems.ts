@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { rentalService, FirestoreRentalItem } from "../firestore";
+import { rentalItemService, FirestoreRentalItem } from "../firestore";
 
 // 모든 대여 아이템 가져오기 훅
 export const useRentalItems = () => {
   return useQuery({
     queryKey: ["rentalItems"],
-    queryFn: () => rentalService.getAll(),
+    queryFn: () => rentalItemService.getAll(),
     staleTime: 5 * 60 * 1000, // 5분
   });
 };
@@ -14,7 +14,7 @@ export const useRentalItems = () => {
 export const useRentalItem = (id: string | undefined) => {
   return useQuery({
     queryKey: ["rentalItems", id],
-    queryFn: () => (id ? rentalService.getById(id) : Promise.resolve(null)),
+    queryFn: () => (id ? rentalItemService.getById(id) : Promise.resolve(null)),
     enabled: !!id,
   });
 };
@@ -23,7 +23,7 @@ export const useRentalItem = (id: string | undefined) => {
 export const useAvailableRentalItems = () => {
   return useQuery({
     queryKey: ["rentalItems", "available"],
-    queryFn: () => rentalService.getAvailable(),
+    queryFn: () => rentalItemService.getAvailable(),
   });
 };
 
@@ -31,7 +31,7 @@ export const useAvailableRentalItems = () => {
 export const useRentalItemsByCategory = (category: string) => {
   return useQuery({
     queryKey: ["rentalItems", "category", category],
-    queryFn: () => rentalService.getByCategory(category),
+    queryFn: () => rentalItemService.getByCategory(category),
     enabled: !!category,
   });
 };
@@ -43,7 +43,7 @@ export const useAddRentalItem = () => {
   return useMutation({
     mutationFn: (
       item: Omit<FirestoreRentalItem, "id" | "createdAt" | "updatedAt">
-    ) => rentalService.add(item),
+    ) => rentalItemService.add(item),
     onSuccess: () => {
       // 대여 아이템 목록과 관련 쿼리 갱신
       queryClient.invalidateQueries({ queryKey: ["rentalItems"] });
@@ -62,7 +62,7 @@ export const useUpdateRentalItem = () => {
     }: {
       id: string;
       item: Partial<FirestoreRentalItem>;
-    }) => rentalService.update(id, item),
+    }) => rentalItemService.update(id, item),
     onSuccess: (_, { id }) => {
       // 대여 아이템 목록과 관련 쿼리 갱신
       queryClient.invalidateQueries({ queryKey: ["rentalItems", id] });
@@ -76,10 +76,145 @@ export const useDeleteRentalItem = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => rentalService.delete(id),
+    mutationFn: (id: string) => rentalItemService.delete(id),
     onSuccess: () => {
       // 대여 아이템 목록과 관련 쿼리 갱신
       queryClient.invalidateQueries({ queryKey: ["rentalItems"] });
+    },
+  });
+};
+
+// 🎯 확장된 대여 시스템 hooks
+
+// 캠퍼스별 대여 아이템 가져오기 훅
+export const useRentalItemsByCampus = (campus: "yangsan" | "jangjeom") => {
+  return useQuery({
+    queryKey: ["rentalItems", "campus", campus],
+    queryFn: () => rentalItemService.getByCampus(campus),
+    enabled: !!campus,
+  });
+};
+
+// 캠퍼스별 이용 가능한 대여 아이템 가져오기 훅
+export const useAvailableRentalItemsByCampus = (
+  campus: "yangsan" | "jangjeom"
+) => {
+  return useQuery({
+    queryKey: ["rentalItems", "available", "campus", campus],
+    queryFn: () => rentalItemService.getAvailableByCampus(campus),
+    enabled: !!campus,
+  });
+};
+
+// 고유 ID로 대여 아이템 가져오기 훅
+export const useRentalItemByUniqueId = (uniqueId: string | undefined) => {
+  return useQuery({
+    queryKey: ["rentalItems", "uniqueId", uniqueId],
+    queryFn: () =>
+      uniqueId
+        ? rentalItemService.getByUniqueId(uniqueId)
+        : Promise.resolve(null),
+    enabled: !!uniqueId,
+  });
+};
+
+// 대여 아이템 검색 훅
+export const useSearchRentalItems = (
+  searchTerm: string,
+  campus?: "yangsan" | "jangjeom"
+) => {
+  return useQuery({
+    queryKey: ["rentalItems", "search", searchTerm, campus],
+    queryFn: () => rentalItemService.search(searchTerm, campus),
+    enabled: searchTerm.length >= 2, // 최소 2글자 이상 입력시 검색
+    staleTime: 30 * 1000, // 30초
+  });
+};
+
+// 대여 아이템 통계 훅
+export const useRentalItemsStatistics = () => {
+  return useQuery({
+    queryKey: ["rentalItems", "statistics"],
+    queryFn: () => rentalItemService.getStatistics(),
+    staleTime: 10 * 60 * 1000, // 10분
+  });
+};
+
+// 인기 대여 아이템 훅
+export const usePopularRentalItems = (limitCount: number = 5) => {
+  return useQuery({
+    queryKey: ["rentalItems", "popular", limitCount],
+    queryFn: () => rentalItemService.getPopularItems(limitCount),
+    staleTime: 30 * 60 * 1000, // 30분
+  });
+};
+
+// 물품 대여 처리 훅
+export const useRentItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => rentalItemService.rentItem(id),
+    onSuccess: (success, id) => {
+      if (success) {
+        // 관련 쿼리들 갱신
+        queryClient.invalidateQueries({ queryKey: ["rentalItems", id] });
+        queryClient.invalidateQueries({ queryKey: ["rentalItems"] });
+        queryClient.invalidateQueries({
+          queryKey: ["rentalItems", "available"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["rentalItems", "statistics"],
+        });
+      }
+    },
+  });
+};
+
+// 물품 반납 처리 훅
+export const useReturnItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => rentalItemService.returnItem(id),
+    onSuccess: (success, id) => {
+      if (success) {
+        // 관련 쿼리들 갱신
+        queryClient.invalidateQueries({ queryKey: ["rentalItems", id] });
+        queryClient.invalidateQueries({ queryKey: ["rentalItems"] });
+        queryClient.invalidateQueries({
+          queryKey: ["rentalItems", "available"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["rentalItems", "statistics"],
+        });
+      }
+    },
+  });
+};
+
+// 물품 상태 업데이트 훅
+export const useUpdateItemStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      condition,
+      availableQuantity,
+    }: {
+      id: string;
+      condition: string;
+      availableQuantity?: number;
+    }) => rentalItemService.updateItemStatus(id, condition, availableQuantity),
+    onSuccess: (_, { id }) => {
+      // 관련 쿼리들 갱신
+      queryClient.invalidateQueries({ queryKey: ["rentalItems", id] });
+      queryClient.invalidateQueries({ queryKey: ["rentalItems"] });
+      queryClient.invalidateQueries({ queryKey: ["rentalItems", "available"] });
+      queryClient.invalidateQueries({
+        queryKey: ["rentalItems", "statistics"],
+      });
     },
   });
 };

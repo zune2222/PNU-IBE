@@ -4,8 +4,38 @@
   "description": "부산대학교 정보의생명공학대학 학생회 공식 웹사이트",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#3B82F6",
+  "categories": ["education", "utilities"],
+  "lang": "ko",
+  "scope": "/",
+  "shortcuts": [
+    {
+      "name": "물품 대여",
+      "short_name": "대여",
+      "description": "물품 대여 신청하기",
+      "url": "/rental",
+      "icons": [
+        {
+          "src": "/android-icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "대여 현황",
+      "short_name": "현황",
+      "description": "내 대여 현황 조회",
+      "url": "/rental-status",
+      "icons": [
+        {
+          "src": "/android-icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
   "icons": [
     {
       "src": "/android-icon-36x36.png",
@@ -41,7 +71,14 @@
       "src": "/android-icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "density": "4.0"
+      "density": "4.0",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/ms-icon-310x310.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export function RentalHero() {
   return (
@@ -61,8 +62,81 @@ export function RentalHero() {
           >
             정보의생명공학대학 학생회에서는 학우 여러분의 편의를 위해 다양한
             물품을 대여해드리고 있습니다. 필요한 물품을 확인하고 간편하게
-            신청하세요. (추후 지원 예정)
+            신청하세요.
           </motion.p>
+
+          {/* 대여 신청 버튼 */}
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+          >
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/rental-application"
+                className="inline-flex items-center px-8 py-4 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                물품 대여 신청하기
+              </Link>
+
+              <Link
+                href="/return-application"
+                className="inline-flex items-center px-8 py-4 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-white"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3"
+                  />
+                </svg>
+                물품 반납 신청하기
+              </Link>
+
+              <Link
+                href="/rental-status"
+                className="inline-flex items-center px-8 py-4 bg-indigo-700 text-white font-semibold rounded-lg hover:bg-indigo-800 transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-white"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                대여 현황 조회
+              </Link>
+            </div>
+            <p className="text-sm text-white/70 mt-3">
+              학생증 인증 후 바로 이용 가능합니다
+            </p>
+          </motion.div>
 
           {/* 대여 안내 */}
           <motion.div
@@ -95,7 +169,7 @@ export function RentalHero() {
                 <div>
                   <h4 className="font-medium text-white">대여 기간</h4>
                   <p className="text-sm text-white/80">
-                    최대 7일까지 대여 가능
+                    최대 14일까지 대여 가능
                   </p>
                 </div>
               </div>
@@ -117,8 +191,8 @@ export function RentalHero() {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-medium text-white">대여 장소</h4>
-                  <p className="text-sm text-white/80">학생회실</p>
+                  <h4 className="font-medium text-white">수령/반납</h4>
+                  <p className="text-sm text-white/80">중앙 보관함</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -139,8 +213,8 @@ export function RentalHero() {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-medium text-white">운영 시간</h4>
-                  <p className="text-sm text-white/80">평일 10:00 ~ 17:00</p>
+                  <h4 className="font-medium text-white">승인 시간</h4>
+                  <p className="text-sm text-white/80">신청 후 1-2일 내</p>
                 </div>
               </div>
             </div>

@@ -5,7 +5,7 @@ import { useAuth } from "../../shared/contexts/AuthContext";
 import {
   noticeService,
   eventService,
-  rentalService,
+  rentalItemService,
 } from "../../shared/services/firestore";
 import { noticeData } from "../../shared/data/noticeData";
 import { eventsData } from "../../shared/data/eventsData";
@@ -50,7 +50,7 @@ export default function TestFirebase() {
       const events = await eventService.getAll();
       addStatus(`✅ Firestore 연결 성공 (행사 ${events.length}개)`);
 
-      const rentals = await rentalService.getAll();
+      const rentals = await rentalItemService.getAll();
       addStatus(`✅ Firestore 연결 성공 (대여물품 ${rentals.length}개)`);
     } catch (error: unknown) {
       console.error("Firebase 연결 테스트 실패:", error);
@@ -135,7 +135,8 @@ export default function TestFirebase() {
     addStatus("📦 대여물품 마이그레이션 시작...");
 
     try {
-      for (const rental of rentalData) {
+      for (let i = 0; i < rentalData.length; i++) {
+        const rental = rentalData[i];
         const firestoreRental = {
           name: rental.name,
           category: rental.category,
@@ -145,9 +146,18 @@ export default function TestFirebase() {
           condition: rental.condition,
           location: rental.location,
           contact: rental.contact,
+          campus: "yangsan" as const,
+          uniqueId: `RENTAL_${String(i + 1).padStart(3, "0")}`,
+          totalQuantity: 1,
+          availableQuantity: rental.available ? 1 : 0,
+          rentalCount: 0,
+          rating: 0,
+          lastRentedAt: null,
+          tags: [rental.category],
+          notes: "",
         };
 
-        const id = await rentalService.add(firestoreRental);
+        const id = await rentalItemService.add(firestoreRental);
         addStatus(`✅ 대여물품 "${rental.name}" 마이그레이션 완료 (ID: ${id})`);
       }
 
