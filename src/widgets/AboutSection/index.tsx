@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 // 학생회 가치 데이터
@@ -226,8 +226,80 @@ export function AboutSection() {
 }
 
 function Stat({ number, label }: { number: string; label: string }) {
+  const [displayValue, setDisplayValue] = useState("0");
+  const [hasStarted, setHasStarted] = useState(false);
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  const startCountAnimation = () => {
+    if (hasStarted) return;
+    setHasStarted(true);
+
+    const numericPart = number.replace(/[^0-9]/g, "");
+    const targetValue = parseInt(numericPart);
+    const duration = 2000; // 2초로 늘림
+    const frameRate = 60; // 60fps
+    const totalFrames = (duration / 1000) * frameRate;
+    let currentFrame = 0;
+
+    const animate = () => {
+      currentFrame++;
+
+      // easeOutQuart 이징 함수로 부드러운 감속
+      const progress = currentFrame / totalFrames;
+      const easeProgress = 1 - Math.pow(1 - progress, 4);
+      const currentValue = Math.round(targetValue * easeProgress);
+
+      let formattedValue;
+      if (number.includes("+")) {
+        formattedValue = `${currentValue.toLocaleString()}+`;
+      } else if (number.includes("%")) {
+        formattedValue = `${currentValue}%`;
+      } else if (number.includes("대")) {
+        formattedValue = `${currentValue}대`;
+      } else {
+        formattedValue = currentValue.toLocaleString();
+      }
+
+      setDisplayValue(formattedValue);
+
+      if (currentFrame < totalFrames) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  };
+
+  useEffect(() => {
+    const element = elementRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasStarted) {
+            // 랜덤 딜레이 후 시작
+            setTimeout(() => {
+              startCountAnimation();
+            }, Math.random() * 500 + 300);
+          }
+        });
+      },
+      {
+        threshold: 0.5, // 50% 보일 때 시작
+        rootMargin: "0px 0px -50px 0px", // 약간 더 들어와야 시작
+      }
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasStarted]);
+
   return (
-    <div className="text-center">
+    <div className="text-center" ref={elementRef}>
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         whileInView={{ scale: 1, opacity: 1 }}
@@ -237,11 +309,21 @@ function Stat({ number, label }: { number: string; label: string }) {
           stiffness: 100,
           delay: Math.random() * 0.3,
         }}
+        style={{
+          willChange: "transform, opacity",
+          transform: "translate3d(0, 0, 0)",
+        }}
       >
-        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-1 sm:mb-2 drop-shadow-lg">
-          {number}
+        <div
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-1 sm:mb-2 drop-shadow-lg korean-text"
+          style={{
+            willChange: "contents",
+            transform: "translate3d(0, 0, 0)",
+          }}
+        >
+          {displayValue}
         </div>
-        <div className="text-gray-700 text-sm sm:text-base font-medium">
+        <div className="text-gray-700 text-sm sm:text-base font-medium korean-text">
           {label}
         </div>
       </motion.div>
