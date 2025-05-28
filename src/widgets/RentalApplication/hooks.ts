@@ -233,8 +233,8 @@ export const useRentalApplication = () => {
         itemId: item.id!,
         itemUniqueId: item.uniqueId,
         status: "rented" as const,
-        rentDate: today.toISOString().split("T")[0],
-        dueDate: dueDate.toISOString().split("T")[0],
+        rentDate: today.toISOString(),
+        dueDate: dueDate.toISOString(),
         purpose: "즉시 대여", // 셀프 서비스는 목적을 기본값으로 설정
 
         // 학생 정보
@@ -267,8 +267,8 @@ export const useRentalApplication = () => {
         itemCategory: item.category,
         campus: item.campus,
         location: item.location,
-        rentDate: today.toISOString().split("T")[0],
-        dueDate: dueDate.toISOString().split("T")[0],
+        rentDate: today.toLocaleDateString("ko-KR"),
+        dueDate: dueDate.toLocaleDateString("ko-KR"),
         rentalId: rentalId,
       };
 

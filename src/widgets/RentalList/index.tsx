@@ -33,6 +33,23 @@ interface CategoryStats {
   jangjeom: number;
 }
 
+// 대여 기록 인터페이스
+interface RentalRecord {
+  id: string;
+  itemName: string;
+  itemImage: string;
+  itemLocation: string;
+  renterName: string;
+  renterStudentId: string;
+  rentDate: Date;
+  dueDate: Date;
+  status: "rented" | "overdue";
+  campus: string;
+  overdueDays?: number;
+  hasTimeInfo?: boolean;
+  dataInconsistency?: boolean;
+}
+
 export function RentalList() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [selectedCampus, setSelectedCampus] = useState("전체");
@@ -67,10 +84,14 @@ export function RentalList() {
   }, []);
 
   // 대여 중인 물품들 직접 가져오기
-  const getRentedItemsForCategory = (category: string, campus?: string) => {
+  const getRentedItemsForCategory = (
+    category: string,
+    campus?: string
+  ): RentalRecord[] => {
     // 해당 카테고리의 대여 중인 물품들 필터링
     let rentedItems = rentals.filter(
-      (item) => item.category === category && item.status === "rented"
+      (item) =>
+        item.category === category && item.status === "rented" && item.id
     );
 
     // 캠퍼스 필터링
@@ -80,7 +101,7 @@ export function RentalList() {
     }
 
     // 각 대여 중인 물품에 대한 대여 정보 찾기
-    const rentedItemsWithInfo = rentedItems.map((item) => {
+    const rentedItemsWithInfo = rentedItems.map((item): RentalRecord => {
       // 해당 물품의 현재 대여 신청 찾기
       const currentRental = rentalApplications.find(
         (app) =>
@@ -88,8 +109,20 @@ export function RentalList() {
       );
 
       if (currentRental) {
-        const rentDate = new Date(currentRental.rentDate);
-        const dueDate = new Date(currentRental.dueDate);
+        // rentDate와 dueDate를 안전하게 파싱
+        // 기존 "YYYY-MM-DD" 형식과 새로운 ISO 형식 모두 지원
+        const parseDate = (dateString: string) => {
+          // ISO 형식인지 확인 (T가 포함된 경우)
+          if (dateString.includes("T")) {
+            return new Date(dateString);
+          } else {
+            // "YYYY-MM-DD" 형식인 경우 기본 시간(09:00) 추가
+            return new Date(dateString + "T09:00:00");
+          }
+        };
+
+        const rentDate = parseDate(currentRental.rentDate);
+        const dueDate = parseDate(currentRental.dueDate);
         const now = new Date();
         const overdueDays =
           now > dueDate
@@ -99,7 +132,7 @@ export function RentalList() {
             : 0;
 
         return {
-          id: item.id,
+          id: item.id!,
           itemName: item.name,
           itemImage: item.image,
           itemLocation: item.location,
@@ -110,12 +143,13 @@ export function RentalList() {
           status: overdueDays > 0 ? "overdue" : "rented",
           campus: item.campus,
           overdueDays: overdueDays > 0 ? overdueDays : undefined,
+          hasTimeInfo: currentRental.rentDate.includes("T"), // 시간 정보 유무 표시
         };
       }
 
       // 대여 신청 정보가 없는 경우 (데이터 불일치)
       return {
-        id: item.id,
+        id: item.id!,
         itemName: item.name,
         itemImage: item.image,
         itemLocation: item.location,
@@ -359,10 +393,14 @@ export function RentalList() {
                                     대여일:{" "}
                                     {record.rentDate.toLocaleDateString(
                                       "ko-KR"
-                                    )}{" "}
-                                    {record.rentDate.toLocaleTimeString(
-                                      "ko-KR",
-                                      { hour: "2-digit", minute: "2-digit" }
+                                    )}
+                                    {record.hasTimeInfo && (
+                                      <span className="text-gray-500 ml-1">
+                                        {record.rentDate.toLocaleTimeString(
+                                          "ko-KR",
+                                          { hour: "2-digit", minute: "2-digit" }
+                                        )}
+                                      </span>
                                     )}
                                   </p>
                                   <p
@@ -373,10 +411,14 @@ export function RentalList() {
                                     }
                                   >
                                     반납 예정일:{" "}
-                                    {record.dueDate.toLocaleDateString("ko-KR")}{" "}
-                                    {record.dueDate.toLocaleTimeString(
-                                      "ko-KR",
-                                      { hour: "2-digit", minute: "2-digit" }
+                                    {record.dueDate.toLocaleDateString("ko-KR")}
+                                    {record.hasTimeInfo && (
+                                      <span className="text-gray-500 ml-1">
+                                        {record.dueDate.toLocaleTimeString(
+                                          "ko-KR",
+                                          { hour: "2-digit", minute: "2-digit" }
+                                        )}
+                                      </span>
                                     )}
                                   </p>
                                 </>
