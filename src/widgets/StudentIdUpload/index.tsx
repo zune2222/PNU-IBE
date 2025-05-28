@@ -361,7 +361,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
             학생증 인증
           </h2>
           <p className="text-gray-600 korean-text">
-            학생증 사진을 업로드하여 본인 인증을 완료하세요
+            모바일 학생증을 업로드하여 본인 인증을 완료하세요
           </p>
         </motion.div>
 

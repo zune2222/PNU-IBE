@@ -60,7 +60,7 @@ export const clientOcrService = {
       const studentInfo = this.parseStudentInfo(fullText);
 
       return {
-        success: studentInfo.confidence >= 0.6,
+        success: studentInfo.confidence >= 0.3,
         studentInfo,
         rawText: fullText,
         debugInfo: { detectedTexts: [fullText] },
@@ -83,7 +83,6 @@ export const clientOcrService = {
 
     let studentId: string | null = null;
     let name: string | null = null;
-    let birthDate: string | null = null;
     let department: string | null = null;
     let confidence = 0;
 
@@ -134,14 +133,7 @@ export const clientOcrService = {
       }
     }
 
-    /* --- (3) 생년월일 --- */
-    const birthLabel = /생년월일\s*[:\-]?\s*(\d{8})/i.exec(normalized);
-    if (birthLabel) {
-      birthDate = birthLabel[1];
-      confidence += 0.15;
-    }
-
-    /* --- (4) 소속(정보의생명공학대학만 인식) --- */
+    /* --- (3) 소속(정보의생명공학대학만 인식) --- */
     if (
       normalized.includes("정보의생명공학대학") ||
       normalized.includes("정보의생명공학") ||
@@ -154,7 +146,6 @@ export const clientOcrService = {
     console.log("파싱 결과:", {
       studentId,
       name,
-      birthDate,
       department,
       confidence,
     });
