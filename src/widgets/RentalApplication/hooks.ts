@@ -7,8 +7,6 @@ import {
   FirestoreRentalItem,
   rentalApplicationService,
 } from "../../shared/services/firestore";
-import { discordService } from "../../shared/services/discordService";
-import type { RentalNotificationData } from "../../shared/services/discordService";
 import {
   ExtendedStudentIdInfo,
   RentalStep,
@@ -306,96 +304,33 @@ export const useRentalApplication = () => {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      // 학생증 사진 URL 확인
-      const studentIdPhotoUrl = verifiedStudentInfo.studentIdPhotoUrl;
-      if (!studentIdPhotoUrl) {
-        showToast({
-          type: "error",
-          message: "학생증 사진이 필요합니다. 다시 인증해주세요.",
-        });
-        return;
-      }
-
-      // 현재 시간을 대여 시작 시간으로 설정
-      const now = new Date();
-      const rentDate = now.toISOString();
-
-      // 24시간 후를 반납 마감일로 설정
-      const dueDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      const dueDateString = dueDate.toISOString();
-
-      // 대여 신청 데이터 생성
-      const rentalApplicationData = {
-        userId: user.uid,
-        itemId: selectedItem.id!,
-        itemUniqueId: selectedItem.uniqueId,
-        status: "rented" as const,
-        rentDate: rentDate,
-        dueDate: dueDateString,
-        purpose: "즉시 대여",
-        studentId: verifiedStudentInfo.studentId,
-        studentName: verifiedStudentInfo.name,
-        department: verifiedStudentInfo.department,
-        campus: selectedItem.campus,
-        phoneNumber: verifiedStudentInfo.phoneNumber,
-        studentIdPhotoUrl: studentIdPhotoUrl,
-        studentIdVerified: true,
-        itemConditionPhotoUrl: "",
-        itemLabelPhotoUrl: "",
-        lockboxSecuredPhotoUrl: "",
-      };
-
-      // 대여 신청 생성
-      const rentalId = await rentalApplicationService.createApplication(
-        rentalApplicationData
-      );
-
-      // 물품 상태를 대여 중으로 변경
-      await rentalItemService.rentItem(selectedItem.id!, rentalId);
-
-      console.log("대여 신청 생성 완료:", rentalId);
-      showToast({
-        type: "success",
-        message: "대여 신청이 생성되었습니다. 이제 사진을 촬영해주세요.",
-      });
-
-      // 생성된 대여 ID를 상태에 저장
-      setCreatedRentalId(rentalId);
-      setRentalDueDate(dueDate);
-
-      // 디스코드 알림 보내기
-      const notificationData: RentalNotificationData = {
-        studentName: verifiedStudentInfo.name || "이름 없음",
-        studentId: verifiedStudentInfo.studentId || "",
-        department: verifiedStudentInfo.department || "학과 정보 없음",
-        phoneNumber: verifiedStudentInfo.phoneNumber,
-        itemName: selectedItem.name,
-        itemCategory: selectedItem.category,
-        campus: selectedItem.campus,
-        location: selectedItem.location,
-        rentDate: rentDate,
-        dueDate: dueDateString,
-        rentalId: rentalId,
-      };
-
-      // 디스코드 알림 전송
-      try {
-        await discordService.notifyInstantRental(notificationData);
-        console.log("즉시 대여 디스코드 알림 전송 완료");
-      } catch (discordError) {
-        console.warn("디스코드 알림 전송 실패:", discordError);
-      }
-    } catch (error) {
-      console.error("대여 신청 생성 오류:", error);
+    // 학생증 사진 URL 확인
+    const studentIdPhotoUrl = verifiedStudentInfo.studentIdPhotoUrl;
+    if (!studentIdPhotoUrl) {
       showToast({
         type: "error",
-        message: "대여 신청 생성 중 오류가 발생했습니다.",
+        message: "학생증 사진이 필요합니다. 다시 인증해주세요.",
       });
-    } finally {
-      setIsLoading(false);
+      return;
     }
+
+    // 24시간 후를 반납 마감일로 설정
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 1);
+    setRentalDueDate(dueDate);
+
+    showToast({
+      type: "success",
+      message: "학생 정보 확인이 완료되었습니다. 비밀번호를 확인해주세요.",
+    });
+  };
+
+  // 대여 완료 처리 (비밀번호 확인 시점)
+  const handleRentalCompleted = (rentalId: string) => {
+    setCreatedRentalId(rentalId);
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 1); // 24시간 후
+    setRentalDueDate(dueDate);
   };
 
   return {
@@ -421,6 +356,7 @@ export const useRentalApplication = () => {
     handleStudentIdError,
     handleItemSelect,
     handleRentalProcess,
+    handleRentalCompleted,
     resetApplication,
   };
 };

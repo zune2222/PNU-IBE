@@ -17,6 +17,7 @@ export default function RentalApplication() {
     selectedItem,
     isLoading,
     step,
+    verifiedStudentInfo,
     applicationForm,
     photos,
     rentalDueDate,
@@ -30,6 +31,7 @@ export default function RentalApplication() {
     handleStudentIdError,
     handleItemSelect,
     handleRentalProcess,
+    handleRentalCompleted,
     resetApplication,
   } = useRentalApplication();
 
@@ -138,13 +140,15 @@ export default function RentalApplication() {
               />
             )}
 
-            {step === "password" && selectedItem && (
+            {step === "password" && selectedItem && verifiedStudentInfo && (
               <PasswordStep
                 selectedItem={selectedItem}
                 applicationForm={applicationForm}
+                verifiedStudentInfo={verifiedStudentInfo}
                 onApplicationFormChange={setApplicationForm}
                 onNextStep={() => setStep("photos")}
                 onReset={resetApplication}
+                onRentalCompleted={handleRentalCompleted}
               />
             )}
 

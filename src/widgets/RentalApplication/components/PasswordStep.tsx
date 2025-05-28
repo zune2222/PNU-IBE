@@ -2,27 +2,37 @@ import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useToast } from "../../../shared/components/Toast";
-import { FirestoreRentalItem } from "../../../shared/services/firestore";
-import { RentalApplicationForm } from "../types";
+import {
+  FirestoreRentalItem,
+  rentalApplicationService,
+} from "../../../shared/services/firestore";
+import { discordService } from "../../../shared/services/discordService";
+import { useAuth } from "../../../shared/contexts/AuthContext";
+import { RentalApplicationForm, ExtendedStudentIdInfo } from "../types";
 
 interface PasswordStepProps {
   selectedItem: FirestoreRentalItem;
   applicationForm: RentalApplicationForm;
+  verifiedStudentInfo: ExtendedStudentIdInfo;
   onApplicationFormChange: (form: RentalApplicationForm) => void;
   onNextStep: () => void;
   onReset: () => void;
+  onRentalCompleted: (rentalId: string) => void;
 }
 
 export const PasswordStep: React.FC<PasswordStepProps> = ({
   selectedItem,
   applicationForm,
+  verifiedStudentInfo,
   onApplicationFormChange,
   onNextStep,
   onReset,
+  onRentalCompleted,
 }) => {
   const { showToast } = useToast();
+  const { user } = useAuth();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // 신청 정보 유효성 검사
     if (!applicationForm.agreement) {
       showToast({
@@ -32,7 +42,106 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
       return;
     }
 
-    onNextStep();
+    if (!user) {
+      showToast({
+        type: "error",
+        message: "로그인이 필요합니다.",
+      });
+      return;
+    }
+
+    // 학생 정보 필수 필드 확인
+    if (
+      !verifiedStudentInfo.name ||
+      !verifiedStudentInfo.studentId ||
+      !verifiedStudentInfo.department
+    ) {
+      showToast({
+        type: "error",
+        message: "학생 정보가 완전하지 않습니다. 다시 인증해주세요.",
+      });
+      return;
+    }
+
+    try {
+      showToast({
+        type: "info",
+        message: "대여를 진행하고 있습니다...",
+      });
+
+      // 대여 완료 처리 - 여기서 실제 대여가 완료됨
+      const today = new Date();
+      const dueDate = new Date(today);
+      dueDate.setDate(today.getDate() + 1); // 24시간 후
+
+      const rentalData = {
+        userId: user.uid,
+        itemId: selectedItem.id!,
+        itemUniqueId: selectedItem.uniqueId,
+        status: "rented" as const,
+        rentDate: today.toISOString().split("T")[0],
+        dueDate: dueDate.toISOString().split("T")[0],
+        purpose: "즉시 대여", // 셀프 서비스는 목적을 기본값으로 설정
+
+        // 학생 정보
+        studentId: verifiedStudentInfo.studentId,
+        studentName: verifiedStudentInfo.name,
+        department: verifiedStudentInfo.department,
+        campus: selectedItem.campus,
+        phoneNumber: verifiedStudentInfo.phoneNumber,
+
+        // 학생증 정보 (이미 인증 완료)
+        studentIdPhotoUrl: verifiedStudentInfo.studentIdPhotoUrl || "",
+        studentIdVerified: true,
+
+        // 대여 시 촬영 사진들 (임시 값 - 다음 단계에서 업데이트 예정)
+        itemConditionPhotoUrl: "",
+        itemLabelPhotoUrl: "",
+        lockboxSecuredPhotoUrl: "",
+      };
+
+      // Firestore에 대여 데이터 저장
+      const rentalId = await rentalApplicationService.processRental(rentalData);
+
+      // 디스코드 알림 전송
+      const discordNotificationData = {
+        studentName: verifiedStudentInfo.name,
+        studentId: verifiedStudentInfo.studentId,
+        department: verifiedStudentInfo.department,
+        phoneNumber: verifiedStudentInfo.phoneNumber,
+        itemName: selectedItem.name,
+        itemCategory: selectedItem.category,
+        campus: selectedItem.campus,
+        location: selectedItem.location,
+        rentDate: today.toISOString().split("T")[0],
+        dueDate: dueDate.toISOString().split("T")[0],
+        rentalId: rentalId,
+      };
+
+      // 디스코드 알림 전송 (실패해도 대여는 완료됨)
+      try {
+        await discordService.notifyInstantRental(discordNotificationData);
+      } catch (discordError) {
+        console.warn("디스코드 알림 전송 실패:", discordError);
+      }
+
+      showToast({
+        type: "success",
+        message: "대여가 완료되었습니다! 보관함에서 물품을 확인해주세요.",
+      });
+
+      // 대여 완료 상태를 상위 컴포넌트에 전달
+      onRentalCompleted(rentalId);
+
+      // 다음 단계로 이동
+      onNextStep();
+    } catch (error) {
+      console.error("대여 처리 오류:", error);
+      showToast({
+        type: "error",
+        message: "대여 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
+      });
+    }
   };
 
   return (
