@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Head from "next/head";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import {
   rentalApplicationService,
@@ -462,10 +463,12 @@ export default function RentalStatus() {
                                 >
                                   <div className="flex items-start space-x-4">
                                     {item?.image && (
-                                      <img
+                                      <Image
                                         src={item.image}
                                         alt={item.name}
-                                        className="w-16 h-16 object-cover rounded flex-shrink-0"
+                                        width={64}
+                                        height={64}
+                                        className="object-cover rounded flex-shrink-0"
                                       />
                                     )}
                                     <div className="flex-1">
@@ -525,10 +528,12 @@ export default function RentalStatus() {
                                 >
                                   <div className="flex items-start space-x-4">
                                     {item?.image && (
-                                      <img
+                                      <Image
                                         src={item.image}
                                         alt={item.name}
-                                        className="w-16 h-16 object-cover rounded flex-shrink-0"
+                                        width={64}
+                                        height={64}
+                                        className="object-cover rounded flex-shrink-0"
                                       />
                                     )}
                                     <div className="flex-1">

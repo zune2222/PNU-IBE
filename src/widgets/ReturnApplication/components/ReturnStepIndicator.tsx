@@ -10,9 +10,8 @@ const steps = [
   { key: "verify", label: "학생 인증", number: 1 },
   { key: "select", label: "물품 선택", number: 2 },
   { key: "photos", label: "사진 업로드", number: 3 },
-  { key: "password", label: "비밀번호", number: 4 },
-  { key: "lockbox", label: "자물쇠 확인", number: 5 },
-  { key: "complete", label: "완료", number: 6 },
+  { key: "lockbox", label: "자물쇠 확인", number: 4 },
+  { key: "complete", label: "완료", number: 5 },
 ] as const;
 
 export default function ReturnStepIndicator({

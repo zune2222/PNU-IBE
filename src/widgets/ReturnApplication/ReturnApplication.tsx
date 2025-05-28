@@ -1,15 +1,16 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useToast } from "../../shared/components/Toast";
 import { StudentIdUpload } from "../StudentIdUpload";
 import useReturnApplication from "./hooks/useReturnApplication";
 import ReturnStepIndicator from "./components/ReturnStepIndicator";
 import RentalSelectionStep from "./components/RentalSelectionStep";
 import PhotoUploadStep from "./components/PhotoUploadStep";
-import PasswordStep from "./components/PasswordStep";
 import LockboxConfirmStep from "./components/LockboxConfirmStep";
 import CompleteStep from "./components/CompleteStep";
 
 export default function ReturnApplication() {
+  const { showToast } = useToast();
   const {
     // 상태
     loading,
@@ -20,9 +21,6 @@ export default function ReturnApplication() {
     rentalItems,
     selectedRental,
     photos,
-    lockboxPassword,
-    errors,
-    successMessage,
     router,
 
     // 액션
@@ -38,6 +36,17 @@ export default function ReturnApplication() {
     isOverdue,
     getOverdueDays,
   } = useReturnApplication();
+
+  React.useEffect(() => {
+    // 페이지 로드 시 이전 상태가 복원되었는지 확인
+    if (step !== "verify" && step !== "complete") {
+      showToast({
+        type: "info",
+        message:
+          "이전 진행 상태를 복원했습니다. 사진 앱 사용 후에도 입력한 정보가 안전하게 보관됩니다.",
+      });
+    }
+  }, [step, showToast]);
 
   if (loading) {
     return (
@@ -109,134 +118,49 @@ export default function ReturnApplication() {
 
       {/* 메인 컨텐츠 */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        {/* 에러 메시지 */}
-        {errors.general && (
-          <motion.div
-            className="mb-6 bg-red-50/90 backdrop-blur-sm border border-red-200 rounded-xl p-4"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{errors.general}</p>
-              </div>
-            </div>
-          </motion.div>
+        {/* 단계별 컴포넌트 렌더링 */}
+        {step === "verify" && (
+          <StudentIdUpload
+            onSuccess={handleStudentIdSuccess}
+            onError={handleStudentIdError}
+          />
         )}
 
-        {/* 성공 메시지 */}
-        {successMessage && (
-          <motion.div
-            className="mb-6 bg-green-50/90 backdrop-blur-sm border border-green-200 rounded-xl p-4"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-green-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-green-700">{successMessage}</p>
-              </div>
-            </div>
-          </motion.div>
+        {step === "select" && (
+          <RentalSelectionStep
+            currentRentals={currentRentals}
+            rentalItems={rentalItems}
+            onRentalSelect={handleRentalSelect}
+            isOverdue={isOverdue}
+            getOverdueDays={getOverdueDays}
+          />
         )}
 
-        {/* 단계별 컨텐츠 */}
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -30, scale: 0.95 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Step 1: 학생증 인증 */}
-          {step === "verify" && (
-            <StudentIdUpload
-              onSuccess={handleStudentIdSuccess}
-              onError={handleStudentIdError}
-            />
-          )}
+        {step === "photos" && selectedRental && (
+          <PhotoUploadStep
+            rental={selectedRental}
+            item={rentalItems[selectedRental.itemId]}
+            photos={photos}
+            onPhotoUploadSuccess={handlePhotoUploadSuccess}
+            onPhotoUploadError={handlePhotoUploadError}
+            onNext={handleProvidePassword}
+            isLoading={isLoading}
+          />
+        )}
 
-          {/* Step 2: 물품 선택 */}
-          {step === "select" && (
-            <RentalSelectionStep
-              studentInfo={studentInfo}
-              currentRentals={currentRentals}
-              rentalItems={rentalItems}
-              isLoading={isLoading}
-              onRentalSelect={handleRentalSelect}
-              onReset={resetApplication}
-              isOverdue={isOverdue}
-              getOverdueDays={getOverdueDays}
-            />
-          )}
+        {step === "lockbox" && selectedRental && (
+          <LockboxConfirmStep
+            rental={selectedRental}
+            item={rentalItems[selectedRental.itemId]}
+            photos={photos}
+            onPhotoUploadSuccess={handlePhotoUploadSuccess}
+            onPhotoUploadError={handlePhotoUploadError}
+            onComplete={handleCompleteReturn}
+            isLoading={isLoading}
+          />
+        )}
 
-          {/* Step 3: 사진 업로드 */}
-          {step === "photos" && selectedRental && (
-            <PhotoUploadStep
-              selectedRental={selectedRental}
-              rentalItems={rentalItems}
-              photos={photos}
-              errors={errors}
-              isLoading={isLoading}
-              onPhotoUploadSuccess={handlePhotoUploadSuccess}
-              onPhotoUploadError={handlePhotoUploadError}
-              onProvidePassword={handleProvidePassword}
-              onBack={() => setStep("select")}
-            />
-          )}
-
-          {/* Step 4: 자물쇠 비밀번호 제공 */}
-          {step === "password" && selectedRental && (
-            <PasswordStep
-              selectedRental={selectedRental}
-              rentalItems={rentalItems}
-              lockboxPassword={lockboxPassword}
-              onBack={() => setStep("photos")}
-              onNext={() => setStep("lockbox")}
-            />
-          )}
-
-          {/* Step 5: 자물쇠 잠금 확인 */}
-          {step === "lockbox" && selectedRental && (
-            <LockboxConfirmStep
-              photos={photos}
-              errors={errors}
-              isLoading={isLoading}
-              onPhotoUploadSuccess={handlePhotoUploadSuccess}
-              onPhotoUploadError={handlePhotoUploadError}
-              onCompleteReturn={handleCompleteReturn}
-              onBack={() => setStep("password")}
-            />
-          )}
-
-          {/* Step 6: 완료 */}
-          {step === "complete" && <CompleteStep router={router} />}
-        </motion.div>
+        {step === "complete" && <CompleteStep onReset={resetApplication} />}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import Image from "next/image";
 import { storageService } from "../../shared/services/storage";
 
 interface PhotoUploadProps {
@@ -9,6 +10,7 @@ interface PhotoUploadProps {
   label: string;
   description: string;
   required?: boolean;
+  autoUpload?: boolean;
 }
 
 export const PhotoUpload: React.FC<PhotoUploadProps> = ({
@@ -19,14 +21,18 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
   label,
   description,
   required = false,
+  autoUpload = false,
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -46,14 +52,21 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     }
 
     setSelectedFile(file);
+    setIsUploaded(false);
 
     // 미리보기 URL 생성
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
+
+    // 자동 업로드가 활성화된 경우 즉시 업로드
+    if (autoUpload) {
+      await handleUpload(file);
+    }
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
+  const handleUpload = async (fileToUpload?: File) => {
+    const file = fileToUpload || selectedFile;
+    if (!file) {
       onError("업로드할 파일을 선택해주세요.");
       return;
     }
@@ -64,7 +77,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     try {
       // 파일 업로드
       const result = await storageService.uploadFileWithProgress(
-        selectedFile,
+        file,
         type === "item_pre_return" ? "item-photos" : "lockbox-photos",
         undefined,
         (progress) => {
@@ -72,6 +85,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
         }
       );
 
+      setIsUploaded(true);
       onUploadSuccess(result.url);
     } catch (error) {
       console.error("파일 업로드 오류:", error);
@@ -89,6 +103,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     setSelectedFile(null);
     setPreviewUrl(null);
     setUploadProgress(0);
+    setIsUploaded(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -179,10 +194,12 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
         <div>
           {/* 미리보기 */}
           <div className="mb-4">
-            <img
+            <Image
               src={previewUrl || ""}
               alt="업로드할 사진"
-              className="w-full max-w-md mx-auto h-64 object-cover rounded-lg border"
+              width={384}
+              height={256}
+              className="mx-auto object-cover rounded-lg border"
             />
           </div>
 
@@ -226,14 +243,25 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
 
           {/* 업로드 버튼 */}
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleUpload}
-              disabled={isUploading || isLoading}
-              className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isUploading ? "업로드 중..." : "업로드"}
-            </button>
+            {!autoUpload && (
+              <button
+                type="button"
+                onClick={() => handleUpload()}
+                disabled={isUploading || isLoading || isUploaded}
+                className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUploading
+                  ? "업로드 중..."
+                  : isUploaded
+                  ? "업로드 완료"
+                  : "업로드"}
+              </button>
+            )}
+            {autoUpload && isUploaded && (
+              <div className="flex-1 bg-green-100 text-green-800 py-2 px-4 rounded-md text-center font-medium">
+                ✓ 업로드 완료
+              </div>
+            )}
             <button
               type="button"
               onClick={handleRemoveFile}

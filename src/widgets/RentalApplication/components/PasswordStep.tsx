@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { FirestoreRentalItem } from "../../../shared/services/firestore";
 import { RentalApplicationForm } from "../types";
@@ -73,10 +74,12 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
         </h3>
         <div className="flex items-center space-x-4">
           <div className="relative">
-            <img
+            <Image
               src={selectedItem.image}
               alt={selectedItem.name}
-              className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl shadow-lg"
+              width={80}
+              height={80}
+              className="object-cover rounded-xl shadow-lg"
             />
             <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center">
               <svg

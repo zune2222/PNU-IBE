@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
+import { useToast } from "../../shared/components/Toast";
 import {
   StudentIdInfo,
   OcrResult,
@@ -17,15 +19,96 @@ interface StudentIdUploadProps {
   onError?: (error: string) => void;
 }
 
+// localStorage 키 상수
+const STORAGE_KEYS = {
+  STUDENT_ID_STATE: "studentIdUploadState",
+  OCR_RESULT: "studentIdOcrResult",
+  PHONE_NUMBER: "studentIdPhoneNumber",
+  PREVIEW_URL: "studentIdPreviewUrl",
+} as const;
+
+// 상태 저장 함수
+const saveToStorage = (key: string, data: unknown) => {
+  try {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+  } catch (error) {
+    console.warn("localStorage 저장 실패:", error);
+  }
+};
+
+// 상태 불러오기 함수
+const loadFromStorage = function <T>(key: string, defaultValue: T): T {
+  try {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    }
+  } catch (error) {
+    console.warn("localStorage 불러오기 실패:", error);
+  }
+  return defaultValue;
+};
+
+// 상태 삭제 함수
+const clearStudentIdStorage = () => {
+  try {
+    if (typeof window !== "undefined") {
+      Object.values(STORAGE_KEYS).forEach((key) => {
+        localStorage.removeItem(key);
+      });
+    }
+  } catch (error) {
+    console.warn("localStorage 삭제 실패:", error);
+  }
+};
+
 export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
   onSuccess,
   onError,
 }) => {
+  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(() =>
+    loadFromStorage(STORAGE_KEYS.PREVIEW_URL, null)
+  );
+  const [ocrResult, setOcrResult] = useState<OcrResult | null>(() =>
+    loadFromStorage(STORAGE_KEYS.OCR_RESULT, null)
+  );
+  const [phoneNumber, setPhoneNumber] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.PHONE_NUMBER, "")
+  );
+
+  // 컴포넌트 마운트 시 상태 복원 확인
+  useEffect(() => {
+    const savedOcrResult = loadFromStorage(STORAGE_KEYS.OCR_RESULT, null);
+    const savedPhoneNumber = loadFromStorage(STORAGE_KEYS.PHONE_NUMBER, "");
+
+    if (savedOcrResult || savedPhoneNumber) {
+      showToast({
+        type: "info",
+        message:
+          "이전 입력 정보를 복원했습니다. 사진 앱 사용 후에도 입력한 정보가 안전하게 보관됩니다.",
+      });
+    }
+  }, [showToast]);
+
+  // 상태 변경 시 localStorage에 저장
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.OCR_RESULT, ocrResult);
+  }, [ocrResult]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.PHONE_NUMBER, phoneNumber);
+  }, [phoneNumber]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.PREVIEW_URL, previewUrl);
+  }, [previewUrl]);
 
   // 파일 선택 처리
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +118,12 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
     // 파일 유효성 검사
     const validation = clientOcrService.validateImageFile(file);
     if (!validation.isValid) {
-      onError?.(validation.error || "유효하지 않은 파일입니다.");
+      const errorMessage = validation.error || "유효하지 않은 파일입니다.";
+      onError?.(errorMessage);
+      showToast({
+        type: "error",
+        message: errorMessage,
+      });
       return;
     }
 
@@ -61,11 +149,27 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       setOcrResult(result);
 
       if (!result.success || !result.studentInfo) {
-        onError?.(result.error || "학생증 정보를 인식할 수 없습니다.");
+        const errorMessage =
+          result.error || "학생증 정보를 인식할 수 없습니다.";
+        onError?.(errorMessage);
+        showToast({
+          type: "error",
+          message: errorMessage,
+        });
+      } else {
+        showToast({
+          type: "success",
+          message: "학생증 정보를 성공적으로 인식했습니다!",
+        });
       }
     } catch (error) {
       console.error("OCR 처리 오류:", error);
-      onError?.("OCR 처리 중 오류가 발생했습니다.");
+      const errorMessage = "OCR 처리 중 오류가 발생했습니다.";
+      onError?.(errorMessage);
+      showToast({
+        type: "error",
+        message: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -74,26 +178,48 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
   // 학생 정보 검증 및 저장
   const handleValidateAndSave = async () => {
     if (!ocrResult?.studentInfo) {
-      onError?.("학생증 정보를 먼저 인식해주세요.");
+      const errorMessage = "학생증 정보를 먼저 인식해주세요.";
+      onError?.(errorMessage);
+      showToast({
+        type: "error",
+        message: errorMessage,
+      });
       return;
     }
 
     const { studentId, name, department, campus } = ocrResult.studentInfo;
 
     if (!studentId || !name) {
-      onError?.("학번과 이름 정보가 인식되지 않았습니다. 다시 시도해주세요.");
+      const errorMessage =
+        "학번과 이름 정보가 인식되지 않았습니다. 다시 시도해주세요.";
+      onError?.(errorMessage);
+      showToast({
+        type: "error",
+        message: errorMessage,
+      });
       return;
     }
 
     if (!phoneNumber) {
-      onError?.("휴대폰 번호는 필수 입력 항목입니다.");
+      const errorMessage = "휴대폰 번호는 필수 입력 항목입니다.";
+      onError?.(errorMessage);
+      showToast({
+        type: "error",
+        message: errorMessage,
+      });
       return;
     }
 
     // 휴대폰 번호 형식 검증
     const phoneRegex = /^010-?\d{4}-?\d{4}$/;
     if (!phoneRegex.test(phoneNumber.replace(/[^0-9]/g, ""))) {
-      onError?.("올바른 휴대폰 번호 형식을 입력해주세요. (010-XXXX-XXXX)");
+      const errorMessage =
+        "올바른 휴대폰 번호 형식을 입력해주세요. (010-XXXX-XXXX)";
+      onError?.(errorMessage);
+      showToast({
+        type: "error",
+        message: errorMessage,
+      });
       return;
     }
 
@@ -106,7 +232,13 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       );
 
       if (!validation.valid) {
-        onError?.(validation.error || "학생 정보 검증에 실패했습니다.");
+        const errorMessage =
+          validation.error || "학생 정보 검증에 실패했습니다.";
+        onError?.(errorMessage);
+        showToast({
+          type: "error",
+          message: errorMessage,
+        });
         return;
       }
 
@@ -124,10 +256,23 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
         studentIdPhotoFile: selectedFile || undefined,
       };
 
+      // localStorage 정리 (인증 성공 시)
+      clearStudentIdStorage();
+
+      showToast({
+        type: "success",
+        message: "학생 인증이 완료되었습니다!",
+      });
+
       onSuccess?.(studentInfo);
     } catch (error) {
       console.error("학생 정보 저장 오류:", error);
-      onError?.("학생 정보 저장 중 오류가 발생했습니다.");
+      const errorMessage = "학생 정보 저장 중 오류가 발생했습니다.";
+      onError?.(errorMessage);
+      showToast({
+        type: "error",
+        message: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -311,10 +456,12 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                   transition={{ duration: 0.3 }}
                   className="relative"
                 >
-                  <img
+                  <Image
                     src={previewUrl}
                     alt="학생증 미리보기"
-                    className="w-full max-w-md mx-auto rounded-xl shadow-lg border border-gray-200"
+                    width={400}
+                    height={300}
+                    className="mx-auto rounded-xl shadow-lg border border-gray-200"
                   />
                 </motion.div>
               )}
@@ -439,7 +586,12 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                           </svg>
                           <span className="text-sm text-blue-700 korean-text">
                             인식 정확도:{" "}
-                            {Math.round(ocrResult.studentInfo.confidence * 100)}
+                            {Math.min(
+                              Math.round(
+                                ocrResult.studentInfo.confidence * 100
+                              ),
+                              100
+                            )}
                             %
                           </span>
                         </div>

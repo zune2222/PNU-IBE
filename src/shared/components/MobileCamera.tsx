@@ -1,4 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
+import Image from "next/image";
 import { Camera, RotateCcw, CheckCircle, AlertCircle, X } from "lucide-react";
 
 interface MobileCameraProps {
@@ -207,10 +208,11 @@ export default function MobileCamera({
             </button>
           </div>
         ) : capturedImage ? (
-          <img
+          <Image
             src={capturedImage}
             alt="촬영된 사진"
-            className="max-w-full max-h-full object-contain"
+            fill
+            className="object-contain"
           />
         ) : (
           <>

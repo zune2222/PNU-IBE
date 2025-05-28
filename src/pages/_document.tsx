@@ -4,6 +4,12 @@ export default function Document() {
   return (
     <Html lang="ko">
       <Head>
+        {/* Viewport 설정 - safe area 지원 */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
+
         {/* 기본 favicon */}
         <link rel="icon" href="/favicon.ico" />
 

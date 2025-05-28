@@ -101,7 +101,10 @@ function PWAInstallPrompt() {
   if (!showPrompt || !isMobile) return null;
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 z-40 p-4 bg-blue-600 text-white rounded-lg shadow-lg">
+    <div
+      className="fixed left-4 right-4 z-40 p-4 bg-blue-600 text-white rounded-lg shadow-lg"
+      style={{ bottom: "calc(4rem + env(safe-area-inset-bottom) + 1rem)" }}
+    >
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <h3 className="font-semibold text-sm mb-1">앱으로 설치하기</h3>
@@ -144,7 +147,7 @@ function AppWrapper({
   const showMobileNav = isMobile && !isAdminPage;
 
   return (
-    <div className={showMobileNav ? "pb-16" : ""}>
+    <div className={showMobileNav ? "mobile-nav-safe-area" : ""}>
       <OfflineIndicator />
       <PWAInstallPrompt />
       <Component {...pageProps} />

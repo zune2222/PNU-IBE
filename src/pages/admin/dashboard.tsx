@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuth } from "../../shared/contexts/AuthContext";
 import {
@@ -2505,10 +2506,12 @@ export default function AdminDashboard() {
                       )}
                       {itemForm.image && (
                         <div className="mt-2">
-                          <img
+                          <Image
                             src={itemForm.image}
                             alt="물품 이미지"
-                            className="w-32 h-32 object-cover rounded-lg border"
+                            width={128}
+                            height={128}
+                            className="object-cover rounded-lg border"
                           />
                         </div>
                       )}
@@ -2558,10 +2561,12 @@ export default function AdminDashboard() {
                             <div className="flex-1">
                               <div className="flex items-center space-x-3">
                                 {item.image && (
-                                  <img
+                                  <Image
                                     src={item.image}
                                     alt={item.name}
-                                    className="w-12 h-12 object-cover rounded-lg"
+                                    width={48}
+                                    height={48}
+                                    className="object-cover rounded-lg"
                                   />
                                 )}
                                 <div>

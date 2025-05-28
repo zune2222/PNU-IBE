@@ -51,6 +51,7 @@ export default function LockboxConfirmStep({
           label="자물쇠 잠금 확인 사진"
           description="자물쇠가 잘 잠겨있는 모습을 촬영해주세요"
           required
+          autoUpload={true}
           onUploadSuccess={(url) => onPhotoUploadSuccess("lockbox", url)}
           onError={onPhotoUploadError}
           isLoading={isLoading}

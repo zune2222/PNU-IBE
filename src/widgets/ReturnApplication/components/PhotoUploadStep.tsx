@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { PhotoUpload } from "../../PhotoUpload";
 import {
   FirestoreRentalApplication,
@@ -45,10 +46,12 @@ export default function PhotoUploadStep({
 
         <div className="flex items-center space-x-4">
           {rentalItems[selectedRental.itemId]?.image && (
-            <img
+            <Image
               src={rentalItems[selectedRental.itemId].image}
               alt={rentalItems[selectedRental.itemId].name}
-              className="w-16 h-16 object-cover rounded-lg"
+              width={64}
+              height={64}
+              className="object-cover rounded-lg"
             />
           )}
           <div>
@@ -72,6 +75,7 @@ export default function PhotoUploadStep({
           label="1. 물품 상태 사진"
           description="반납하기 전 물품의 현재 상태를 촬영해주세요"
           required
+          autoUpload={true}
           onUploadSuccess={(url) => onPhotoUploadSuccess("item", url)}
           onError={onPhotoUploadError}
           isLoading={isLoading}
@@ -88,6 +92,7 @@ export default function PhotoUploadStep({
           label="2. 물품 라벨 사진"
           description="물품에 부착된 라벨(스티커)이 잘 보이도록 촬영해주세요"
           required
+          autoUpload={true}
           onUploadSuccess={(url) => onPhotoUploadSuccess("label", url)}
           onError={onPhotoUploadError}
           isLoading={isLoading}

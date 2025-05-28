@@ -14,7 +14,6 @@ export default function Home() {
           name="description"
           content="부산대학교 정보의생명공학대학 제2대 학생회 정의 공식 홈페이지입니다."
         />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

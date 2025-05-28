@@ -112,7 +112,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                       }}
                     >
                       {index <= currentStepIndex ? (
-                        <span>{stepItem.icon}</span>
+                        <span>{stepItem.number}</span>
                       ) : (
                         <span className="text-sm">{index + 1}</span>
                       )}

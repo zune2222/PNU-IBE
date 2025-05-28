@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { FirestoreRentalItem } from "../../../shared/services/firestore";
 import { RentalPhotos } from "../types";
@@ -102,10 +103,12 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
         </h3>
         <div className="flex items-center space-x-4">
           <div className="relative">
-            <img
+            <Image
               src={selectedItem.image}
               alt={selectedItem.name}
-              className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl shadow-lg"
+              width={80}
+              height={80}
+              className="object-cover rounded-xl shadow-lg"
             />
             <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center">
               <svg
@@ -174,10 +177,12 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                 >
                   <div className="flex items-start space-x-4">
                     <div className="relative group">
-                      <img
+                      <Image
                         src={getPreviewUrl(step.file) || ""}
                         alt={`${step.title} 미리보기`}
-                        className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-xl shadow-lg border border-emerald-200"
+                        width={128}
+                        height={128}
+                        className="object-cover rounded-xl shadow-lg border border-emerald-200"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 rounded-xl flex items-center justify-center">
                         <motion.button
@@ -341,10 +346,12 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                   <div className="relative mb-2">
                     {step.file ? (
                       <div className="relative group">
-                        <img
+                        <Image
                           src={getPreviewUrl(step.file) || ""}
                           alt={step.title}
-                          className="w-full h-24 object-cover rounded-lg shadow-md border border-blue-200"
+                          width={128}
+                          height={128}
+                          className="object-cover rounded-lg shadow-md border border-blue-200"
                         />
                         <div className="absolute inset-0 bg-emerald-500/20 rounded-lg flex items-center justify-center">
                           <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">

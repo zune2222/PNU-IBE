@@ -172,6 +172,22 @@
   .safe-area-inset-right {
     padding-right: env(safe-area-inset-right);
   }
+
+  /* 모바일 네비게이션을 위한 safe area 조합 클래스 */
+  .mobile-nav-safe-area {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+
+  /* 모바일 네비게이션 바 자체 높이 확장 */
+  .mobile-nav-bar {
+    padding-bottom: env(safe-area-inset-bottom);
+    background-color: white;
+  }
+
+  /* 모바일 네비게이션 내부 패딩 */
+  .mobile-nav-content {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 @layer components {

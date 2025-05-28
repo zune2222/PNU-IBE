@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 import {
@@ -98,10 +99,12 @@ export default function RentalSelectionStep({
               >
                 <div className="flex items-center space-x-4">
                   {item?.image && (
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.name}
-                      className="w-16 h-16 object-cover rounded-lg"
+                      width={64}
+                      height={64}
+                      className="object-cover rounded-lg"
                     />
                   )}
                   <div className="flex-1">
