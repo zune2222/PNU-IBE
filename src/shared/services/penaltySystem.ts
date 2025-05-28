@@ -123,12 +123,13 @@ class PenaltySystem {
                 // Discord 알림 전송
                 try {
                   await discordService.notifyOverdue({
-                    userName: user.name,
+                    studentName: user.name,
                     studentId: user.studentId,
                     itemName: item.name,
-                    endDate: rental.dueDate,
+                    dueDate: rental.dueDate,
                     overdueDays,
-                    penaltyPoints: additionalPenalty,
+                    phoneNumber: rental.phoneNumber || "연락처 없음",
+                    rentalId: rental.id || "알 수 없음",
                   });
                   result.notificationsSent++;
                 } catch {
