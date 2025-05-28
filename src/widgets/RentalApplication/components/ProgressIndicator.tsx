@@ -7,11 +7,11 @@ interface ProgressIndicatorProps {
 }
 
 const steps = [
-  { key: "verify", label: "학생증 인증", icon: "🎓" },
-  { key: "select", label: "물품 선택", icon: "📦" },
-  { key: "password", label: "비밀번호 제공", icon: "🔐" },
-  { key: "photos", label: "사진 촬영", icon: "📸" },
-  { key: "complete", label: "신청 완료", icon: "✅" },
+  { key: "verify", label: "학생증 인증", number: 1 },
+  { key: "select", label: "물품 선택", number: 2 },
+  { key: "password", label: "비밀번호 제공", number: 3 },
+  { key: "photos", label: "사진 촬영", number: 4 },
+  { key: "complete", label: "신청 완료", number: 5 },
 ];
 
 export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
@@ -36,9 +36,9 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           >
             {/* 진행률 바 */}
             <div className="relative">
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-primary to-secondary rounded-full"
+                  className="h-full bg-gradient-to-r from-green-500 to-blue-500 rounded-full"
                   initial={{ width: 0 }}
                   animate={{
                     width: `${((currentStepIndex + 1) / steps.length) * 100}%`,
@@ -46,7 +46,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                   transition={{ duration: 0.8, ease: "easeInOut" }}
                 />
               </div>
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full animate-pulse" />
+              <div className="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-full animate-pulse" />
             </div>
 
             {/* 현재 단계 표시 */}
@@ -56,12 +56,12 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20"
+                className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20"
               >
-                <span className="text-lg mr-2">
-                  {steps[currentStepIndex]?.icon}
+                <span className="w-6 h-6 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                  {steps[currentStepIndex]?.number}
                 </span>
-                <span className="text-sm font-semibold text-primary korean-text">
+                <span className="text-sm font-semibold text-green-700">
                   {currentStepIndex + 1}단계: {steps[currentStepIndex]?.label}
                 </span>
               </motion.div>
@@ -91,7 +91,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                     <motion.div
                       className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold shadow-lg border-2 transition-all duration-300 ${
                         index <= currentStepIndex
-                          ? "bg-gradient-to-br from-primary to-secondary text-white border-primary/30"
+                          ? "bg-gradient-to-br from-green-500 to-blue-500 text-white border-green-500/30"
                           : "bg-white/80 backdrop-blur-sm text-gray-400 border-gray-300"
                       }`}
                       whileHover={{ scale: 1.1 }}
@@ -99,9 +99,9 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                         index === currentStepIndex
                           ? {
                               boxShadow: [
-                                "0 0 0 0 rgba(99, 102, 241, 0.4)",
-                                "0 0 0 10px rgba(99, 102, 241, 0)",
-                                "0 0 0 0 rgba(99, 102, 241, 0)",
+                                "0 0 0 0 rgba(34, 197, 94, 0.4)",
+                                "0 0 0 10px rgba(34, 197, 94, 0)",
+                                "0 0 0 0 rgba(34, 197, 94, 0)",
                               ],
                             }
                           : {}
@@ -120,15 +120,15 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 
                     {/* 단계 라벨 */}
                     <motion.span
-                      className={`mt-2 text-sm font-medium korean-text transition-colors duration-300 ${
+                      className={`mt-2 text-sm font-medium transition-colors duration-300 ${
                         index <= currentStepIndex
-                          ? "text-primary"
+                          ? "text-green-600"
                           : "text-gray-400"
                       }`}
                       animate={
                         index === currentStepIndex
                           ? {
-                              color: ["#6366f1", "#8b5cf6", "#6366f1"],
+                              color: ["#16a34a", "#2563eb", "#16a34a"],
                             }
                           : {}
                       }
@@ -152,7 +152,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                   >
                     <div className="absolute inset-0 bg-gray-300 rounded-full" />
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-primary to-secondary rounded-full origin-left"
+                      className="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-500 rounded-full origin-left"
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: index < currentStepIndex ? 1 : 0 }}
                       transition={{ duration: 0.8, delay: 0.5 }}

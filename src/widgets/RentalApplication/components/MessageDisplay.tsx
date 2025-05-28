@@ -49,10 +49,10 @@ export const MessageDisplay: React.FC<MessageDisplayProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
-                <h3 className="text-sm font-semibold text-red-800 mb-1 korean-text">
+                <h3 className="text-sm font-semibold text-red-800 mb-1">
                   오류가 발생했습니다
                 </h3>
-                <p className="text-sm text-red-700 korean-text leading-relaxed">
+                <p className="text-sm text-red-700 leading-relaxed">
                   {errors.general}
                 </p>
               </motion.div>
@@ -98,10 +98,10 @@ export const MessageDisplay: React.FC<MessageDisplayProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
-                <h3 className="text-sm font-semibold text-emerald-800 mb-1 korean-text">
+                <h3 className="text-sm font-semibold text-emerald-800 mb-1">
                   성공적으로 처리되었습니다
                 </h3>
-                <p className="text-sm text-emerald-700 korean-text leading-relaxed">
+                <p className="text-sm text-emerald-700 leading-relaxed">
                   {successMessage}
                 </p>
               </motion.div>

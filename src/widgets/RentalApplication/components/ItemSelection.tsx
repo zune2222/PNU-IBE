@@ -49,7 +49,7 @@ export const ItemSelection: React.FC<ItemSelectionProps> = ({
 
   return (
     <motion.div
-      className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 p-6 sm:p-8"
+      className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 p-4 sm:p-6 lg:p-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
@@ -58,51 +58,46 @@ export const ItemSelection: React.FC<ItemSelectionProps> = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="text-center mb-8"
+        className="text-center mb-6 sm:mb-8"
       >
-        <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 mb-4">
-          <span className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></span>
-          <span className="text-sm font-semibold text-primary korean-text">
+        <div className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 mb-3 sm:mb-4">
+          <span className="w-2 h-2 bg-primary rounded-full mr-2 sm:mr-3 animate-pulse"></span>
+          <span className="text-xs sm:text-sm font-semibold text-primary">
             2단계: 물품 선택
           </span>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-dark to-gray-700 bg-clip-text text-transparent korean-text mb-2">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
           대여 가능한 물품
         </h2>
-        <p className="text-gray-600 korean-text">
+        <p className="text-sm sm:text-base text-gray-600">
           원하는 물품을 선택하여 대여 신청을 진행하세요
         </p>
       </motion.div>
 
       {isLoading ? (
         <motion.div
-          className="text-center py-12"
+          className="text-center py-8 sm:py-12"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="relative mx-auto w-16 h-16 mb-4">
-            <div className="w-16 h-16 border-4 border-primary/20 rounded-full animate-spin border-t-primary"></div>
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-ping border-t-secondary/50"></div>
+          <div className="relative mx-auto w-12 h-12 sm:w-16 sm:h-16 mb-4">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-blue-500/20 rounded-full animate-spin border-t-blue-500"></div>
           </div>
-          <motion.div
-            className="text-lg font-medium text-gray-700 korean-text"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
+          <div className="text-base sm:text-lg font-medium text-gray-700">
             물품 목록을 불러오는 중...
-          </motion.div>
+          </div>
         </motion.div>
       ) : availableItems.length === 0 ? (
         <motion.div
-          className="text-center py-12"
+          className="text-center py-8 sm:py-12"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-2xl mx-auto w-fit mb-4">
+          <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-4 sm:p-6 rounded-2xl mx-auto w-fit mb-4">
             <svg
-              className="w-12 h-12 text-gray-400 mx-auto"
+              className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -115,16 +110,16 @@ export const ItemSelection: React.FC<ItemSelectionProps> = ({
               />
             </svg>
           </div>
-          <div className="text-lg font-medium text-gray-700 korean-text">
+          <div className="text-base sm:text-lg font-medium text-gray-700">
             현재 대여 가능한 물품이 없습니다
           </div>
-          <p className="text-gray-500 mt-2 korean-text">
+          <p className="text-sm sm:text-base text-gray-500 mt-2">
             잠시 후 다시 확인해주세요
           </p>
         </motion.div>
       ) : (
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
@@ -142,12 +137,12 @@ export const ItemSelection: React.FC<ItemSelectionProps> = ({
                 <img
                   src={item.image}
                   alt={item.name}
-                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-40 sm:h-48 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute top-3 right-3">
+                <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                    className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-medium border ${getStatusColor(
                       item.status
                     )} backdrop-blur-sm`}
                   >
@@ -156,26 +151,26 @@ export const ItemSelection: React.FC<ItemSelectionProps> = ({
                 </div>
               </div>
 
-              <div className="p-6">
-                <h3 className="font-bold text-lg text-gray-900 mb-2 korean-text group-hover:text-primary transition-colors duration-300">
+              <div className="p-4 sm:p-6">
+                <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-2 group-hover:text-primary transition-colors duration-300 line-clamp-2">
                   {item.name}
                 </h3>
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2 korean-text leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-2 leading-relaxed">
                   {item.description}
                 </p>
 
-                <div className="flex justify-between items-center mb-4">
-                  <span className="px-3 py-1 bg-gradient-to-r from-primary/10 to-secondary/10 text-primary text-xs font-medium rounded-full border border-primary/20">
+                <div className="flex justify-between items-center mb-3 sm:mb-4">
+                  <span className="px-2 py-1 sm:px-3 sm:py-1 bg-gradient-to-r from-primary/10 to-secondary/10 text-primary text-xs font-medium rounded-full border border-primary/20">
                     {item.category}
                   </span>
-                  <span className="text-xs text-gray-500 korean-text">
+                  <span className="text-xs text-gray-500">
                     {item.campus === "yangsan" ? "양산캠퍼스" : "장전캠퍼스"}
                   </span>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <motion.button
-                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200 transition-all duration-300 korean-text"
+                    className="flex-1 px-3 py-2 sm:px-4 sm:py-2 bg-gray-100 text-gray-700 text-xs sm:text-sm font-medium rounded-xl hover:bg-gray-200 transition-all duration-300"
                     onClick={() => {
                       alert(`${item.name}\n\n${item.description}`);
                     }}
@@ -185,7 +180,7 @@ export const ItemSelection: React.FC<ItemSelectionProps> = ({
                     상세정보
                   </motion.button>
                   <motion.button
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium rounded-xl hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 shadow-lg korean-text"
+                    className="flex-1 px-3 py-2 sm:px-4 sm:py-2 bg-gradient-to-r from-primary to-secondary text-white text-xs sm:text-sm font-medium rounded-xl hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 shadow-lg"
                     onClick={() => onItemSelect(item)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}

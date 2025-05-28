@@ -28,11 +28,54 @@ export default function ReturnStepIndicator({
       transition={{ duration: 0.6, delay: 0.3 }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center py-4">
+        {/* 모바일 뷰 */}
+        <div className="md:hidden py-4">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-4"
+          >
+            {/* 진행률 바 */}
+            <div className="relative">
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-green-500 to-blue-500 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: `${((currentStepIndex + 1) / steps.length) * 100}%`,
+                  }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                />
+              </div>
+            </div>
+
+            {/* 현재 단계 표시 */}
+            <div className="text-center">
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20"
+              >
+                <span className="w-6 h-6 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                  {steps[currentStepIndex]?.number}
+                </span>
+                <span className="text-sm font-semibold text-green-700">
+                  {currentStepIndex + 1}단계: {steps[currentStepIndex]?.label}
+                </span>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* 데스크톱 뷰 */}
+        <div className="hidden md:flex items-center justify-center py-4">
           <div className="flex items-center space-x-8">
             {steps.map((stepInfo, index) => (
               <React.Fragment key={stepInfo.key}>
-                <div
+                <motion.div
                   className={`flex items-center ${
                     currentStep === stepInfo.key
                       ? "text-blue-600"
@@ -40,8 +83,11 @@ export default function ReturnStepIndicator({
                       ? "text-green-600"
                       : "text-gray-400"
                   }`}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div
+                  <motion.div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                       currentStep === stepInfo.key
                         ? "bg-blue-100"
@@ -49,19 +95,44 @@ export default function ReturnStepIndicator({
                         ? "bg-green-100"
                         : "bg-gray-100"
                     }`}
+                    whileHover={{ scale: 1.1 }}
+                    animate={
+                      currentStep === stepInfo.key
+                        ? {
+                            boxShadow: [
+                              "0 0 0 0 rgba(59, 130, 246, 0.4)",
+                              "0 0 0 10px rgba(59, 130, 246, 0)",
+                              "0 0 0 0 rgba(59, 130, 246, 0)",
+                            ],
+                          }
+                        : {}
+                    }
+                    transition={{
+                      duration: 2,
+                      repeat: currentStep === stepInfo.key ? Infinity : 0,
+                    }}
                   >
                     {stepInfo.number}
-                  </div>
+                  </motion.div>
                   <span className="ml-2 text-sm font-medium">
                     {stepInfo.label}
                   </span>
-                </div>
+                </motion.div>
                 {index < steps.length - 1 && (
-                  <div
-                    className={`w-8 h-px ${
-                      currentStepIndex > index ? "bg-green-600" : "bg-gray-300"
-                    }`}
-                  />
+                  <motion.div
+                    className="relative"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.5, delay: (index + 1) * 0.1 }}
+                  >
+                    <div className="w-8 h-px bg-gray-300" />
+                    <motion.div
+                      className="absolute inset-0 bg-green-600 origin-left"
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: currentStepIndex > index ? 1 : 0 }}
+                      transition={{ duration: 0.8, delay: 0.5 }}
+                    />
+                  </motion.div>
                 )}
               </React.Fragment>
             ))}
