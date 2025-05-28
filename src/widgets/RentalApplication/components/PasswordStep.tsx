@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { FirestoreRentalItem } from "../../../shared/services/firestore";
 import { RentalApplicationForm } from "../types";
 
@@ -33,77 +34,193 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+    <motion.div
+      className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 p-6 sm:p-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="text-center mb-8"
+      >
+        <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 mb-4">
+          <span className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></span>
+          <span className="text-sm font-semibold text-primary korean-text">
+            3단계: 비밀번호 확인
+          </span>
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-dark to-gray-700 bg-clip-text text-transparent korean-text mb-2">
           자물쇠 비밀번호 확인
         </h2>
-        <button
-          onClick={onReset}
-          className="text-xs sm:text-sm text-gray-600 hover:text-gray-800 py-1 px-2 border border-gray-300 rounded"
-        >
-          물품 다시 선택
-        </button>
-      </div>
+        <p className="text-gray-600 korean-text">
+          보관함 비밀번호를 확인하고 물품을 찾아주세요
+        </p>
+      </motion.div>
 
       {/* 선택된 물품 정보 */}
-      <div className="bg-gray-50 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-        <h3 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">
+      <motion.div
+        className="bg-gradient-to-br from-gray-50/80 to-gray-100/80 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-gray-200/60"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <h3 className="font-semibold text-gray-900 mb-4 korean-text flex items-center">
+          <span className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></span>
           선택한 물품
         </h3>
-        <div className="flex items-center space-x-3 sm:space-x-4">
-          <img
-            src={selectedItem.image}
-            alt={selectedItem.name}
-            className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded"
-          />
-          <div>
-            <p className="font-medium text-sm sm:text-base">
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <img
+              src={selectedItem.image}
+              alt={selectedItem.name}
+              className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl shadow-lg"
+            />
+            <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center">
+              <svg
+                className="w-3 h-3 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-lg text-gray-900 korean-text">
               {selectedItem.name}
             </p>
-            <p className="text-xs sm:text-sm text-gray-600 line-clamp-1">
+            <p className="text-sm text-gray-600 line-clamp-2 korean-text leading-relaxed">
               {selectedItem.description}
             </p>
-            <p className="text-xs text-gray-500">
-              {selectedItem.campus === "yangsan" ? "양산캠퍼스" : "장전캠퍼스"}
-            </p>
+            <div className="flex items-center mt-2">
+              <span className="px-2 py-1 bg-gradient-to-r from-primary/10 to-secondary/10 text-primary text-xs font-medium rounded-full border border-primary/20">
+                {selectedItem.campus === "yangsan"
+                  ? "양산캠퍼스"
+                  : "장전캠퍼스"}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 자물쇠 비밀번호 표시 */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <h3 className="font-medium text-blue-800 mb-3">🔒 자물쇠 비밀번호</h3>
-        <div className="bg-white border border-blue-300 rounded-lg p-4 text-center">
-          <p className="text-xs text-blue-600 mb-2">보관함 자물쇠 비밀번호</p>
-          <p className="text-3xl font-mono font-bold text-blue-800 mb-2">
+      <motion.div
+        className="bg-gradient-to-br from-blue-50/90 to-indigo-50/90 backdrop-blur-sm border border-blue-200/60 rounded-2xl p-6 mb-6 shadow-lg"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <div className="flex items-center mb-4">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mr-3">
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          </div>
+          <h3 className="font-bold text-blue-800 korean-text">
+            자물쇠 비밀번호
+          </h3>
+        </div>
+
+        <motion.div
+          className="bg-white/90 backdrop-blur-sm border border-blue-300/60 rounded-xl p-6 text-center shadow-lg"
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+        >
+          <p className="text-sm text-blue-600 mb-2 korean-text">
+            보관함 자물쇠 비밀번호
+          </p>
+          <motion.p
+            className="text-4xl font-mono font-bold text-blue-800 mb-3 tracking-wider"
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
             {selectedItem.lockboxPassword || "1234"}
-          </p>
-          <p className="text-xs text-blue-600">
-            위치:{" "}
-            {selectedItem.campus === "yangsan" ? "양산캠퍼스" : "장전캠퍼스"}{" "}
-            {selectedItem.location}
-          </p>
-        </div>
-        <div className="mt-3 text-xs text-blue-700">
-          💡 이 비밀번호로 보관함을 열고 물품을 확인한 후 다음 단계로
-          진행해주세요.
-        </div>
-      </div>
+          </motion.p>
+          <div className="flex items-center justify-center text-sm text-blue-600">
+            <svg
+              className="w-4 h-4 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            <span className="korean-text">
+              {selectedItem.campus === "yangsan" ? "양산캠퍼스" : "장전캠퍼스"}{" "}
+              {selectedItem.location}
+            </span>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="mt-4 p-4 bg-blue-100/50 rounded-xl"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          <div className="flex items-start">
+            <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-lg flex items-center justify-center mr-3 mt-0.5">
+              <span className="text-white text-sm">💡</span>
+            </div>
+            <p className="text-sm text-blue-700 korean-text leading-relaxed">
+              이 비밀번호로 보관함을 열고 물품을 확인한 후 다음 단계로
+              진행해주세요.
+            </p>
+          </div>
+        </motion.div>
+      </motion.div>
 
       {/* 대여 신청 정보 */}
-      <div className="border-t pt-4 sm:pt-6">
-        <h3 className="font-medium text-gray-900 mb-3 text-sm sm:text-base">
+      <motion.div
+        className="border-t border-gray-200/60 pt-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+      >
+        <h3 className="font-semibold text-gray-900 mb-6 korean-text flex items-center">
+          <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
           대여 신청 정보
         </h3>
 
-        <div className="space-y-3 sm:space-y-4">
-          <div className="flex items-start space-x-3">
-            <div
-              className={`flex items-center justify-center w-5 h-5 border-2 rounded cursor-pointer transition-all duration-200 ${
+        <div className="space-y-6">
+          <motion.div
+            className="flex items-start space-x-4"
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className={`flex items-center justify-center w-6 h-6 border-2 rounded-lg cursor-pointer transition-all duration-300 ${
                 applicationForm.agreement
-                  ? "bg-blue-600 border-blue-600"
-                  : "bg-white border-gray-300 hover:border-blue-400"
+                  ? "bg-gradient-to-br from-primary to-secondary border-primary shadow-lg"
+                  : "bg-white border-gray-300 hover:border-primary/50 shadow-sm"
               }`}
               onClick={() =>
                 onApplicationFormChange({
@@ -111,24 +228,29 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
                   agreement: !applicationForm.agreement,
                 })
               }
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
             >
               {applicationForm.agreement && (
-                <svg
-                  className="w-3 h-3 text-white"
+                <motion.svg
+                  className="w-4 h-4 text-white"
                   fill="currentColor"
                   viewBox="0 0 20 20"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <path
                     fillRule="evenodd"
                     d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                     clipRule="evenodd"
                   />
-                </svg>
+                </motion.svg>
               )}
-            </div>
-            <div className="text-sm">
+            </motion.div>
+            <div className="flex-1">
               <label
-                className="font-medium text-gray-700 cursor-pointer"
+                className="font-medium text-gray-700 cursor-pointer korean-text"
                 onClick={() =>
                   onApplicationFormChange({
                     ...applicationForm,
@@ -138,62 +260,104 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
               >
                 대여 약관에 동의합니다
               </label>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 mt-1 korean-text">
                 물품 손상 시 수리비 부담, 연체 시 벌점 부과 등에 동의합니다
               </p>
             </div>
-          </div>
+          </motion.div>
+
           {errors.agreement && (
-            <p className="text-red-600 text-xs mt-1">{errors.agreement}</p>
+            <motion.p
+              className="text-red-600 text-sm mt-2 korean-text"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {errors.agreement}
+            </motion.p>
           )}
 
           {/* 상세 약관 내용 */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-xs">
-            <h4 className="font-medium text-gray-900 mb-2">
-              📋 대여 약관 상세 내용
+          <motion.div
+            className="bg-gradient-to-br from-gray-50/80 to-gray-100/80 backdrop-blur-sm border border-gray-200/60 rounded-2xl p-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <h4 className="font-semibold text-gray-900 mb-4 korean-text flex items-center">
+              <span className="text-lg mr-2">📋</span>
+              대여 약관 상세 내용
             </h4>
-            <div className="space-y-2 text-gray-700">
-              <div>
-                <strong>1. 대여 기간:</strong> 24시간 (익일 같은 시간까지)
-              </div>
-              <div>
-                <strong>2. 연체 시:</strong> 하루당 벌점 1점 부과, 3회 연체 시
-                한 달 이용 정지
-              </div>
-              <div>
-                <strong>3. 물품 손상 시:</strong> 수리비 실비 부담 (영수증 제공)
-              </div>
-              <div>
-                <strong>4. 물품 분실 시:</strong> 동일 물품 재구매 비용 부담
-              </div>
-              <div>
-                <strong>5. 주의사항:</strong> 대여 중 제3자에게 양도 금지, 타인
-                명의 대여 금지
-              </div>
-              <div>
-                <strong>6. 문의:</strong> 정보대학 학생회 (양산캠퍼스 학생회실)
-              </div>
+            <div className="space-y-3 text-sm text-gray-700">
+              {[
+                { title: "대여 기간", content: "24시간 (익일 같은 시간까지)" },
+                {
+                  title: "연체 시",
+                  content: "하루당 벌점 1점 부과, 3회 연체 시 한 달 이용 정지",
+                },
+                {
+                  title: "물품 손상 시",
+                  content: "수리비 실비 부담 (영수증 제공)",
+                },
+                {
+                  title: "물품 분실 시",
+                  content: "동일 물품 재구매 비용 부담",
+                },
+                {
+                  title: "주의사항",
+                  content: "대여 중 제3자에게 양도 금지, 타인 명의 대여 금지",
+                },
+                {
+                  title: "문의",
+                  content: "정보대학 학생회 (양산캠퍼스 학생회실)",
+                },
+              ].map((item, index) => (
+                <motion.div
+                  key={index}
+                  className="flex items-start"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.7 + index * 0.1 }}
+                >
+                  <span className="font-semibold text-primary mr-2 korean-text">
+                    {index + 1}.
+                  </span>
+                  <div>
+                    <strong className="korean-text">{item.title}:</strong>
+                    <span className="ml-1 korean-text">{item.content}</span>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="flex justify-end space-x-3 mt-6">
-        <button
+      <motion.div
+        className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 mt-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.7 }}
+      >
+        <motion.button
           type="button"
           onClick={onReset}
-          className="px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 shadow-md korean-text"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           취소
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           type="button"
           onClick={handleSubmit}
-          className="px-4 py-2 sm:px-6 sm:py-2 bg-blue-600 text-white rounded-md text-xs sm:text-sm font-medium hover:bg-blue-700 shadow-sm"
+          className="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 shadow-lg korean-text"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           사진 촬영하기
-        </button>
-      </div>
-    </div>
+        </motion.button>
+      </motion.div>
+    </motion.div>
   );
 };

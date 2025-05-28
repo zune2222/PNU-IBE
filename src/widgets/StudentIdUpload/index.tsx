@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import {
   StudentIdInfo,
   OcrResult,
@@ -165,181 +166,295 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto px-3 sm:px-6">
-      <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 text-center">
-          학생증 인증
-        </h2>
+    <motion.div
+      className="w-full max-w-2xl mx-auto px-4 sm:px-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 p-6 sm:p-8">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-center mb-8"
+        >
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 mb-4">
+            <span className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></span>
+            <span className="text-sm font-semibold text-primary korean-text">
+              1단계: 학생 인증
+            </span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-dark to-gray-700 bg-clip-text text-transparent korean-text mb-2">
+            학생증 인증
+          </h2>
+          <p className="text-gray-600 korean-text">
+            학생증 사진을 업로드하여 본인 인증을 완료하세요
+          </p>
+        </motion.div>
 
         {/* 파일 업로드 영역 */}
         {!selectedFile && (
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-5 sm:p-8 text-center">
-            <div className="mb-3">
-              <svg
-                className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400"
-                stroke="currentColor"
-                fill="none"
-                viewBox="0 0 48 48"
-              >
-                <path
-                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <p className="text-base sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2">
+          <motion.div
+            className="border-2 border-dashed border-primary/30 rounded-2xl p-8 sm:p-12 text-center bg-gradient-to-br from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10 transition-all duration-300"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            whileHover={{ scale: 1.02 }}
+          >
+            <motion.div
+              className="mb-6"
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <div className="bg-gradient-to-br from-primary to-secondary p-4 rounded-2xl shadow-lg mx-auto w-fit">
+                <svg
+                  className="h-12 w-12 text-white"
+                  stroke="currentColor"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                >
+                  <path
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </motion.div>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 korean-text">
               학생증 사진을 업로드하세요
-            </p>
-            <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
+            </h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-6 korean-text">
               JPG, PNG, WebP 파일 (최대 10MB)
             </p>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               {/* 갤러리에서 선택 버튼 */}
-              <label className="cursor-pointer flex-1">
-                <span className="block w-full rounded-md border border-gray-300 py-3 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 text-center shadow-sm">
-                  갤러리에서 선택
-                </span>
+              <label className="cursor-pointer group">
                 <input
                   type="file"
-                  className="sr-only"
                   accept="image/*"
                   onChange={handleFileSelect}
+                  className="hidden"
                 />
+                <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform group-hover:scale-105 shadow-lg korean-text">
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  갤러리에서 선택
+                </div>
               </label>
 
               {/* 카메라로 촬영 버튼 */}
-              <label className="cursor-pointer flex-1">
-                <span className="block w-full rounded-md border border-gray-300 py-3 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 text-center shadow-sm">
-                  카메라로 촬영
-                </span>
+              <label className="cursor-pointer group">
                 <input
                   type="file"
-                  className="sr-only"
                   accept="image/*"
                   capture="environment"
                   onChange={handleFileSelect}
+                  className="hidden"
                 />
+                <div className="inline-flex items-center px-6 py-3 bg-white text-primary font-semibold rounded-xl hover:bg-gray-50 transition-all duration-300 transform group-hover:scale-105 shadow-lg border-2 border-primary/20 korean-text">
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  카메라로 촬영
+                </div>
               </label>
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {/* 선택된 파일 미리보기 */}
-        {selectedFile && previewUrl && (
-          <div className="mb-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base sm:text-lg font-medium text-gray-900">
-                업로드된 학생증
-              </h3>
-              <button
-                onClick={handleRemoveFile}
-                className="text-red-600 hover:text-red-800 py-1 px-2 text-sm rounded-md border border-transparent hover:border-red-200"
-              >
-                다시 찍기
-              </button>
-            </div>
-            <div className="relative">
-              <img
-                src={previewUrl}
-                alt="학생증 미리보기"
-                className="w-full h-48 sm:h-64 object-contain bg-gray-100 rounded-lg"
-              />
-            </div>
-            <div className="mt-3 text-xs sm:text-sm text-gray-600 flex justify-between">
-              <p>
-                파일명:{" "}
-                {selectedFile.name.length > 20
-                  ? selectedFile.name.substring(0, 20) + "..."
-                  : selectedFile.name}
-              </p>
-              <p>크기: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+        {/* 파일 미리보기 및 OCR 결과 */}
+        {selectedFile && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-6"
+          >
+            {/* 이미지 미리보기 */}
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 korean-text">
+                  업로드된 이미지
+                </h3>
+                <motion.button
+                  onClick={handleRemoveFile}
+                  className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </motion.button>
+              </div>
+              {previewUrl && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative"
+                >
+                  <img
+                    src={previewUrl}
+                    alt="학생증 미리보기"
+                    className="w-full max-w-md mx-auto rounded-xl shadow-lg border border-gray-200"
+                  />
+                </motion.div>
+              )}
             </div>
 
-            {!ocrResult && !showManualInput && (
-              <button
-                onClick={handleOcrProcess}
-                disabled={isLoading}
-                className="mt-4 w-full bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 disabled:opacity-50 shadow-sm font-medium text-base"
+            {/* OCR 처리 버튼 */}
+            {!ocrResult && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-center"
               >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
+                <motion.button
+                  onClick={handleOcrProcess}
+                  disabled={isLoading}
+                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed korean-text"
+                  whileHover={{ scale: isLoading ? 1 : 1.05 }}
+                  whileTap={{ scale: isLoading ? 1 : 0.95 }}
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 rounded-full animate-spin border-t-white mr-3"></div>
+                      학생증 정보 인식 중...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-5 h-5 mr-3"
+                        fill="none"
                         stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    처리 중...
-                  </div>
-                ) : (
-                  "학생 정보 추출하기"
-                )}
-              </button>
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                        />
+                      </svg>
+                      학생증 정보 자동 인식
+                    </>
+                  )}
+                </motion.button>
+              </motion.div>
             )}
-          </div>
-        )}
 
-        {/* OCR 결과 */}
-        {ocrResult && (
-          <div className="mb-5">
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3">
-              추출된 정보
-            </h3>
-            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-              {ocrResult.success && ocrResult.studentInfo ? (
-                <div className="space-y-2 text-sm sm:text-base">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">인식 신뢰도:</span>
-                    <span
-                      className={clientOcrService.getConfidenceColor(
-                        ocrResult.studentInfo.confidence
-                      )}
-                    >
-                      {clientOcrService.getConfidenceText(
-                        ocrResult.studentInfo.confidence
-                      )}{" "}
-                      ({Math.round(ocrResult.studentInfo.confidence * 100)}%)
-                    </span>
+            {/* OCR 결과 또는 수동 입력 폼 */}
+            {(ocrResult || showManualInput) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/60 shadow-lg"
+              >
+                <h3 className="text-xl font-semibold text-gray-900 mb-6 korean-text">
+                  학생 정보 확인
+                </h3>
+
+                <div className="space-y-4">
+                  {/* 학번 입력 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
+                      학번 *
+                    </label>
+                    <input
+                      type="text"
+                      value={manualInput.studentId}
+                      onChange={(e) =>
+                        setManualInput({
+                          ...manualInput,
+                          studentId: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                      placeholder="학번을 입력하세요"
+                    />
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">학번:</span>
-                    <span>
-                      {ocrResult.studentInfo.studentId || "인식 실패"}
-                    </span>
+
+                  {/* 이름 입력 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
+                      이름 *
+                    </label>
+                    <input
+                      type="text"
+                      value={manualInput.name}
+                      onChange={(e) =>
+                        setManualInput({ ...manualInput, name: e.target.value })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                      placeholder="이름을 입력하세요"
+                    />
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">이름:</span>
-                    <span>{ocrResult.studentInfo.name || "인식 실패"}</span>
+
+                  {/* 학과 입력 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
+                      학과
+                    </label>
+                    <input
+                      type="text"
+                      value={manualInput.department}
+                      onChange={(e) =>
+                        setManualInput({
+                          ...manualInput,
+                          department: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                      placeholder="학과를 입력하세요"
+                    />
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">학과:</span>
-                    <span>
-                      {ocrResult.studentInfo.department || "인식 실패"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-medium">캠퍼스:</span>
-                      <span className="text-sm text-blue-600">
-                        직접 선택 필요
-                      </span>
-                    </div>
+
+                  {/* 캠퍼스 선택 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
+                      캠퍼스
+                    </label>
                     <select
                       value={manualInput.campus}
                       onChange={(e) =>
@@ -348,17 +463,18 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                           campus: e.target.value as "yangsan" | "jangjeom",
                         })
                       }
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
                     >
                       <option value="yangsan">양산캠퍼스</option>
                       <option value="jangjeom">장전캠퍼스</option>
                     </select>
                   </div>
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-medium">휴대폰 번호:</span>
-                      <span className="text-sm text-red-600">필수 입력</span>
-                    </div>
+
+                  {/* 휴대폰 번호 입력 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
+                      휴대폰 번호 *
+                    </label>
                     <input
                       type="tel"
                       value={manualInput.phoneNumber}
@@ -368,231 +484,60 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                           phoneNumber: e.target.value,
                         })
                       }
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="010-1234-5678"
-                      maxLength={13}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                      placeholder="010-0000-0000"
                     />
                   </div>
                 </div>
-              ) : (
-                <div className="text-red-600 text-sm sm:text-base">
-                  <p>{ocrResult.error}</p>
-                </div>
-              )}
-            </div>
 
-            {/* OCR 성공 시 저장 버튼 또는 실패 시 다시 시도 버튼 */}
-            {ocrResult.success && ocrResult.studentInfo ? (
-              <button
-                onClick={handleValidateAndSave}
-                disabled={isLoading}
-                className="mt-4 w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 disabled:opacity-50 shadow-sm font-medium text-base"
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    처리 중...
-                  </div>
-                ) : (
-                  "정보 검증 및 저장"
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={handleRemoveFile}
-                className="mt-4 w-full bg-red-600 text-white px-4 py-3 rounded-md hover:bg-red-700 disabled:opacity-50 shadow-sm font-medium text-base"
-              >
-                다시 시도하기
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* 수동 입력 폼 - OCR 결과가 없고 수동 입력 모드가 활성화된 경우에만 표시 */}
-        {showManualInput && !ocrResult && (
-          <div className="mb-5">
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3">
-              수동 입력
-            </h3>
-            <div className="grid grid-cols-1 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  학번 *
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={manualInput.studentId}
-                  onChange={(e) =>
-                    setManualInput({
-                      ...manualInput,
-                      studentId: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                  placeholder="예: 202012345"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  이름 *
-                </label>
-                <input
-                  type="text"
-                  value={manualInput.name}
-                  onChange={(e) =>
-                    setManualInput({ ...manualInput, name: e.target.value })
-                  }
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                  placeholder="홍길동"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  학과/전공
-                </label>
-                <input
-                  type="text"
-                  value={manualInput.department}
-                  onChange={(e) =>
-                    setManualInput({
-                      ...manualInput,
-                      department: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                  placeholder="정보컴퓨터공학부"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  캠퍼스
-                </label>
-                <select
-                  value={manualInput.campus}
-                  onChange={(e) =>
-                    setManualInput({
-                      ...manualInput,
-                      campus: e.target.value as "yangsan" | "jangjeom",
-                    })
-                  }
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                >
-                  <option value="yangsan">양산캠퍼스</option>
-                  <option value="jangjeom">장전캠퍼스</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  휴대폰 번호:
-                </label>
-                <input
-                  type="tel"
-                  value={manualInput.phoneNumber}
-                  onChange={(e) =>
-                    setManualInput({
-                      ...manualInput,
-                      phoneNumber: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                  placeholder="010-1234-5678"
-                  maxLength={13}
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={handleValidateAndSave}
-              disabled={
-                isLoading ||
-                !manualInput.studentId ||
-                !manualInput.name ||
-                !manualInput.phoneNumber
-              }
-              className="mt-4 w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 disabled:opacity-50 shadow-sm font-medium text-base"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
+                {/* 버튼들 */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-8">
+                  <motion.button
+                    onClick={handleValidateAndSave}
+                    disabled={isLoading}
+                    className="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed korean-text"
+                    whileHover={{ scale: isLoading ? 1 : 1.05 }}
+                    whileTap={{ scale: isLoading ? 1 : 0.95 }}
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  처리 중...
-                </div>
-              ) : (
-                "정보 검증 및 저장"
-              )}
-            </button>
-          </div>
-        )}
+                    {isLoading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 rounded-full animate-spin border-t-white mr-3"></div>
+                        인증 중...
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        인증 완료
+                      </>
+                    )}
+                  </motion.button>
 
-        {/* 안내 메시지 */}
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-md">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-blue-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-xs sm:text-sm text-blue-700">
-                <strong>안내사항:</strong>
-                <br />
-                • 모바일 학생증의 정보가 모두 보이도록 캡쳐해주세요
-                <br />
-                • 화면 확대나 너무 작은 크기의 캡쳐는 인식률이 낮아집니다
-                <br />
-                • OCR 인식이 실패하면 수동으로 정보를 입력할 수 있습니다
-                <br />• 입력된 정보는 학사 시스템과 대조하여 검증됩니다
-              </p>
-            </div>
-          </div>
-        </div>
+                  <motion.button
+                    onClick={handleRemoveFile}
+                    className="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-md korean-text"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    다시 선택
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 };
