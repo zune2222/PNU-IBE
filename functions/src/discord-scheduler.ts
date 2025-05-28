@@ -86,9 +86,9 @@ export const checkOverdueRentals = onSchedule(
 
       // 현재 대여 중인 항목 조회
       const activeRentalsQuery = await db
-        .collection("rentalApplications")
-        .where("status", "==", "approved")
-        .where("endDate", "<", todayStr)
+        .collection("rental_applications")
+        .where("status", "==", "rented")
+        .where("dueDate", "<", todayStr)
         .get();
 
       let overdueCount = 0;
@@ -96,7 +96,7 @@ export const checkOverdueRentals = onSchedule(
 
       for (const doc of activeRentalsQuery.docs) {
         const rental = doc.data();
-        const endDate = new Date(rental.endDate);
+        const endDate = new Date(rental.dueDate);
         const overdueDays = Math.floor(
           (today.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24)
         );
@@ -104,34 +104,79 @@ export const checkOverdueRentals = onSchedule(
         if (overdueDays > 0) {
           overdueCount++;
 
-          // 사용자 정보 조회
-          const userDoc = await db.collection("users").doc(rental.userId).get();
-          const user = userDoc.data();
+          // 벌점 계산 (연체일 * 1점)
+          const penaltyPoints = overdueDays;
+
+          // 물품 정보 조회
+          let itemName = "알 수 없는 물품";
+          try {
+            const itemDoc = await db
+              .collection("rental_items")
+              .doc(rental.itemId)
+              .get();
+            if (itemDoc.exists) {
+              const itemData = itemDoc.data();
+              itemName = itemData?.name || "알 수 없는 물품";
+            }
+          } catch (error) {
+            logger.warn(`물품 정보 조회 실패: ${rental.itemId}`, error);
+          }
+
+          // 사용자 정보 조회 - 학번으로 조회
+          const usersQuery = await db
+            .collection("users")
+            .where("studentId", "==", rental.studentId)
+            .get();
+
+          let user = null;
+          if (!usersQuery.empty) {
+            user = usersQuery.docs[0].data();
+          }
 
           if (user) {
             overdueUsers.push({
               userName: user.name,
               studentId: user.studentId,
-              itemName: rental.itemName,
-              endDate: rental.endDate,
+              itemName: itemName,
+              endDate: rental.dueDate,
               overdueDays,
             });
 
-            // 벌점 계산 (연체일 * 1점)
-            const penaltyPoints = overdueDays;
-
-            // 벌점 기록 추가
+            // 벌점 기록 추가 - studentId 기반으로 저장
             await db.collection("penalties").add({
-              userId: rental.userId,
+              userId: rental.studentId, // 학번을 userId로 사용
               rentalId: doc.id,
               type: "OVERDUE",
               points: penaltyPoints,
-              reason: `${rental.itemName} ${overdueDays}일 연체`,
+              reason: `${itemName} ${overdueDays}일 연체`,
               appliedAt: admin.firestore.Timestamp.now(),
             });
 
             logger.info(
-              `연체 처리: ${user.name} - ${rental.itemName} (${overdueDays}일)`
+              `연체 처리: ${user.name} (${rental.studentId}) - ${itemName} (${overdueDays}일)`
+            );
+          } else {
+            // 사용자 정보가 없는 경우에도 대여 신청의 정보를 사용
+            overdueUsers.push({
+              userName: rental.studentName,
+              studentId: rental.studentId,
+              itemName: itemName,
+              endDate: rental.dueDate,
+              overdueDays,
+            });
+
+            // 벌점 기록 추가 - 사용자 정보가 없어도 학번으로 기록
+            await db.collection("penalties").add({
+              userId: rental.studentId, // 학번을 userId로 사용
+              rentalId: doc.id,
+              type: "OVERDUE",
+              points: penaltyPoints,
+              reason: `${itemName} ${overdueDays}일 연체`,
+              appliedAt: admin.firestore.Timestamp.now(),
+            });
+
+            logger.info(
+              `연체 처리 (사용자 정보 없음): ${rental.studentName} (${rental.studentId}) - ${itemName} (${overdueDays}일)`
             );
           }
         }
@@ -224,43 +269,39 @@ export const sendDailySummary = onSchedule(
       ] = await Promise.all([
         // 새로운 신청 (오늘)
         db
-          .collection("rentalApplications")
+          .collection("rental_applications")
           .where(
-            "appliedAt",
+            "createdAt",
             ">=",
             admin.firestore.Timestamp.fromDate(new Date(todayStr))
           )
           .get(),
 
-        // 승인 대기
+        // 승인 대기 - 셀프 서비스에서는 pending 상태가 없을 수 있음
         db
-          .collection("rentalApplications")
+          .collection("rental_applications")
           .where("status", "==", "pending")
           .get(),
 
         // 현재 대여 중
         db
-          .collection("rentalApplications")
-          .where("status", "==", "approved")
-          .where("endDate", ">=", todayStr)
+          .collection("rental_applications")
+          .where("status", "==", "rented")
+          .where("dueDate", ">=", todayStr)
           .get(),
 
         // 연체 중
         db
-          .collection("rentalApplications")
-          .where("status", "==", "approved")
-          .where("endDate", "<", todayStr)
+          .collection("rental_applications")
+          .where("status", "==", "rented")
+          .where("dueDate", "<", todayStr)
           .get(),
 
         // 완료된 반납 (오늘)
         db
-          .collection("rentalApplications")
+          .collection("rental_applications")
           .where("status", "==", "returned")
-          .where(
-            "returnedAt",
-            ">=",
-            admin.firestore.Timestamp.fromDate(new Date(todayStr))
-          )
+          .where("actualReturnDate", ">=", todayStr)
           .get(),
       ]);
 
@@ -275,8 +316,8 @@ export const sendDailySummary = onSchedule(
       // 인기 물품 통계 (최근 7일)
       const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
       const recentRentalsQuery = await db
-        .collection("rentalApplications")
-        .where("appliedAt", ">=", admin.firestore.Timestamp.fromDate(weekAgo))
+        .collection("rental_applications")
+        .where("createdAt", ">=", admin.firestore.Timestamp.fromDate(weekAgo))
         .get();
 
       const itemStats: { [key: string]: number } = {};
@@ -393,7 +434,7 @@ export const systemHealthCheck = onSchedule(
       });
 
       // 중요한 컬렉션들의 접근 가능성 확인
-      const collections = ["users", "rentalApplications", "items"];
+      const collections = ["users", "rental_applications", "items"];
       const healthResults = await Promise.all(
         collections.map(async (collection) => {
           try {

@@ -11,7 +11,6 @@ import CompleteStep from "./components/CompleteStep";
 export default function ReturnApplication() {
   const {
     // 상태
-    loading,
     step,
     isLoading,
     studentInfo,
@@ -35,26 +34,6 @@ export default function ReturnApplication() {
     isOverdue,
     getOverdueDays,
   } = useReturnApplication();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50">
-        <motion.div
-          className="flex flex-col items-center"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-primary/20 rounded-full animate-spin border-t-primary"></div>
-          </div>
-          <div className="text-lg font-medium text-gray-700 mt-4">
-            로딩 중...
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 relative overflow-hidden">

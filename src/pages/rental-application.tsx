@@ -12,7 +12,6 @@ import { CompletionStep } from "../widgets/RentalApplication/components/Completi
 export default function RentalApplication() {
   const {
     // 상태
-    loading,
     availableItems,
     selectedItem,
     isLoading,
@@ -32,26 +31,6 @@ export default function RentalApplication() {
     handleRentalProcess,
     resetApplication,
   } = useRentalApplication();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50">
-        <motion.div
-          className="flex flex-col items-center"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-blue-500/20 rounded-full animate-spin border-t-blue-500"></div>
-          </div>
-          <div className="text-lg font-medium text-gray-700 mt-4">
-            로딩 중...
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <>

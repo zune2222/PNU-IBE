@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useAuth } from "../../../shared/contexts/AuthContext";
 import { useToast } from "../../../shared/components/Toast";
 import {
   rentalApplicationService,
@@ -77,46 +76,88 @@ const clearStorage = () => {
 };
 
 export default function useReturnApplication() {
-  const { user, loading } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
 
-  // 단계 관리 (localStorage에서 복원)
-  const [step, setStepState] = useState<ReturnStep>(() =>
-    loadFromStorage(STORAGE_KEYS.RETURN_STEP, "verify")
-  );
+  // 단계 관리 (기본값으로 초기화, localStorage 복원은 useEffect에서)
+  const [step, setStepState] = useState<ReturnStep>("verify");
   const [isLoading, setIsLoading] = useState(false);
 
-  // 학생 정보 (localStorage에서 복원)
+  // 학생 정보 (기본값으로 초기화)
   const [studentInfo, setStudentInfoState] = useState<StudentIdInfo | null>(
-    () => loadFromStorage(STORAGE_KEYS.STUDENT_INFO, null)
+    null
   );
 
-  // 대여 중인 물품들 (localStorage에서 복원)
+  // 대여 중인 물품들 (기본값으로 초기화)
   const [currentRentals, setCurrentRentalsState] = useState<
     FirestoreRentalApplication[]
-  >(() => loadFromStorage(STORAGE_KEYS.CURRENT_RENTALS, []));
+  >([]);
 
   const [rentalItems, setRentalItemsState] = useState<{
     [id: string]: FirestoreRentalItem;
-  }>(() => loadFromStorage(STORAGE_KEYS.RENTAL_ITEMS, {}));
+  }>({});
 
   const [selectedRental, setSelectedRentalState] =
-    useState<FirestoreRentalApplication | null>(() =>
-      loadFromStorage(STORAGE_KEYS.SELECTED_RENTAL, null)
-    );
+    useState<FirestoreRentalApplication | null>(null);
 
-  // 사진 업로드 상태 (localStorage에서 복원)
-  const [photos, setPhotosState] = useState<ReturnPhotos>(() =>
-    loadFromStorage(STORAGE_KEYS.PHOTOS, {
-      itemPhoto: "",
-      labelPhoto: "",
-      lockboxPhoto: "",
-    })
-  );
+  // 사진 업로드 상태 (기본값으로 초기화)
+  const [photos, setPhotosState] = useState<ReturnPhotos>({
+    itemPhoto: "",
+    labelPhoto: "",
+    lockboxPhoto: "",
+  });
 
   // 자물쇠 비밀번호 상태 추가
   const [lockboxPassword, setLockboxPassword] = useState<string>("");
+
+  // 클라이언트에서만 localStorage 상태 복원
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedStep = loadFromStorage(STORAGE_KEYS.RETURN_STEP, "verify");
+      const savedStudentInfo = loadFromStorage(STORAGE_KEYS.STUDENT_INFO, null);
+      const savedCurrentRentals = loadFromStorage(
+        STORAGE_KEYS.CURRENT_RENTALS,
+        []
+      );
+      const savedRentalItems = loadFromStorage(STORAGE_KEYS.RENTAL_ITEMS, {});
+      const savedSelectedRental = loadFromStorage(
+        STORAGE_KEYS.SELECTED_RENTAL,
+        null
+      );
+      const savedPhotos = loadFromStorage(STORAGE_KEYS.PHOTOS, {
+        itemPhoto: "",
+        labelPhoto: "",
+        lockboxPhoto: "",
+      });
+
+      setStepState(savedStep);
+      setStudentInfoState(savedStudentInfo);
+      setCurrentRentalsState(savedCurrentRentals);
+      setRentalItemsState(savedRentalItems);
+      setSelectedRentalState(savedSelectedRental);
+      setPhotosState(savedPhotos);
+
+      // 이미 진행 중인 상태가 있다면 로그 출력
+      if (savedStep !== "verify" && savedStep !== "complete") {
+        console.log("이전 진행 상태를 복원했습니다:", savedStep);
+      }
+    }
+  }, []);
+
+  // 페이지 언로드 시 상태 저장 (추가 보장)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveToStorage(STORAGE_KEYS.RETURN_STEP, step);
+      saveToStorage(STORAGE_KEYS.STUDENT_INFO, studentInfo);
+      saveToStorage(STORAGE_KEYS.CURRENT_RENTALS, currentRentals);
+      saveToStorage(STORAGE_KEYS.RENTAL_ITEMS, rentalItems);
+      saveToStorage(STORAGE_KEYS.SELECTED_RENTAL, selectedRental);
+      saveToStorage(STORAGE_KEYS.PHOTOS, photos);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [step, studentInfo, currentRentals, rentalItems, selectedRental, photos]);
 
   // 상태 변경 시 localStorage에 저장하는 래퍼 함수들
   const setStep = (newStep: ReturnStep) => {
@@ -158,30 +199,6 @@ export default function useReturnApplication() {
       saveToStorage(STORAGE_KEYS.PHOTOS, photos);
     }
   };
-
-  // 컴포넌트 마운트 시 상태 복원 확인
-  useEffect(() => {
-    // 이미 진행 중인 상태가 있다면 복원된 상태 사용
-    const savedStep = loadFromStorage(STORAGE_KEYS.RETURN_STEP, "verify");
-    if (savedStep !== "verify" && savedStep !== "complete") {
-      console.log("이전 진행 상태를 복원했습니다:", savedStep);
-    }
-  }, []);
-
-  // 페이지 언로드 시 상태 저장 (추가 보장)
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      saveToStorage(STORAGE_KEYS.RETURN_STEP, step);
-      saveToStorage(STORAGE_KEYS.STUDENT_INFO, studentInfo);
-      saveToStorage(STORAGE_KEYS.CURRENT_RENTALS, currentRentals);
-      saveToStorage(STORAGE_KEYS.RENTAL_ITEMS, rentalItems);
-      saveToStorage(STORAGE_KEYS.SELECTED_RENTAL, selectedRental);
-      saveToStorage(STORAGE_KEYS.PHOTOS, photos);
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [step, studentInfo, currentRentals, rentalItems, selectedRental, photos]);
 
   // 학생증 인증 성공 처리
   const handleStudentIdSuccess = async (studentData: StudentIdInfo) => {
@@ -335,7 +352,7 @@ export default function useReturnApplication() {
 
   // 자물쇠 비밀번호 제공 및 디스코드 알림
   const handleProvidePassword = async () => {
-    if (!selectedRental || !validateItemPhotos()) {
+    if (!selectedRental || !validateItemPhotos() || !studentInfo) {
       return;
     }
 
@@ -347,7 +364,7 @@ export default function useReturnApplication() {
       // 사진 업로드 기록 저장
       await photoUploadService.createPhotoRecord({
         rentalId: selectedRental.id!,
-        userId: user?.uid || "anonymous",
+        userId: studentInfo.studentId!, // 학번을 userId로 사용
         type: "item_pre_return",
         url: photos.itemPhoto,
         verified: false,
@@ -355,7 +372,7 @@ export default function useReturnApplication() {
 
       await photoUploadService.createPhotoRecord({
         rentalId: selectedRental.id!,
-        userId: user?.uid || "anonymous",
+        userId: studentInfo.studentId!, // 학번을 userId로 사용
         type: "item_pre_return", // item_label 대신 item_pre_return 사용
         url: photos.labelPhoto,
         verified: false,
@@ -385,7 +402,7 @@ export default function useReturnApplication() {
 
   // 최종 반납 완료 처리
   const handleCompleteReturn = async () => {
-    if (!photos.lockboxPhoto) {
+    if (!photos.lockboxPhoto || !studentInfo) {
       showToast({
         type: "error",
         message: "자물쇠 잠금 확인 사진을 업로드해주세요.",
@@ -411,7 +428,7 @@ export default function useReturnApplication() {
       // 자물쇠 사진 기록 저장
       await photoUploadService.createPhotoRecord({
         rentalId: selectedRental!.id!,
-        userId: user?.uid || "anonymous",
+        userId: studentInfo.studentId!, // 학번을 userId로 사용
         type: "lockbox_post_return",
         url: photos.lockboxPhoto,
         verified: false,
@@ -475,7 +492,6 @@ export default function useReturnApplication() {
 
   return {
     // 상태
-    loading,
     step,
     isLoading,
     studentInfo,

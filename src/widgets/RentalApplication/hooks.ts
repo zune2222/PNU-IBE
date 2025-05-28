@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useAuth } from "../../shared/contexts/AuthContext";
 import { useToast } from "../../shared/components/Toast";
 import {
   rentalItemService,
@@ -71,41 +70,66 @@ const clearRentalStorage = () => {
 };
 
 export const useRentalApplication = () => {
-  const { user, loading } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
 
-  // 상태 관리 (localStorage에서 복원)
+  // 상태 관리 (기본값으로 초기화, localStorage 복원은 useEffect에서)
   const [availableItems, setAvailableItems] = useState<FirestoreRentalItem[]>(
     []
   );
   const [selectedItem, setSelectedItemState] =
-    useState<FirestoreRentalItem | null>(() =>
-      loadFromStorage(STORAGE_KEYS.SELECTED_ITEM, null)
-    );
+    useState<FirestoreRentalItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStepState] = useState<RentalStep>(() =>
-    loadFromStorage(STORAGE_KEYS.RENTAL_STEP, "verify")
-  );
+  const [step, setStepState] = useState<RentalStep>("verify");
   const [verifiedStudentInfo, setVerifiedStudentInfoState] =
-    useState<ExtendedStudentIdInfo | null>(() =>
-      loadFromStorage(STORAGE_KEYS.VERIFIED_STUDENT_INFO, null)
-    );
+    useState<ExtendedStudentIdInfo | null>(null);
   const [applicationForm, setApplicationFormState] =
-    useState<RentalApplicationForm>(() =>
-      loadFromStorage(STORAGE_KEYS.APPLICATION_FORM, { agreement: false })
-    );
-  const [photos, setPhotosState] = useState<RentalPhotos>(() =>
-    // File 객체는 localStorage에 저장할 수 없으므로 항상 기본값 사용
-    ({ itemCondition: null, itemLabel: null, lockboxSecured: null })
-  );
-  const [createdRentalId, setCreatedRentalIdState] = useState<string | null>(
-    () => loadFromStorage(STORAGE_KEYS.CREATED_RENTAL_ID, null)
-  );
-  const [rentalDueDate, setRentalDueDateState] = useState<Date | null>(() => {
-    const saved = loadFromStorage(STORAGE_KEYS.RENTAL_DUE_DATE, null);
-    return saved ? new Date(saved) : null;
+    useState<RentalApplicationForm>({ agreement: false });
+  const [photos, setPhotosState] = useState<RentalPhotos>({
+    itemCondition: null,
+    itemLabel: null,
+    lockboxSecured: null,
   });
+  const [createdRentalId, setCreatedRentalIdState] = useState<string | null>(
+    null
+  );
+  const [rentalDueDate, setRentalDueDateState] = useState<Date | null>(null);
+
+  // 클라이언트에서만 localStorage 상태 복원
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedSelectedItem = loadFromStorage(
+        STORAGE_KEYS.SELECTED_ITEM,
+        null
+      );
+      const savedStep = loadFromStorage(STORAGE_KEYS.RENTAL_STEP, "verify");
+      const savedStudentInfo = loadFromStorage(
+        STORAGE_KEYS.VERIFIED_STUDENT_INFO,
+        null
+      );
+      const savedApplicationForm = loadFromStorage(
+        STORAGE_KEYS.APPLICATION_FORM,
+        { agreement: false }
+      );
+      const savedCreatedRentalId = loadFromStorage(
+        STORAGE_KEYS.CREATED_RENTAL_ID,
+        null
+      );
+      const savedRentalDueDate = loadFromStorage(
+        STORAGE_KEYS.RENTAL_DUE_DATE,
+        null
+      );
+
+      setSelectedItemState(savedSelectedItem);
+      setStepState(savedStep);
+      setVerifiedStudentInfoState(savedStudentInfo);
+      setApplicationFormState(savedApplicationForm);
+      setCreatedRentalIdState(savedCreatedRentalId);
+      setRentalDueDateState(
+        savedRentalDueDate ? new Date(savedRentalDueDate) : null
+      );
+    }
+  }, []);
 
   // 상태 변경 시 localStorage에 저장하는 래퍼 함수들
   const setSelectedItem = (item: FirestoreRentalItem | null) => {
@@ -195,7 +219,7 @@ export const useRentalApplication = () => {
   };
 
   const handleItemSelect = async (item: FirestoreRentalItem) => {
-    if (!user || !verifiedStudentInfo) {
+    if (!verifiedStudentInfo) {
       showToast({
         type: "error",
         message: "학생 인증이 필요합니다.",
@@ -229,7 +253,7 @@ export const useRentalApplication = () => {
       dueDate.setDate(today.getDate() + 1); // 24시간 후
 
       const rentalData = {
-        userId: user.uid,
+        userId: verifiedStudentInfo.studentId, // 학번을 userId로 사용
         itemId: item.id!,
         itemUniqueId: item.uniqueId,
         status: "rented" as const,
@@ -315,7 +339,7 @@ export const useRentalApplication = () => {
   };
 
   const uploadStudentInfo = async () => {
-    if (!verifiedStudentInfo || !selectedItem || !user) return;
+    if (!verifiedStudentInfo || !selectedItem) return;
 
     // OCR 정보 검증
     if (
@@ -360,7 +384,7 @@ export const useRentalApplication = () => {
   };
 
   const handleRentalProcess = async () => {
-    if (!selectedItem || !verifiedStudentInfo || !createdRentalId || !user) {
+    if (!selectedItem || !verifiedStudentInfo || !createdRentalId) {
       showToast({
         type: "error",
         message: "대여 신청 정보가 없습니다. 처음부터 다시 시도해주세요.",
@@ -405,7 +429,7 @@ export const useRentalApplication = () => {
           itemLabel: photos.itemLabel,
           lockboxSecured: photos.lockboxSecured,
         },
-        user.uid,
+        verifiedStudentInfo.studentId!, // 학번을 userId로 사용 (이미 null 체크 완료)
         createdRentalId
       );
 
@@ -438,8 +462,6 @@ export const useRentalApplication = () => {
 
   return {
     // 상태
-    user,
-    loading,
     availableItems,
     selectedItem,
     isLoading,
