@@ -106,15 +106,30 @@ export const clientOcrService = {
       name = nameLabel[1];
       confidence += 0.35;
     } else {
-      // 범용 패턴이지만 부정 키워드 제외
-      const nameFallbackRegex = /\b([가-힣]{2,4})\b/g;
-      const blacklist = /(재학|상태|학번|소속|대학|학과)/;
-      let match: RegExpExecArray | null;
-      while ((match = nameFallbackRegex.exec(normalized))) {
-        if (!blacklist.test(match[1])) {
-          name = match[1];
-          confidence += 0.15;
-          break;
+      // 학번 뒤에 오는 이름 패턴 먼저 시도 (더 정확함)
+      if (studentId) {
+        const nameAfterStudentId = new RegExp(
+          studentId + "\\s+([가-힣]{2,4})"
+        ).exec(normalized);
+        if (nameAfterStudentId) {
+          name = nameAfterStudentId[1];
+          confidence += 0.3;
+        }
+      }
+
+      // 여전히 찾지 못했다면 범용 패턴 사용 (개선된 버전)
+      if (!name) {
+        const nameFallbackRegex = /([가-힣]{2,4})(?=\s|$|[^가-힣])/g;
+        const blacklist =
+          /(재학|상태|학번|소속|대학|학과|부산|양산|정보|생명|공학|모바일|학생|pepsin|pith)/i;
+        let match: RegExpExecArray | null;
+        while ((match = nameFallbackRegex.exec(normalized))) {
+          const candidateName = match[1];
+          if (!blacklist.test(candidateName)) {
+            name = candidateName;
+            confidence += 0.15;
+            break;
+          }
         }
       }
     }

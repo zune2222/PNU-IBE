@@ -1,7 +1,21 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useEvents } from "../../shared/services/hooks";
 
 export function EventsHero() {
+  const { data: events = [], isLoading } = useEvents();
+
+  // 상태별 이벤트 개수 계산
+  const ongoingCount = events.filter(
+    (event) => event.status === "ongoing"
+  ).length;
+  const upcomingCount = events.filter(
+    (event) => event.status === "upcoming"
+  ).length;
+  const completedCount = events.filter(
+    (event) => event.status === "completed"
+  ).length;
+
   return (
     <section className="relative min-h-screen flex items-center pt-20 pb-20 overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50">
       {/* 개선된 배경 요소들 */}
@@ -84,7 +98,7 @@ export function EventsHero() {
                 </div>
                 <div className="text-left sm:text-center flex-1 sm:flex-none">
                   <div className="text-xl sm:text-2xl md:text-3xl font-bold text-dark korean-text mb-0 sm:mb-1">
-                    3
+                    {isLoading ? "..." : ongoingCount}
                   </div>
                   <div className="text-sm sm:text-base text-gray-600 korean-text">
                     진행 중
@@ -113,7 +127,7 @@ export function EventsHero() {
                 </div>
                 <div className="text-left sm:text-center flex-1 sm:flex-none">
                   <div className="text-xl sm:text-2xl md:text-3xl font-bold text-dark korean-text mb-0 sm:mb-1">
-                    7
+                    {isLoading ? "..." : upcomingCount}
                   </div>
                   <div className="text-sm sm:text-base text-gray-600 korean-text">
                     예정
@@ -142,7 +156,7 @@ export function EventsHero() {
                 </div>
                 <div className="text-left sm:text-center flex-1 sm:flex-none">
                   <div className="text-xl sm:text-2xl md:text-3xl font-bold text-dark korean-text mb-0 sm:mb-1">
-                    25
+                    {isLoading ? "..." : completedCount}
                   </div>
                   <div className="text-sm sm:text-base text-gray-600 korean-text">
                     완료
