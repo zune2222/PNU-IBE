@@ -116,7 +116,7 @@ const departments = [
       </svg>
     ),
     memberList:
-      "국장: 이연지(22학번), 국원: 설대연(25학번), 김현지(25학번), 박준이(21학번)",
+      "국장: 이연지(22학번), 국원: 설대연(25학번), 김현지(24학번), 박준이(21학번)",
     color: "from-violet-500 to-purple-500",
     bgColor: "from-violet-400/20 to-purple-400/20",
   },

@@ -1,13 +1,13 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useToast } from "../../../shared/components/Toast";
 import { FirestoreRentalItem } from "../../../shared/services/firestore";
 import { RentalApplicationForm } from "../types";
 
 interface PasswordStepProps {
   selectedItem: FirestoreRentalItem;
   applicationForm: RentalApplicationForm;
-  errors: { [key: string]: string };
   onApplicationFormChange: (form: RentalApplicationForm) => void;
   onNextStep: () => void;
   onReset: () => void;
@@ -16,22 +16,23 @@ interface PasswordStepProps {
 export const PasswordStep: React.FC<PasswordStepProps> = ({
   selectedItem,
   applicationForm,
-  errors,
   onApplicationFormChange,
   onNextStep,
   onReset,
 }) => {
+  const { showToast } = useToast();
+
   const handleSubmit = () => {
     // 신청 정보 유효성 검사
-    const newErrors: { [key: string]: string } = {};
-
     if (!applicationForm.agreement) {
-      newErrors.agreement = "약관에 동의해주세요.";
+      showToast({
+        type: "error",
+        message: "약관에 동의해주세요.",
+      });
+      return;
     }
 
-    if (Object.keys(newErrors).length === 0) {
-      onNextStep();
-    }
+    onNextStep();
   };
 
   return (
@@ -268,17 +269,6 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
               </p>
             </div>
           </motion.div>
-
-          {errors.agreement && (
-            <motion.p
-              className="text-red-600 text-sm mt-2 korean-text"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {errors.agreement}
-            </motion.p>
-          )}
 
           {/* 상세 약관 내용 */}
           <motion.div

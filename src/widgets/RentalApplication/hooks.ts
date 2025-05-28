@@ -175,21 +175,17 @@ export const useRentalApplication = () => {
   };
 
   const handleStudentIdSuccess = (studentInfoData: ExtendedStudentIdInfo) => {
-    showToast({
-      type: "success",
-      message: "학생증 인증이 완료되었습니다!",
-    });
     setVerifiedStudentInfo(studentInfoData);
 
     // 인증 완료 후 바로 물품 선택 단계로 이동
     setTimeout(() => {
       setStep("select");
       showToast({
-        type: "info",
+        type: "success",
         message:
           "학생 인증이 완료되었습니다. 이제 물품을 선택하고 대여 신청하실 수 있습니다!",
       });
-    }, 2000);
+    }, 1000); // 1초 후에 한 번만 토스트 표시
   };
 
   const handleStudentIdError = (error: string) => {

@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { GoogleAnalytics, pageview } from "../shared/lib/analytics";
 import { AuthProvider } from "../shared/contexts/AuthContext";
+import { ToastProvider } from "../shared/components/Toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useMobile } from "../shared/hooks/useMobile";
@@ -201,10 +202,12 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <main className="font-pretendard">
-          <GoogleAnalytics />
-          <AppWrapper Component={Component} pageProps={pageProps} />
-        </main>
+        <ToastProvider>
+          <main className="font-pretendard">
+            <GoogleAnalytics />
+            <AppWrapper Component={Component} pageProps={pageProps} />
+          </main>
+        </ToastProvider>
       </AuthProvider>
       {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools initialIsOpen={false} />

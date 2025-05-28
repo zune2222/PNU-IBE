@@ -8,7 +8,6 @@ import { ItemSelection } from "../widgets/RentalApplication/components/ItemSelec
 import { PasswordStep } from "../widgets/RentalApplication/components/PasswordStep";
 import { PhotoCapture } from "../widgets/RentalApplication/components/PhotoCapture";
 import { CompletionStep } from "../widgets/RentalApplication/components/CompletionStep";
-import { MessageDisplay } from "../widgets/RentalApplication/components/MessageDisplay";
 
 export default function RentalApplication() {
   const {
@@ -20,8 +19,6 @@ export default function RentalApplication() {
     step,
     applicationForm,
     photos,
-    errors,
-    successMessage,
     rentalDueDate,
     router,
 
@@ -118,15 +115,6 @@ export default function RentalApplication() {
 
         {/* 메인 컨텐츠 */}
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
-          {/* 메시지 표시 */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <MessageDisplay errors={errors} successMessage={successMessage} />
-          </motion.div>
-
           {/* 단계별 컨텐츠 */}
           <motion.div
             key={step}
@@ -154,7 +142,6 @@ export default function RentalApplication() {
               <PasswordStep
                 selectedItem={selectedItem}
                 applicationForm={applicationForm}
-                errors={errors}
                 onApplicationFormChange={setApplicationForm}
                 onNextStep={() => setStep("photos")}
                 onReset={resetApplication}
@@ -165,7 +152,6 @@ export default function RentalApplication() {
               <PhotoCapture
                 selectedItem={selectedItem}
                 photos={photos}
-                errors={errors}
                 isLoading={isLoading}
                 onPhotosChange={setPhotos}
                 onSubmit={handleRentalProcess}

@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export type ToastType = "success" | "error" | "info" | "warning";
@@ -37,8 +43,37 @@ interface ToastProviderProps {
 
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const lastToastRef = useRef<{ message: string; timestamp: number } | null>(
+    null
+  );
 
   const showToast = useCallback((toast: Omit<Toast, "id">) => {
+    const now = Date.now();
+
+    // 중복 토스트 방지: 같은 메시지가 2초 이내에 연속으로 호출되면 무시
+    if (
+      lastToastRef.current &&
+      lastToastRef.current.message === toast.message &&
+      now - lastToastRef.current.timestamp < 2000 // 2초로 증가
+    ) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("중복 토스트 방지:", toast.message);
+      }
+      return;
+    }
+
+    // 기존에 같은 메시지의 토스트가 있다면 제거
+    setToasts((prev) => {
+      const filtered = prev.filter((t) => t.message !== toast.message);
+
+      // 최대 3개까지만 유지 (새로운 것이 추가되면 가장 오래된 것 제거)
+      if (filtered.length >= 3) {
+        return filtered.slice(1); // 가장 오래된 것 제거
+      }
+
+      return filtered;
+    });
+
     const id = Math.random().toString(36).substr(2, 9);
     const newToast: Toast = {
       ...toast,
@@ -47,6 +82,12 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     };
 
     setToasts((prev) => [...prev, newToast]);
+
+    // 마지막 토스트 정보 업데이트
+    lastToastRef.current = {
+      message: toast.message,
+      timestamp: now,
+    };
 
     // 자동 제거
     if (newToast.duration && newToast.duration > 0) {
@@ -62,6 +103,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
 
   const clearAllToasts = useCallback(() => {
     setToasts([]);
+    lastToastRef.current = null;
   }, []);
 
   const getToastIcon = (type: ToastType) => {

@@ -7,7 +7,6 @@ import { RentalPhotos } from "../types";
 interface PhotoCaptureProps {
   selectedItem: FirestoreRentalItem;
   photos: RentalPhotos;
-  errors: { [key: string]: string };
   isLoading: boolean;
   onPhotosChange: (photos: RentalPhotos) => void;
   onSubmit: () => void;
@@ -17,7 +16,6 @@ interface PhotoCaptureProps {
 export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
   selectedItem,
   photos,
-  errors,
   isLoading,
   onPhotosChange,
   onSubmit,
@@ -311,17 +309,6 @@ export const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                   </div>
                 </label>
               </div>
-
-              {errors[step.key] && (
-                <motion.p
-                  className="text-red-600 text-sm korean-text"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {errors[step.key]}
-                </motion.p>
-              )}
             </div>
           </motion.div>
         ))}

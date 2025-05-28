@@ -1,6 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { useToast } from "../../shared/components/Toast";
 import { StudentIdUpload } from "../StudentIdUpload";
 import useReturnApplication from "./hooks/useReturnApplication";
 import ReturnStepIndicator from "./components/ReturnStepIndicator";
@@ -10,7 +9,6 @@ import LockboxConfirmStep from "./components/LockboxConfirmStep";
 import CompleteStep from "./components/CompleteStep";
 
 export default function ReturnApplication() {
-  const { showToast } = useToast();
   const {
     // 상태
     loading,
@@ -22,6 +20,7 @@ export default function ReturnApplication() {
     selectedRental,
     photos,
     router,
+    lockboxPassword,
 
     // 액션
     setStep,
@@ -36,17 +35,6 @@ export default function ReturnApplication() {
     isOverdue,
     getOverdueDays,
   } = useReturnApplication();
-
-  React.useEffect(() => {
-    // 페이지 로드 시 이전 상태가 복원되었는지 확인
-    if (step !== "verify" && step !== "complete") {
-      showToast({
-        type: "info",
-        message:
-          "이전 진행 상태를 복원했습니다. 사진 앱 사용 후에도 입력한 정보가 안전하게 보관됩니다.",
-      });
-    }
-  }, [step, showToast]);
 
   if (loading) {
     return (
@@ -128,9 +116,12 @@ export default function ReturnApplication() {
 
         {step === "select" && (
           <RentalSelectionStep
+            studentInfo={studentInfo}
             currentRentals={currentRentals}
             rentalItems={rentalItems}
+            isLoading={isLoading}
             onRentalSelect={handleRentalSelect}
+            onReset={resetApplication}
             isOverdue={isOverdue}
             getOverdueDays={getOverdueDays}
           />
@@ -138,29 +129,32 @@ export default function ReturnApplication() {
 
         {step === "photos" && selectedRental && (
           <PhotoUploadStep
-            rental={selectedRental}
-            item={rentalItems[selectedRental.itemId]}
+            selectedRental={selectedRental}
+            rentalItems={rentalItems}
             photos={photos}
+            errors={{}}
+            isLoading={isLoading}
             onPhotoUploadSuccess={handlePhotoUploadSuccess}
             onPhotoUploadError={handlePhotoUploadError}
-            onNext={handleProvidePassword}
-            isLoading={isLoading}
+            onProvidePassword={handleProvidePassword}
+            onBack={() => setStep("select")}
           />
         )}
 
         {step === "lockbox" && selectedRental && (
           <LockboxConfirmStep
-            rental={selectedRental}
-            item={rentalItems[selectedRental.itemId]}
             photos={photos}
+            errors={{}}
+            isLoading={isLoading}
+            lockboxPassword={lockboxPassword}
             onPhotoUploadSuccess={handlePhotoUploadSuccess}
             onPhotoUploadError={handlePhotoUploadError}
-            onComplete={handleCompleteReturn}
-            isLoading={isLoading}
+            onCompleteReturn={handleCompleteReturn}
+            onBack={() => setStep("photos")}
           />
         )}
 
-        {step === "complete" && <CompleteStep onReset={resetApplication} />}
+        {step === "complete" && <CompleteStep router={router} />}
       </div>
     </div>
   );

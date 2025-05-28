@@ -8,6 +8,7 @@ import {
   photoUploadService,
   FirestoreRentalApplication,
   FirestoreRentalItem,
+  lockboxPasswordService,
 } from "../../../shared/services/firestore";
 import { discordService } from "../../../shared/services/discordService";
 import { StudentIdInfo } from "../../../shared/services/clientOcrService";
@@ -113,6 +114,9 @@ export default function useReturnApplication() {
       lockboxPhoto: "",
     })
   );
+
+  // 자물쇠 비밀번호 상태 추가
+  const [lockboxPassword, setLockboxPassword] = useState<string>("");
 
   // 상태 변경 시 localStorage에 저장하는 래퍼 함수들
   const setStep = (newStep: ReturnStep) => {
@@ -240,9 +244,45 @@ export default function useReturnApplication() {
     });
   };
 
-  // 물품 선택 처리
-  const handleRentalSelect = (rental: FirestoreRentalApplication) => {
+  // 자물쇠 비밀번호 가져오기
+  const fetchLockboxPassword = async (rental: FirestoreRentalApplication) => {
+    try {
+      const item = rentalItems[rental.itemId];
+      if (!item) return;
+
+      const passwordData = await lockboxPasswordService.getCurrentPassword(
+        item.campus,
+        item.location
+      );
+
+      if (passwordData) {
+        setLockboxPassword(passwordData.currentPassword);
+      } else {
+        // 비밀번호가 설정되지 않은 경우 기본값 사용
+        setLockboxPassword("1234");
+        showToast({
+          type: "warning",
+          message:
+            "보관함 비밀번호가 설정되지 않았습니다. 관리자에게 문의하세요.",
+        });
+      }
+    } catch (error) {
+      console.error("자물쇠 비밀번호 조회 오류:", error);
+      setLockboxPassword("1234");
+      showToast({
+        type: "error",
+        message: "비밀번호 조회 중 오류가 발생했습니다. 관리자에게 문의하세요.",
+      });
+    }
+  };
+
+  // 물품 선택 함수
+  const handleRentalSelect = async (rental: FirestoreRentalApplication) => {
     setSelectedRental(rental);
+
+    // 선택된 렌탈의 자물쇠 비밀번호 가져오기
+    await fetchLockboxPassword(rental);
+
     setStep("photos");
   };
 
@@ -361,7 +401,7 @@ export default function useReturnApplication() {
     setIsLoading(true);
 
     try {
-      // 반납 상태 업데이트
+      // 반납 상태 업데이트 (자동 처리)
       await rentalApplicationService.updateStatus(
         selectedRental!.id!,
         "returned",
@@ -369,6 +409,9 @@ export default function useReturnApplication() {
           actualReturnDate: new Date().toISOString().split("T")[0],
         }
       );
+
+      // 물품 상태를 "available"로 업데이트 (중요!)
+      await rentalItemService.returnItem(selectedRental!.itemId);
 
       // 자물쇠 사진 기록 저장
       await photoUploadService.createPhotoRecord({
@@ -391,8 +434,9 @@ export default function useReturnApplication() {
 
       showToast({
         type: "success",
-        message: "반납이 완료되었습니다! 이용해주셔서 감사합니다.",
-        duration: 3000,
+        message:
+          "반납이 자동으로 완료되었습니다! 관리자 승인 없이 바로 처리되었어요. 🎉",
+        duration: 4000,
       });
 
       setStep("complete");
@@ -456,6 +500,7 @@ export default function useReturnApplication() {
     selectedRental,
     photos,
     router,
+    lockboxPassword,
 
     // 액션
     setStep,

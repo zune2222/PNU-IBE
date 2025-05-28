@@ -85,17 +85,8 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
   // 컴포넌트 마운트 시 상태 복원 확인
   useEffect(() => {
-    const savedOcrResult = loadFromStorage(STORAGE_KEYS.OCR_RESULT, null);
-    const savedPhoneNumber = loadFromStorage(STORAGE_KEYS.PHONE_NUMBER, "");
-
-    if (savedOcrResult || savedPhoneNumber) {
-      showToast({
-        type: "info",
-        message:
-          "이전 입력 정보를 복원했습니다. 사진 앱 사용 후에도 입력한 정보가 안전하게 보관됩니다.",
-      });
-    }
-  }, [showToast]);
+    // 이전 상태 복원 알림 제거 - 사용자에게 불필요한 정보
+  }, []);
 
   // 상태 변경 시 localStorage에 저장
   useEffect(() => {
