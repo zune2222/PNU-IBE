@@ -32,10 +32,10 @@ export default function LockboxConfirmStep({
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center mb-8"
       >
-        <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-green-500/10 border border-purple-500/20 mb-4">
-          <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 animate-pulse"></span>
-          <span className="text-sm font-semibold text-purple-600">
-            5단계: 자물쇠 확인
+        <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 mb-4">
+          <span className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></span>
+          <span className="text-sm font-semibold text-primary">
+            4단계: 자물쇠 확인
           </span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
@@ -52,16 +52,16 @@ export default function LockboxConfirmStep({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl"
+          className="mb-8 p-6 bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/20 rounded-xl"
         >
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">
+            <h3 className="text-lg font-semibold text-primary mb-2">
               🔐 자물쇠 비밀번호
             </h3>
-            <div className="text-3xl font-bold text-blue-600 bg-white/80 rounded-lg py-3 px-6 inline-block border border-blue-300">
+            <div className="text-3xl font-bold text-primary bg-white/80 rounded-lg py-3 px-6 inline-block border border-primary/30">
               {lockboxPassword}
             </div>
-            <p className="text-sm text-blue-700 mt-3">
+            <p className="text-sm text-primary/80 mt-3">
               이 번호로 자물쇠를 열고 물품을 넣은 후 다시 잠가주세요
             </p>
           </div>
@@ -131,7 +131,7 @@ export default function LockboxConfirmStep({
         <button
           onClick={onCompleteReturn}
           disabled={isLoading || !photos.lockboxPhoto}
-          className="px-6 py-2 bg-purple-600 text-white rounded-md text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
+          className="px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-md text-sm font-medium hover:from-primary/90 hover:to-secondary/90 disabled:opacity-50"
         >
           {isLoading ? "반납 처리 중..." : "반납 완료"}
         </button>

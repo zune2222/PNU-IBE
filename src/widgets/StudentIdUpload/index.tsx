@@ -90,6 +90,30 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
     loadFromStorage(STORAGE_KEYS.PHONE_NUMBER, "")
   );
 
+  // 전화번호 포맷팅 함수
+  const formatPhoneNumber = (value: string) => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, "");
+
+    // 길이에 따라 포맷팅
+    if (numbers.length <= 3) {
+      return numbers;
+    } else if (numbers.length <= 7) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    } else {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(
+        7,
+        11
+      )}`;
+    }
+  };
+
+  // 전화번호 입력 핸들러
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhoneNumber(formatted);
+  };
+
   // 컴포넌트 마운트 시 상태 복원 확인
   useEffect(() => {
     // 이전 상태 복원 알림 제거 - 사용자에게 불필요한 정보
@@ -596,7 +620,9 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                       <input
                         type="tel"
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        onChange={handlePhoneNumberChange}
+                        maxLength={13}
+                        inputMode="numeric"
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
                         placeholder="010-0000-0000"
                       />

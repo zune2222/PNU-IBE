@@ -362,16 +362,13 @@ export default function useReturnApplication() {
       });
 
       // 디스코드 알림 발송
-      await discordService.notifyReturnRequested({
-        userName: studentInfo?.name || "알 수 없음",
+      await discordService.notifyInstantReturn({
+        studentName: studentInfo?.name || "알 수 없음",
         studentId: studentInfo?.studentId || "알 수 없음",
         itemName: item.name,
-        endDate: selectedRental.dueDate,
-      });
-
-      showToast({
-        type: "success",
-        message: "반납 요청이 전송되었습니다. 자물쇠 잠금 사진을 촬영해주세요.",
+        returnDate: new Date().toISOString().split("T")[0],
+        rentalId: selectedRental.id!,
+        isOnTime: true,
       });
 
       setStep("lockbox");
@@ -420,20 +417,9 @@ export default function useReturnApplication() {
         verified: false,
       });
 
-      // 반납 완료 디스코드 알림
-      const item = rentalItems[selectedRental!.itemId];
-
-      await discordService.notifyReturnCompleted({
-        userName: studentInfo?.name || "알 수 없음",
-        studentId: studentInfo?.studentId || "알 수 없음",
-        itemName: item.name,
-        actualReturnDate: new Date().toISOString().split("T")[0],
-      });
-
       showToast({
         type: "success",
-        message:
-          "반납이 자동으로 완료되었습니다! 관리자 승인 없이 바로 처리되었어요. 🎉",
+        message: "반납이 완료되었습니다! 🎉",
         duration: 4000,
       });
 

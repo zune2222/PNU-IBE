@@ -46,7 +46,7 @@ export default function ReturnApplication() {
           transition={{ duration: 0.5 }}
         >
           <div className="relative">
-            <div className="w-16 h-16 border-4 border-blue-500/20 rounded-full animate-spin border-t-blue-500"></div>
+            <div className="w-16 h-16 border-4 border-primary/20 rounded-full animate-spin border-t-primary"></div>
           </div>
           <div className="text-lg font-medium text-gray-700 mt-4">
             로딩 중...
@@ -60,9 +60,9 @@ export default function ReturnApplication() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 relative overflow-hidden">
       {/* 배경 요소들 */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 via-blue-500 to-purple-500"></div>
-        <div className="absolute top-20 right-10 w-96 h-96 rounded-full bg-gradient-to-br from-green-500/10 to-blue-500/10 blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-gradient-to-tr from-blue-500/10 to-purple-500/10 blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary to-secondary"></div>
+        <div className="absolute top-20 right-10 w-96 h-96 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-gradient-to-tr from-primary/10 to-secondary/10 blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       {/* 헤더 */}
@@ -79,7 +79,7 @@ export default function ReturnApplication() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 물품 반납 신청
               </h1>
               <p className="text-sm sm:text-base text-gray-600 mt-1">

@@ -20,26 +20,24 @@ export default function CompleteStep({ router }: CompleteStepProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        <div className="relative inline-block">
+        <div className="relative">
           <svg
-            className="mx-auto h-20 w-20 text-green-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+            className="mx-auto h-20 w-20 text-primary"
+            fill="currentColor"
+            viewBox="0 0 20 20"
           >
             <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clipRule="evenodd"
             />
           </svg>
-          <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full animate-ping"></div>
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full animate-ping"></div>
         </div>
       </motion.div>
 
       <motion.h2
-        className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-4"
+        className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
@@ -48,17 +46,15 @@ export default function CompleteStep({ router }: CompleteStepProps) {
       </motion.h2>
 
       <motion.div
-        className="mb-8 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200"
+        className="mb-8 p-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl border border-primary/20"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.6 }}
       >
-        <p className="text-green-800 text-lg font-semibold mb-2">
-          ✅ 반납이 자동으로 처리되었습니다
+        <p className="text-primary text-lg font-semibold mb-2">
+          ✅ 반납이 성공적으로 이루어졌습니다.
         </p>
         <p className="text-gray-700 text-sm leading-relaxed">
-          별도의 승인 과정 없이 바로 반납 완료되었습니다.
-          <br />
           관리자에게 자동으로 알림이 전송되었으니 안심하세요!
         </p>
       </motion.div>
@@ -78,7 +74,7 @@ export default function CompleteStep({ router }: CompleteStepProps) {
 
       <motion.button
         onClick={() => router.push("/")}
-        className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-3 rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+        className="bg-gradient-to-r from-primary to-secondary text-white px-8 py-3 rounded-xl font-medium hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-lg"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 1.0 }}

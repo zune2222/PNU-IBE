@@ -26,11 +26,6 @@ interface DiscordField {
   inline?: boolean;
 }
 
-interface DiscordWebhookPayload {
-  content?: string;
-  embeds: DiscordEmbed[];
-}
-
 interface RentalNotificationData {
   studentName: string;
   studentId: string;
@@ -88,7 +83,7 @@ class DiscordService {
     }
   }
 
-  // 즉시 대여 완료 알림 (새로운 플로우용)
+  // 즉시 대여 완료 알림
   async notifyInstantRental(data: RentalNotificationData): Promise<boolean> {
     const embed: DiscordEmbed = {
       title: "🔔 즉시 대여 완료",
@@ -137,151 +132,65 @@ class DiscordService {
     return await this.sendMessage(message);
   }
 
-  // 대여 신청 알림 전송
-  async sendRentalNotification(data: RentalNotificationData): Promise<boolean> {
-    if (!DISCORD_WEBHOOK_URL) {
-      console.warn(
-        "디스코드 웹훅 URL이 설정되지 않아 알림을 보낼 수 없습니다."
-      );
-      return false;
-    }
-
-    try {
-      const embed: DiscordEmbed = {
-        title: "🔔 새로운 물품 대여 신청",
-        description: `**${data.studentName}** 학생이 물품을 대여했습니다.`,
-        color: 0x3b82f6, // 파란색
-        fields: [
-          {
-            name: "👤 학생 정보",
-            value: `**이름:** ${data.studentName}\n**학번:** ${data.studentId}\n**학과:** ${data.department}\n**연락처:** ${data.phoneNumber}`,
-            inline: true,
-          },
-          {
-            name: "📦 물품 정보",
-            value: `**물품명:** ${data.itemName}\n**카테고리:** ${
-              data.itemCategory
-            }\n**위치:** ${
-              data.campus === "yangsan" ? "양산캠퍼스" : "장전캠퍼스"
-            } ${data.location}`,
-            inline: true,
-          },
-          {
-            name: "📅 대여 기간",
-            value: `**대여일:** ${data.rentDate}\n**반납 예정일:** ${data.dueDate}`,
-            inline: false,
-          },
-          {
-            name: "🔗 관리",
-            value: `**대여 ID:** \`${data.rentalId}\`\n[관리자 페이지에서 확인하기](${window.location.origin}/admin/rentals)`,
-            inline: false,
-          },
-        ],
-        timestamp: new Date().toISOString(),
-        footer: {
-          text: "PNU IBE 물품 대여 시스템",
-        },
-      };
-
-      const payload: DiscordWebhookPayload = {
-        content: "@here 새로운 대여 신청이 있습니다!",
-        embeds: [embed],
-      };
-
-      const response = await fetch(DISCORD_WEBHOOK_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `디스코드 알림 전송 실패: ${response.status} ${response.statusText}`
-        );
-      }
-
-      console.log("디스코드 대여 알림 전송 완료:", data.rentalId);
-      return true;
-    } catch (error) {
-      console.error("디스코드 알림 전송 오류:", error);
-      return false;
-    }
-  }
-
-  // 반납 알림 전송
-  async sendReturnNotification(data: {
+  // 즉시 반납 완료 알림
+  async notifyInstantReturn(data: {
     studentName: string;
     studentId: string;
     itemName: string;
     returnDate: string;
     rentalId: string;
     isOnTime: boolean;
+    overdueDays?: number;
   }): Promise<boolean> {
-    if (!DISCORD_WEBHOOK_URL) {
-      console.warn(
-        "디스코드 웹훅 URL이 설정되지 않아 알림을 보낼 수 없습니다."
-      );
-      return false;
-    }
-
-    try {
-      const embed: DiscordEmbed = {
-        title: data.isOnTime ? "✅ 물품 반납 완료" : "⚠️ 연체 반납 완료",
-        description: `**${data.studentName}** 학생이 물품을 반납했습니다.`,
-        color: data.isOnTime ? 0x10b981 : 0xf59e0b, // 초록색 또는 주황색
-        fields: [
-          {
-            name: "👤 학생 정보",
-            value: `**이름:** ${data.studentName}\n**학번:** ${data.studentId}`,
-            inline: true,
-          },
-          {
-            name: "📦 물품 정보",
-            value: `**물품명:** ${data.itemName}\n**반납일:** ${data.returnDate}`,
-            inline: true,
-          },
-          {
-            name: "📊 상태",
-            value: data.isOnTime ? "✅ 정상 반납" : "⚠️ 연체 반납",
-            inline: false,
-          },
-        ],
-        timestamp: new Date().toISOString(),
-        footer: {
-          text: "PNU IBE 물품 대여 시스템",
+    const embed: DiscordEmbed = {
+      title: data.isOnTime ? "✅ 즉시 반납 완료" : "⚠️ 연체 반납 완료",
+      description: `**${data.studentName}** 학생이 물품을 즉시 반납했습니다.`,
+      color: data.isOnTime ? COLORS.SUCCESS : COLORS.WARNING,
+      fields: [
+        {
+          name: "👤 학생 정보",
+          value: `**이름:** ${data.studentName}\n**학번:** ${data.studentId}`,
+          inline: true,
         },
-      };
-
-      const payload: DiscordWebhookPayload = {
-        embeds: [embed],
-      };
-
-      const response = await fetch(DISCORD_WEBHOOK_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+        {
+          name: "📦 물품 정보",
+          value: `**물품명:** ${data.itemName}\n**반납일:** ${data.returnDate}`,
+          inline: true,
         },
-        body: JSON.stringify(payload),
-      });
+        {
+          name: "📊 상태",
+          value: data.isOnTime
+            ? "✅ 정상 반납"
+            : `⚠️ 연체 반납 (${data.overdueDays}일 연체)`,
+          inline: false,
+        },
+        {
+          name: "🔗 관리",
+          value: `**대여 ID:** \`${data.rentalId}\``,
+          inline: false,
+        },
+      ],
+      timestamp: new Date().toISOString(),
+      footer: {
+        text: "PNU IBE 물품 대여 시스템",
+      },
+      thumbnail: {
+        url: PNU_IBE_LOGO,
+      },
+    };
 
-      if (!response.ok) {
-        throw new Error(
-          `디스코드 알림 전송 실패: ${response.status} ${response.statusText}`
-        );
-      }
+    const message: DiscordMessage = {
+      content: data.isOnTime
+        ? "✅ 물품이 정상 반납되었습니다!"
+        : "⚠️ 연체된 물품이 반납되었습니다!",
+      embeds: [embed],
+    };
 
-      console.log("디스코드 반납 알림 전송 완료:", data.rentalId);
-      return true;
-    } catch (error) {
-      console.error("디스코드 알림 전송 오류:", error);
-      return false;
-    }
+    return await this.sendMessage(message);
   }
 
-  // 연체 알림 전송
-  async sendOverdueNotification(data: {
+  // 연체 알림
+  async notifyOverdue(data: {
     studentName: string;
     studentId: string;
     itemName: string;
@@ -290,348 +199,92 @@ class DiscordService {
     phoneNumber: string;
     rentalId: string;
   }): Promise<boolean> {
-    if (!DISCORD_WEBHOOK_URL) {
-      console.warn(
-        "디스코드 웹훅 URL이 설정되지 않아 알림을 보낼 수 없습니다."
-      );
-      return false;
-    }
-
-    try {
-      const embed: DiscordEmbed = {
-        title: "🚨 물품 연체 알림",
-        description: `**${data.studentName}** 학생의 물품이 ${data.overdueDays}일 연체되었습니다.`,
-        color: 0xef4444, // 빨간색
-        fields: [
-          {
-            name: "👤 학생 정보",
-            value: `**이름:** ${data.studentName}\n**학번:** ${data.studentId}\n**연락처:** ${data.phoneNumber}`,
-            inline: true,
-          },
-          {
-            name: "📦 물품 정보",
-            value: `**물품명:** ${data.itemName}\n**반납 예정일:** ${data.dueDate}\n**연체 일수:** ${data.overdueDays}일`,
-            inline: true,
-          },
-          {
-            name: "📞 조치 사항",
-            value: "학생에게 연락하여 즉시 반납하도록 안내해주세요.",
-            inline: false,
-          },
-        ],
-        timestamp: new Date().toISOString(),
-        footer: {
-          text: "PNU IBE 물품 대여 시스템",
-        },
-      };
-
-      const payload: DiscordWebhookPayload = {
-        content: "@here 연체된 물품이 있습니다!",
-        embeds: [embed],
-      };
-
-      const response = await fetch(DISCORD_WEBHOOK_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `디스코드 알림 전송 실패: ${response.status} ${response.statusText}`
-        );
-      }
-
-      console.log("디스코드 연체 알림 전송 완료:", data.rentalId);
-      return true;
-    } catch (error) {
-      console.error("디스코드 알림 전송 오류:", error);
-      return false;
-    }
-  }
-
-  // 새로운 대여 신청 알림
-  async notifyNewRentalApplication(data: {
-    userName: string;
-    studentId: string;
-    itemName: string;
-    startDate: string;
-    endDate: string;
-    purpose: string;
-  }): Promise<boolean> {
-    const message: DiscordMessage = {
-      username: "PNU IBE 대여 시스템",
-      avatar_url: PNU_IBE_LOGO,
-      embeds: [
+    const embed: DiscordEmbed = {
+      title: "🚨 물품 연체 알림",
+      description: `**${data.studentName}** 학생의 물품이 ${data.overdueDays}일 연체되었습니다.`,
+      color: COLORS.ERROR,
+      fields: [
         {
-          title: "🆕 새로운 대여 신청",
-          description: `**${data.userName}**님이 물품 대여를 신청했습니다.`,
-          color: COLORS.WARNING,
-          fields: [
-            {
-              name: "신청자",
-              value: `${data.userName} (${data.studentId})`,
-              inline: true,
-            },
-            { name: "물품", value: data.itemName, inline: true },
-            {
-              name: "대여 기간",
-              value: `${data.startDate} ~ ${data.endDate}`,
-              inline: false,
-            },
-            { name: "대여 목적", value: data.purpose, inline: false },
-          ],
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: "PNU 정보의생명공학대학 학생회",
-            icon_url: PNU_IBE_LOGO,
-          },
+          name: "👤 학생 정보",
+          value: `**이름:** ${data.studentName}\n**학번:** ${data.studentId}\n**연락처:** ${data.phoneNumber}`,
+          inline: true,
+        },
+        {
+          name: "📦 물품 정보",
+          value: `**물품명:** ${data.itemName}\n**반납 예정일:** ${data.dueDate}\n**연체 일수:** ${data.overdueDays}일`,
+          inline: true,
+        },
+        {
+          name: "📞 조치 사항",
+          value: "학생에게 연락하여 즉시 반납하도록 안내해주세요.",
+          inline: false,
+        },
+        {
+          name: "🔗 관리",
+          value: `**대여 ID:** \`${data.rentalId}\``,
+          inline: false,
         },
       ],
+      timestamp: new Date().toISOString(),
+      footer: {
+        text: "PNU IBE 물품 대여 시스템",
+      },
+      thumbnail: {
+        url: PNU_IBE_LOGO,
+      },
     };
 
-    return this.sendMessage(message);
-  }
-
-  // 대여 승인 알림
-  async notifyRentalApproved(data: {
-    userName: string;
-    studentId: string;
-    itemName: string;
-    lockboxLocation: string;
-    lockboxPassword: string;
-  }): Promise<boolean> {
     const message: DiscordMessage = {
-      username: "PNU IBE 대여 시스템",
-      avatar_url: PNU_IBE_LOGO,
-      embeds: [
-        {
-          title: "✅ 대여 승인 완료",
-          description: `**${data.userName}**님의 대여 신청이 승인되었습니다.`,
-          color: COLORS.SUCCESS,
-          fields: [
-            {
-              name: "신청자",
-              value: `${data.userName} (${data.studentId})`,
-              inline: true,
-            },
-            { name: "물품", value: data.itemName, inline: true },
-            { name: "보관함 위치", value: data.lockboxLocation, inline: false },
-            {
-              name: "보관함 비밀번호",
-              value: `||${data.lockboxPassword}||`,
-              inline: false,
-            },
-          ],
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: "보관함에서 물품을 수령해주세요",
-            icon_url: PNU_IBE_LOGO,
-          },
-        },
-      ],
+      content: "🚨 연체된 물품이 있습니다!",
+      embeds: [embed],
     };
 
-    return this.sendMessage(message);
-  }
-
-  // 대여 거부 알림
-  async notifyRentalRejected(data: {
-    userName: string;
-    studentId: string;
-    itemName: string;
-    reason: string;
-  }): Promise<boolean> {
-    const message: DiscordMessage = {
-      username: "PNU IBE 대여 시스템",
-      avatar_url: PNU_IBE_LOGO,
-      embeds: [
-        {
-          title: "❌ 대여 신청 거부",
-          description: `**${data.userName}**님의 대여 신청이 거부되었습니다.`,
-          color: COLORS.ERROR,
-          fields: [
-            {
-              name: "신청자",
-              value: `${data.userName} (${data.studentId})`,
-              inline: true,
-            },
-            { name: "물품", value: data.itemName, inline: true },
-            { name: "거부 사유", value: data.reason, inline: false },
-          ],
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: "문의사항이 있으시면 학생회에 연락해주세요",
-            icon_url: PNU_IBE_LOGO,
-          },
-        },
-      ],
-    };
-
-    return this.sendMessage(message);
-  }
-
-  // 반납 신청 알림
-  async notifyReturnRequested(data: {
-    userName: string;
-    studentId: string;
-    itemName: string;
-    endDate: string;
-  }): Promise<boolean> {
-    const message: DiscordMessage = {
-      username: "PNU IBE 대여 시스템",
-      avatar_url: PNU_IBE_LOGO,
-      embeds: [
-        {
-          title: "📦 반납 신청",
-          description: `**${data.userName}**님이 물품 반납을 신청했습니다.`,
-          color: COLORS.WARNING,
-          fields: [
-            {
-              name: "신청자",
-              value: `${data.userName} (${data.studentId})`,
-              inline: true,
-            },
-            { name: "물품", value: data.itemName, inline: true },
-            { name: "원래 반납일", value: data.endDate, inline: true },
-          ],
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: "관리자 확인이 필요합니다",
-            icon_url: PNU_IBE_LOGO,
-          },
-        },
-      ],
-    };
-
-    return this.sendMessage(message);
-  }
-
-  // 반납 완료 알림
-  async notifyReturnCompleted(data: {
-    userName: string;
-    studentId: string;
-    itemName: string;
-    actualReturnDate: string;
-  }): Promise<boolean> {
-    const message: DiscordMessage = {
-      username: "PNU IBE 대여 시스템",
-      avatar_url: PNU_IBE_LOGO,
-      embeds: [
-        {
-          title: "✅ 반납 완료",
-          description: `**${data.userName}**님의 물품 반납이 완료되었습니다.`,
-          color: COLORS.SUCCESS,
-          fields: [
-            {
-              name: "반납자",
-              value: `${data.userName} (${data.studentId})`,
-              inline: true,
-            },
-            { name: "물품", value: data.itemName, inline: true },
-            { name: "반납일", value: data.actualReturnDate, inline: true },
-          ],
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: "이용해주셔서 감사합니다",
-            icon_url: PNU_IBE_LOGO,
-          },
-        },
-      ],
-    };
-
-    return this.sendMessage(message);
-  }
-
-  // 연체 알림
-  async notifyOverdue(data: {
-    userName: string;
-    studentId: string;
-    itemName: string;
-    endDate: string;
-    overdueDays: number;
-    penaltyPoints: number;
-  }): Promise<boolean> {
-    const message: DiscordMessage = {
-      username: "PNU IBE 대여 시스템",
-      avatar_url: PNU_IBE_LOGO,
-      embeds: [
-        {
-          title: "⚠️ 연체 발생",
-          description: `**${data.userName}**님의 대여 물품이 연체되었습니다.`,
-          color: COLORS.ERROR,
-          fields: [
-            {
-              name: "연체자",
-              value: `${data.userName} (${data.studentId})`,
-              inline: true,
-            },
-            { name: "물품", value: data.itemName, inline: true },
-            { name: "원래 반납일", value: data.endDate, inline: true },
-            { name: "연체일", value: `${data.overdueDays}일`, inline: true },
-            {
-              name: "부과 벌점",
-              value: `${data.penaltyPoints}점`,
-              inline: true,
-            },
-          ],
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: "즉시 반납해주세요",
-            icon_url: PNU_IBE_LOGO,
-          },
-        },
-      ],
-    };
-
-    return this.sendMessage(message);
+    return await this.sendMessage(message);
   }
 
   // 일일 요약 알림
   async notifyDailySummary(data: {
     date: string;
-    newApplications: number;
-    pendingApplications: number;
+    newRentals: number;
     activeRentals: number;
     overdueRentals: number;
     completedReturns: number;
+    totalItems: number;
+    availableItems: number;
   }): Promise<boolean> {
-    const message: DiscordMessage = {
-      username: "PNU IBE 대여 시스템",
-      avatar_url: PNU_IBE_LOGO,
-      embeds: [
+    const embed: DiscordEmbed = {
+      title: "📊 일일 대여 현황 요약",
+      description: `**${data.date}** 대여 시스템 현황입니다.`,
+      color: COLORS.INFO,
+      fields: [
         {
-          title: "📊 일일 대여 현황 요약",
-          description: `**${data.date}** 대여 시스템 현황입니다.`,
-          color: COLORS.INFO,
-          fields: [
-            {
-              name: "새로운 신청",
-              value: `${data.newApplications}건`,
-              inline: true,
-            },
-            {
-              name: "승인 대기",
-              value: `${data.pendingApplications}건`,
-              inline: true,
-            },
-            { name: "대여 중", value: `${data.activeRentals}건`, inline: true },
-            { name: "연체", value: `${data.overdueRentals}건`, inline: true },
-            {
-              name: "완료된 반납",
-              value: `${data.completedReturns}건`,
-              inline: true,
-            },
-          ],
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: "PNU 정보의생명공학대학 학생회",
-            icon_url: PNU_IBE_LOGO,
-          },
+          name: "📈 오늘의 활동",
+          value: `**새로운 대여:** ${data.newRentals}건\n**완료된 반납:** ${data.completedReturns}건`,
+          inline: true,
+        },
+        {
+          name: "📊 현재 상황",
+          value: `**대여 중:** ${data.activeRentals}건\n**연체:** ${data.overdueRentals}건`,
+          inline: true,
+        },
+        {
+          name: "📦 물품 현황",
+          value: `**전체 물품:** ${data.totalItems}개\n**대여 가능:** ${data.availableItems}개`,
+          inline: true,
         },
       ],
+      timestamp: new Date().toISOString(),
+      footer: {
+        text: "PNU IBE 물품 대여 시스템",
+      },
+      thumbnail: {
+        url: PNU_IBE_LOGO,
+      },
+    };
+
+    const message: DiscordMessage = {
+      content: "📊 일일 대여 현황 요약입니다.",
+      embeds: [embed],
     };
 
     return this.sendMessage(message);
@@ -644,37 +297,38 @@ class DiscordService {
     userId?: string;
     additionalInfo?: string;
   }): Promise<boolean> {
-    const message: DiscordMessage = {
-      username: "PNU IBE 시스템",
-      avatar_url: PNU_IBE_LOGO,
-      embeds: [
-        {
-          title: "🚨 시스템 오류 발생",
-          description: "대여 시스템에 오류가 발생했습니다.",
-          color: COLORS.ERROR,
-          fields: [
-            { name: "오류 타입", value: data.errorType, inline: true },
-            { name: "오류 메시지", value: data.errorMessage, inline: false },
-            ...(data.userId
-              ? [{ name: "사용자 ID", value: data.userId, inline: true }]
-              : []),
-            ...(data.additionalInfo
-              ? [
-                  {
-                    name: "추가 정보",
-                    value: data.additionalInfo,
-                    inline: false,
-                  },
-                ]
-              : []),
-          ],
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: "시스템 관리자 확인 필요",
-            icon_url: PNU_IBE_LOGO,
-          },
-        },
+    const embed: DiscordEmbed = {
+      title: "🚨 시스템 오류 발생",
+      description: "대여 시스템에 오류가 발생했습니다.",
+      color: COLORS.ERROR,
+      fields: [
+        { name: "오류 타입", value: data.errorType, inline: true },
+        { name: "오류 메시지", value: data.errorMessage, inline: false },
+        ...(data.userId
+          ? [{ name: "사용자 ID", value: data.userId, inline: true }]
+          : []),
+        ...(data.additionalInfo
+          ? [
+              {
+                name: "추가 정보",
+                value: data.additionalInfo,
+                inline: false,
+              },
+            ]
+          : []),
       ],
+      timestamp: new Date().toISOString(),
+      footer: {
+        text: "PNU IBE 물품 대여 시스템",
+      },
+      thumbnail: {
+        url: PNU_IBE_LOGO,
+      },
+    };
+
+    const message: DiscordMessage = {
+      content: "🚨 시스템 오류가 발생했습니다!",
+      embeds: [embed],
     };
 
     return this.sendMessage(message);
@@ -682,22 +336,22 @@ class DiscordService {
 
   // 테스트 메시지 (개발용)
   async sendTestMessage(): Promise<boolean> {
+    const embed: DiscordEmbed = {
+      title: "🧪 테스트 완료",
+      description: "Discord Webhook이 정상적으로 작동하고 있습니다.",
+      color: COLORS.SUCCESS,
+      timestamp: new Date().toISOString(),
+      footer: {
+        text: "PNU IBE 물품 대여 시스템",
+      },
+      thumbnail: {
+        url: PNU_IBE_LOGO,
+      },
+    };
+
     const message: DiscordMessage = {
-      username: "PNU IBE 대여 시스템",
-      avatar_url: PNU_IBE_LOGO,
       content: "🧪 Discord 알림 시스템 테스트 메시지입니다.",
-      embeds: [
-        {
-          title: "테스트 완료",
-          description: "Discord Webhook이 정상적으로 작동하고 있습니다.",
-          color: COLORS.SUCCESS,
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: "PNU 정보의생명공학대학 학생회",
-            icon_url: PNU_IBE_LOGO,
-          },
-        },
-      ],
+      embeds: [embed],
     };
 
     return this.sendMessage(message);

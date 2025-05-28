@@ -59,13 +59,13 @@ export default function RentalSelectionStep({
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center mb-6 sm:mb-8"
       >
-        <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 mb-4">
-          <span className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse"></span>
-          <span className="text-sm font-semibold text-green-600">
+        <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 mb-4">
+          <span className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></span>
+          <span className="text-sm font-semibold text-primary">
             2단계: 물품 선택
           </span>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
+        <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
           반납할 물품 선택
         </h2>
         <p className="text-gray-600">
@@ -99,7 +99,7 @@ export default function RentalSelectionStep({
           </div>
           <button
             onClick={() => router.push("/rental-application")}
-            className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            className="bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl font-medium hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-lg"
           >
             물품 대여하기
           </button>
@@ -185,7 +185,7 @@ export default function RentalSelectionStep({
 
                   {/* 반납 버튼 */}
                   <div className="flex-shrink-0">
-                    <button className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-green-400 text-white px-6 py-3 rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <button className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl font-medium hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-lg">
                       반납 신청
                     </button>
                   </div>

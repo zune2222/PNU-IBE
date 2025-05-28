@@ -62,14 +62,14 @@ export default function PhotoUploadStep({
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center mb-6"
       >
-        <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 mb-4">
-          <span className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse"></span>
-          <span className="text-sm font-semibold text-green-600">
+        <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 mb-4">
+          <span className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></span>
+          <span className="text-sm font-semibold text-primary">
             3단계: 사진 업로드
           </span>
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
-          반납 사진 업로드
+        <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
+          물품 상태 사진 업로드
         </h2>
         <p className="text-sm sm:text-base text-gray-600">
           물품 상태와 라벨을 촬영해주세요
@@ -192,7 +192,7 @@ export default function PhotoUploadStep({
           <button
             onClick={onProvidePassword}
             disabled={isLoading || !photos.itemPhoto || !photos.labelPhoto}
-            className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-3 rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:transform-none disabled:hover:scale-100"
+            className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl font-medium hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:transform-none disabled:hover:scale-100"
           >
             {isLoading ? "처리 중..." : "다음 단계"}
           </button>

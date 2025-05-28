@@ -39,7 +39,7 @@ export default function ReturnStepIndicator({
             <div className="relative">
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-green-500 to-blue-500 rounded-full"
+                  className="h-full bg-gradient-to-r from-primary to-secondary rounded-full"
                   initial={{ width: 0 }}
                   animate={{
                     width: `${((currentStepIndex + 1) / steps.length) * 100}%`,
@@ -56,12 +56,12 @@ export default function ReturnStepIndicator({
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20"
+                className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20"
               >
-                <span className="w-6 h-6 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                <span className="w-6 h-6 bg-gradient-to-r from-primary to-secondary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
                   {steps[currentStepIndex]?.number}
                 </span>
-                <span className="text-sm font-semibold text-green-700">
+                <span className="text-sm font-semibold text-primary">
                   {currentStepIndex + 1}단계: {steps[currentStepIndex]?.label}
                 </span>
               </motion.div>
@@ -77,9 +77,9 @@ export default function ReturnStepIndicator({
                 <motion.div
                   className={`flex items-center ${
                     currentStep === stepInfo.key
-                      ? "text-blue-600"
+                      ? "text-primary"
                       : currentStepIndex > index
-                      ? "text-green-600"
+                      ? "text-primary"
                       : "text-gray-400"
                   }`}
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -89,9 +89,9 @@ export default function ReturnStepIndicator({
                   <motion.div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                       currentStep === stepInfo.key
-                        ? "bg-blue-100"
+                        ? "bg-primary/10 text-primary"
                         : currentStepIndex > index
-                        ? "bg-green-100"
+                        ? "bg-primary/10 text-primary"
                         : "bg-gray-100"
                     }`}
                     whileHover={{ scale: 1.1 }}
@@ -99,9 +99,9 @@ export default function ReturnStepIndicator({
                       currentStep === stepInfo.key
                         ? {
                             boxShadow: [
-                              "0 0 0 0 rgba(59, 130, 246, 0.4)",
-                              "0 0 0 10px rgba(59, 130, 246, 0)",
-                              "0 0 0 0 rgba(59, 130, 246, 0)",
+                              "0 0 0 0 rgba(var(--color-primary), 0.4)",
+                              "0 0 0 10px rgba(var(--color-primary), 0)",
+                              "0 0 0 0 rgba(var(--color-primary), 0)",
                             ],
                           }
                         : {}
@@ -126,7 +126,7 @@ export default function ReturnStepIndicator({
                   >
                     <div className="w-8 h-px bg-gray-300" />
                     <motion.div
-                      className="absolute inset-0 bg-green-600 origin-left"
+                      className="absolute inset-0 bg-primary origin-left"
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: currentStepIndex > index ? 1 : 0 }}
                       transition={{ duration: 0.8, delay: 0.5 }}
