@@ -1,38 +1,71 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useToast } from "../../../shared/components/Toast";
 import {
   FirestoreRentalItem,
-  rentalApplicationService,
+  lockboxPasswordService,
 } from "../../../shared/services/firestore";
-import { discordService } from "../../../shared/services/discordService";
-import { useAuth } from "../../../shared/contexts/AuthContext";
-import { RentalApplicationForm, ExtendedStudentIdInfo } from "../types";
+import { RentalApplicationForm } from "../types";
 
 interface PasswordStepProps {
   selectedItem: FirestoreRentalItem;
   applicationForm: RentalApplicationForm;
-  verifiedStudentInfo: ExtendedStudentIdInfo;
   onApplicationFormChange: (form: RentalApplicationForm) => void;
   onNextStep: () => void;
   onReset: () => void;
-  onRentalCompleted: (rentalId: string) => void;
 }
 
 export const PasswordStep: React.FC<PasswordStepProps> = ({
   selectedItem,
   applicationForm,
-  verifiedStudentInfo,
   onApplicationFormChange,
   onNextStep,
   onReset,
-  onRentalCompleted,
 }) => {
   const { showToast } = useToast();
-  const { user } = useAuth();
+  const [lockboxPassword, setLockboxPassword] = useState<string>("1234");
+  const [isLoadingPassword, setIsLoadingPassword] = useState(true);
 
-  const handleSubmit = async () => {
+  // 컴포넌트 마운트 시 자물쇠 비밀번호 가져오기
+  useEffect(() => {
+    const fetchLockboxPassword = async () => {
+      try {
+        setIsLoadingPassword(true);
+
+        const passwordData =
+          await lockboxPasswordService.getCurrentPasswordByCampus(
+            selectedItem.campus
+          );
+
+        if (passwordData) {
+          setLockboxPassword(passwordData.currentPassword);
+        } else {
+          // 비밀번호가 설정되지 않은 경우 기본값 사용
+          setLockboxPassword("1234");
+          showToast({
+            type: "warning",
+            message:
+              "보관함 비밀번호가 설정되지 않았습니다. 관리자에게 문의하세요.",
+          });
+        }
+      } catch (error) {
+        console.error("자물쇠 비밀번호 조회 오류:", error);
+        setLockboxPassword("1234");
+        showToast({
+          type: "error",
+          message:
+            "비밀번호 조회 중 오류가 발생했습니다. 관리자에게 문의하세요.",
+        });
+      } finally {
+        setIsLoadingPassword(false);
+      }
+    };
+
+    fetchLockboxPassword();
+  }, [selectedItem.campus, showToast]);
+
+  const handleSubmit = () => {
     // 신청 정보 유효성 검사
     if (!applicationForm.agreement) {
       showToast({
@@ -42,106 +75,8 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
       return;
     }
 
-    if (!user) {
-      showToast({
-        type: "error",
-        message: "로그인이 필요합니다.",
-      });
-      return;
-    }
-
-    // 학생 정보 필수 필드 확인
-    if (
-      !verifiedStudentInfo.name ||
-      !verifiedStudentInfo.studentId ||
-      !verifiedStudentInfo.department
-    ) {
-      showToast({
-        type: "error",
-        message: "학생 정보가 완전하지 않습니다. 다시 인증해주세요.",
-      });
-      return;
-    }
-
-    try {
-      showToast({
-        type: "info",
-        message: "대여를 진행하고 있습니다...",
-      });
-
-      // 대여 완료 처리 - 여기서 실제 대여가 완료됨
-      const today = new Date();
-      const dueDate = new Date(today);
-      dueDate.setDate(today.getDate() + 1); // 24시간 후
-
-      const rentalData = {
-        userId: user.uid,
-        itemId: selectedItem.id!,
-        itemUniqueId: selectedItem.uniqueId,
-        status: "rented" as const,
-        rentDate: today.toISOString().split("T")[0],
-        dueDate: dueDate.toISOString().split("T")[0],
-        purpose: "즉시 대여", // 셀프 서비스는 목적을 기본값으로 설정
-
-        // 학생 정보
-        studentId: verifiedStudentInfo.studentId,
-        studentName: verifiedStudentInfo.name,
-        department: verifiedStudentInfo.department,
-        campus: selectedItem.campus,
-        phoneNumber: verifiedStudentInfo.phoneNumber,
-
-        // 학생증 정보 (이미 인증 완료)
-        studentIdPhotoUrl: verifiedStudentInfo.studentIdPhotoUrl || "",
-        studentIdVerified: true,
-
-        // 대여 시 촬영 사진들 (임시 값 - 다음 단계에서 업데이트 예정)
-        itemConditionPhotoUrl: "",
-        itemLabelPhotoUrl: "",
-        lockboxSecuredPhotoUrl: "",
-      };
-
-      // Firestore에 대여 데이터 저장
-      const rentalId = await rentalApplicationService.processRental(rentalData);
-
-      // 디스코드 알림 전송
-      const discordNotificationData = {
-        studentName: verifiedStudentInfo.name,
-        studentId: verifiedStudentInfo.studentId,
-        department: verifiedStudentInfo.department,
-        phoneNumber: verifiedStudentInfo.phoneNumber,
-        itemName: selectedItem.name,
-        itemCategory: selectedItem.category,
-        campus: selectedItem.campus,
-        location: selectedItem.location,
-        rentDate: today.toISOString().split("T")[0],
-        dueDate: dueDate.toISOString().split("T")[0],
-        rentalId: rentalId,
-      };
-
-      // 디스코드 알림 전송 (실패해도 대여는 완료됨)
-      try {
-        await discordService.notifyInstantRental(discordNotificationData);
-      } catch (discordError) {
-        console.warn("디스코드 알림 전송 실패:", discordError);
-      }
-
-      showToast({
-        type: "success",
-        message: "대여가 완료되었습니다! 보관함에서 물품을 확인해주세요.",
-      });
-
-      // 대여 완료 상태를 상위 컴포넌트에 전달
-      onRentalCompleted(rentalId);
-
-      // 다음 단계로 이동
-      onNextStep();
-    } catch (error) {
-      console.error("대여 처리 오류:", error);
-      showToast({
-        type: "error",
-        message: "대여 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
-      });
-    }
+    // 다음 단계로 이동
+    onNextStep();
   };
 
   return (
@@ -259,13 +194,22 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
           <p className="text-sm text-blue-600 mb-2 korean-text">
             보관함 자물쇠 비밀번호
           </p>
-          <motion.p
-            className="text-4xl font-mono font-bold text-blue-800 mb-3 tracking-wider"
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            {selectedItem.lockboxPassword || "1234"}
-          </motion.p>
+          {isLoadingPassword ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-blue-600 korean-text">
+                비밀번호 로딩 중...
+              </span>
+            </div>
+          ) : (
+            <motion.p
+              className="text-4xl font-mono font-bold text-blue-800 mb-3 tracking-wider"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              {lockboxPassword}
+            </motion.p>
+          )}
           <div className="flex items-center justify-center text-sm text-blue-600">
             <svg
               className="w-4 h-4 mr-1"

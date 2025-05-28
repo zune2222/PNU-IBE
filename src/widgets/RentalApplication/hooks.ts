@@ -7,6 +7,8 @@ import {
   FirestoreRentalItem,
   rentalApplicationService,
 } from "../../shared/services/firestore";
+import { discordService } from "../../shared/services/discordService";
+import type { RentalNotificationData } from "../../shared/services/discordService";
 import {
   ExtendedStudentIdInfo,
   RentalStep,
@@ -192,82 +194,106 @@ export const useRentalApplication = () => {
     });
   };
 
-  const handleItemSelect = (item: FirestoreRentalItem) => {
-    setSelectedItem(item);
-    setStep("password");
-  };
-
-  const handleRentalProcess = async () => {
-    if (!selectedItem || !verifiedStudentInfo || !createdRentalId || !user) {
+  const handleItemSelect = async (item: FirestoreRentalItem) => {
+    if (!user || !verifiedStudentInfo) {
       showToast({
         type: "error",
-        message: "대여 신청 정보가 없습니다. 처음부터 다시 시도해주세요.",
+        message: "학생 인증이 필요합니다.",
       });
       return;
     }
 
-    const newErrors: { [key: string]: string } = {};
-
-    // 사진 파일 검증
-    if (!photos.itemCondition) {
-      newErrors.itemCondition = "물품 상태 사진을 촬영해주세요.";
-    }
-    if (!photos.itemLabel) {
-      newErrors.itemLabel = "물품 라벨 사진을 촬영해주세요.";
-    }
-    if (!photos.lockboxSecured) {
-      newErrors.lockboxSecured = "잠금함 보안 사진을 촬영해주세요.";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      // 첫 번째 에러만 toast로 표시
-      const firstError = Object.values(newErrors)[0];
+    // 학생 정보 필수 필드 확인
+    if (
+      !verifiedStudentInfo.name ||
+      !verifiedStudentInfo.studentId ||
+      !verifiedStudentInfo.department
+    ) {
       showToast({
         type: "error",
-        message: firstError,
+        message: "학생 정보가 완전하지 않습니다. 다시 인증해주세요.",
       });
-      return;
-    }
-
-    // 모든 사진이 존재하는지 타입 가드
-    if (!photos.itemCondition || !photos.itemLabel || !photos.lockboxSecured) {
       return;
     }
 
     setIsLoading(true);
     try {
-      // 대여 관련 사진들을 Firebase Storage에 업로드
-      const rentalPhotos = await uploadRentalPhotos(
-        {
-          itemCondition: photos.itemCondition,
-          itemLabel: photos.itemLabel,
-          lockboxSecured: photos.lockboxSecured,
-        },
-        user.uid,
-        createdRentalId
-      );
+      showToast({
+        type: "info",
+        message: "대여를 진행하고 있습니다...",
+      });
 
-      // 기존 대여 신청에 사진 정보 업데이트
-      await rentalApplicationService.updateStatus(
-        createdRentalId,
-        "rented",
-        rentalPhotos
-      );
+      // 대여 완료 처리 - 여기서 실제 대여가 완료됨
+      const today = new Date();
+      const dueDate = new Date(today);
+      dueDate.setDate(today.getDate() + 1); // 24시간 후
 
-      console.log("대여 신청 사진 업데이트 완료:", createdRentalId);
+      const rentalData = {
+        userId: user.uid,
+        itemId: item.id!,
+        itemUniqueId: item.uniqueId,
+        status: "rented" as const,
+        rentDate: today.toISOString().split("T")[0],
+        dueDate: dueDate.toISOString().split("T")[0],
+        purpose: "즉시 대여", // 셀프 서비스는 목적을 기본값으로 설정
+
+        // 학생 정보
+        studentId: verifiedStudentInfo.studentId,
+        studentName: verifiedStudentInfo.name,
+        department: verifiedStudentInfo.department,
+        campus: item.campus,
+        phoneNumber: verifiedStudentInfo.phoneNumber,
+
+        // 학생증 정보 (이미 인증 완료)
+        studentIdPhotoUrl: verifiedStudentInfo.studentIdPhotoUrl || "",
+        studentIdVerified: true,
+
+        // 대여 시 촬영 사진들 (임시 값 - 다음 단계에서 업데이트 예정)
+        itemConditionPhotoUrl: "",
+        itemLabelPhotoUrl: "",
+        lockboxSecuredPhotoUrl: "",
+      };
+
+      // Firestore에 대여 데이터 저장
+      const rentalId = await rentalApplicationService.processRental(rentalData);
+
+      // 디스코드 알림 전송
+      const discordNotificationData: RentalNotificationData = {
+        studentName: verifiedStudentInfo.name,
+        studentId: verifiedStudentInfo.studentId,
+        department: verifiedStudentInfo.department,
+        phoneNumber: verifiedStudentInfo.phoneNumber,
+        itemName: item.name,
+        itemCategory: item.category,
+        campus: item.campus,
+        location: item.location,
+        rentDate: today.toISOString().split("T")[0],
+        dueDate: dueDate.toISOString().split("T")[0],
+        rentalId: rentalId,
+      };
+
+      // 디스코드 알림 전송 (실패해도 대여는 완료됨)
+      try {
+        await discordService.notifyInstantRental(discordNotificationData);
+      } catch (discordError) {
+        console.warn("디스코드 알림 전송 실패:", discordError);
+      }
+
       showToast({
         type: "success",
-        message: "대여가 완료되었습니다!",
+        message: "대여가 완료되었습니다! 보관함 비밀번호를 확인해주세요.",
       });
-      setStep("complete");
 
-      // localStorage 정리 (대여 완료 시)
-      clearRentalStorage();
+      // 선택된 물품과 대여 완료 정보 저장
+      setSelectedItem(item);
+      setCreatedRentalId(rentalId);
+      setRentalDueDate(dueDate);
+      setStep("password");
     } catch (error) {
-      console.error("사진 업데이트 오류:", error);
+      console.error("대여 처리 오류:", error);
       showToast({
         type: "error",
-        message: "사진 업로드 중 오류가 발생했습니다.",
+        message: "대여 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
       });
     } finally {
       setIsLoading(false);
@@ -331,6 +357,83 @@ export const useRentalApplication = () => {
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 1); // 24시간 후
     setRentalDueDate(dueDate);
+  };
+
+  const handleRentalProcess = async () => {
+    if (!selectedItem || !verifiedStudentInfo || !createdRentalId || !user) {
+      showToast({
+        type: "error",
+        message: "대여 신청 정보가 없습니다. 처음부터 다시 시도해주세요.",
+      });
+      return;
+    }
+
+    const newErrors: { [key: string]: string } = {};
+
+    // 사진 파일 검증
+    if (!photos.itemCondition) {
+      newErrors.itemCondition = "물품 상태 사진을 촬영해주세요.";
+    }
+    if (!photos.itemLabel) {
+      newErrors.itemLabel = "물품 라벨 사진을 촬영해주세요.";
+    }
+    if (!photos.lockboxSecured) {
+      newErrors.lockboxSecured = "잠금함 보안 사진을 촬영해주세요.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      // 첫 번째 에러만 toast로 표시
+      const firstError = Object.values(newErrors)[0];
+      showToast({
+        type: "error",
+        message: firstError,
+      });
+      return;
+    }
+
+    // 모든 사진이 존재하는지 타입 가드
+    if (!photos.itemCondition || !photos.itemLabel || !photos.lockboxSecured) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // 대여 관련 사진들을 Firebase Storage에 업로드
+      const rentalPhotos = await uploadRentalPhotos(
+        {
+          itemCondition: photos.itemCondition,
+          itemLabel: photos.itemLabel,
+          lockboxSecured: photos.lockboxSecured,
+        },
+        user.uid,
+        createdRentalId
+      );
+
+      // 기존 대여 신청에 사진 정보 업데이트
+      await rentalApplicationService.updateStatus(
+        createdRentalId,
+        "rented",
+        rentalPhotos
+      );
+
+      console.log("대여 신청 사진 업데이트 완료:", createdRentalId);
+      showToast({
+        type: "success",
+        message: "사진 업로드가 완료되었습니다!",
+      });
+      setStep("complete");
+
+      // localStorage 정리 (대여 완료 시)
+      clearRentalStorage();
+    } catch (error) {
+      console.error("사진 업데이트 오류:", error);
+      showToast({
+        type: "error",
+        message: "사진 업로드 중 오류가 발생했습니다.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return {

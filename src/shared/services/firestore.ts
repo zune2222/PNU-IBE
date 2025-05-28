@@ -581,11 +581,20 @@ export const rentalItemService = {
   async rentItem(itemId: string, rentalId: string): Promise<boolean> {
     try {
       const docRef = doc(db, "rental_items", itemId);
+
+      // 문서 존재 여부 확인
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        console.error(`물품을 찾을 수 없습니다. itemId: ${itemId}`);
+        return false;
+      }
+
+      const currentData = docSnap.data();
       await updateDoc(docRef, {
         status: "rented",
         currentRentalId: rentalId,
         lastRentedDate: new Date().toISOString().split("T")[0],
-        totalRentCount: (await getDoc(docRef)).data()?.totalRentCount || 0 + 1,
+        totalRentCount: (currentData?.totalRentCount || 0) + 1,
         updatedAt: Timestamp.now(),
       });
       return true;
@@ -941,8 +950,19 @@ export const rentalApplicationService = {
       updatedAt: now,
     });
 
-    // 물품의 상태를 대여 중으로 변경
-    await rentalItemService.rentItem(applicationData.itemUniqueId, docRef.id);
+    // 물품의 상태를 대여 중으로 변경 (itemId를 사용)
+    const rentItemSuccess = await rentalItemService.rentItem(
+      applicationData.itemId,
+      docRef.id
+    );
+
+    if (!rentItemSuccess) {
+      // 물품 상태 업데이트 실패 시 대여 신청도 삭제
+      await deleteDoc(docRef);
+      throw new Error(
+        `물품을 찾을 수 없습니다. itemId: ${applicationData.itemId}`
+      );
+    }
 
     return docRef.id;
   },
@@ -1293,6 +1313,35 @@ export const lockboxPasswordService = {
         id: querySnapshot.docs[0].id,
         ...querySnapshot.docs[0].data(),
       } as FirestoreLockboxPassword;
+    }
+    return null;
+  },
+
+  // 캠퍼스별 비밀번호 조회 (location 무관)
+  async getCurrentPasswordByCampus(
+    campus: "yangsan" | "jangjeom"
+  ): Promise<FirestoreLockboxPassword | null> {
+    const q = query(
+      collection(db, "lockbox_passwords"),
+      where("campus", "==", campus)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // 여러 개가 있을 경우 가장 최근에 변경된 것을 반환
+      const passwords = querySnapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          } as FirestoreLockboxPassword)
+      );
+
+      // lastChangedAt 기준으로 내림차순 정렬하여 가장 최근 것 반환
+      passwords.sort(
+        (a, b) => b.lastChangedAt.toMillis() - a.lastChangedAt.toMillis()
+      );
+      return passwords[0];
     }
     return null;
   },

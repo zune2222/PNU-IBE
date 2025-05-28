@@ -250,10 +250,8 @@ export default function useReturnApplication() {
       const item = rentalItems[rental.itemId];
       if (!item) return;
 
-      const passwordData = await lockboxPasswordService.getCurrentPassword(
-        item.campus,
-        item.location
-      );
+      const passwordData =
+        await lockboxPasswordService.getCurrentPasswordByCampus(item.campus);
 
       if (passwordData) {
         setLockboxPassword(passwordData.currentPassword);
