@@ -25,14 +25,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
-  const [showManualInput, setShowManualInput] = useState(false);
-  const [manualInput, setManualInput] = useState({
-    studentId: "",
-    name: "",
-    department: "",
-    campus: "yangsan" as "yangsan" | "jangjeom",
-    phoneNumber: "",
-  });
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   // 파일 선택 처리
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,7 +47,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
     // 이전 결과 초기화
     setOcrResult(null);
-    setShowManualInput(false);
+    setPhoneNumber("");
   };
 
   // OCR 처리 실행
@@ -67,19 +60,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       const result = await clientOcrService.extractStudentIdInfo(selectedFile);
       setOcrResult(result);
 
-      if (result.success && result.studentInfo) {
-        // OCR 성공 시 자동으로 manual input 폼에 채우기
-        setManualInput({
-          studentId: result.studentInfo.studentId || "",
-          name: result.studentInfo.name || "",
-          department: result.studentInfo.department || "",
-          campus: result.studentInfo.campus || "yangsan", // OCR에서 인식된 캠퍼스 값 사용
-          phoneNumber: "", // Assuming phoneNumber is not provided in the OCR result
-        });
-        // 수동 입력 모드는 비활성화
-        setShowManualInput(false);
-      } else {
-        // OCR 실패 시 수동 입력 모드는 활성화하지 않고 에러만 표시
+      if (!result.success || !result.studentInfo) {
         onError?.(result.error || "학생증 정보를 인식할 수 없습니다.");
       }
     } catch (error) {
@@ -92,10 +73,15 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
   // 학생 정보 검증 및 저장
   const handleValidateAndSave = async () => {
-    const { studentId, name, department, campus, phoneNumber } = manualInput;
+    if (!ocrResult?.studentInfo) {
+      onError?.("학생증 정보를 먼저 인식해주세요.");
+      return;
+    }
+
+    const { studentId, name, department, campus } = ocrResult.studentInfo;
 
     if (!studentId || !name) {
-      onError?.("학번과 이름은 필수 입력 항목입니다.");
+      onError?.("학번과 이름 정보가 인식되지 않았습니다. 다시 시도해주세요.");
       return;
     }
 
@@ -131,7 +117,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
         department: department || null,
         campus,
         grade: null,
-        confidence: ocrResult?.studentInfo?.confidence || 1.0,
+        confidence: ocrResult.studentInfo.confidence || 1.0,
         phoneNumber: phoneNumber
           .replace(/[^0-9]/g, "")
           .replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3"),
@@ -155,14 +141,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       setPreviewUrl(null);
     }
     setOcrResult(null);
-    setShowManualInput(false);
-    setManualInput({
-      studentId: "",
-      name: "",
-      department: "",
-      campus: "yangsan",
-      phoneNumber: "",
-    });
+    setPhoneNumber("");
   };
 
   return (
@@ -384,7 +363,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
             )}
 
             {/* OCR 결과 또는 수동 입력 폼 */}
-            {(ocrResult || showManualInput) && (
+            {ocrResult && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -392,147 +371,150 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                 className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/60 shadow-lg"
               >
                 <h3 className="text-xl font-semibold text-gray-900 mb-6 korean-text">
-                  학생 정보 확인
+                  인식된 학생 정보
                 </h3>
 
-                <div className="space-y-4">
-                  {/* 학번 입력 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
-                      학번 *
-                    </label>
-                    <input
-                      type="text"
-                      value={manualInput.studentId}
-                      onChange={(e) =>
-                        setManualInput({
-                          ...manualInput,
-                          studentId: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
-                      placeholder="학번을 입력하세요"
-                    />
-                  </div>
+                {ocrResult.success && ocrResult.studentInfo ? (
+                  <div className="space-y-4">
+                    {/* 학번 (읽기 전용) */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
+                        학번
+                      </label>
+                      <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700">
+                        {ocrResult.studentInfo.studentId || "인식되지 않음"}
+                      </div>
+                    </div>
 
-                  {/* 이름 입력 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
-                      이름 *
-                    </label>
-                    <input
-                      type="text"
-                      value={manualInput.name}
-                      onChange={(e) =>
-                        setManualInput({ ...manualInput, name: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
-                      placeholder="이름을 입력하세요"
-                    />
-                  </div>
+                    {/* 이름 (읽기 전용) */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
+                        이름
+                      </label>
+                      <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700">
+                        {ocrResult.studentInfo.name || "인식되지 않음"}
+                      </div>
+                    </div>
 
-                  {/* 학과 입력 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
-                      학과
-                    </label>
-                    <input
-                      type="text"
-                      value={manualInput.department}
-                      onChange={(e) =>
-                        setManualInput({
-                          ...manualInput,
-                          department: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
-                      placeholder="학과를 입력하세요"
-                    />
-                  </div>
+                    {/* 학과 (읽기 전용) */}
+                    {ocrResult.studentInfo.department && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
+                          학과
+                        </label>
+                        <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700">
+                          {ocrResult.studentInfo.department}
+                        </div>
+                      </div>
+                    )}
 
-                  {/* 캠퍼스 선택 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
-                      캠퍼스
-                    </label>
-                    <select
-                      value={manualInput.campus}
-                      onChange={(e) =>
-                        setManualInput({
-                          ...manualInput,
-                          campus: e.target.value as "yangsan" | "jangjeom",
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
-                    >
-                      <option value="yangsan">양산캠퍼스</option>
-                      <option value="jangjeom">장전캠퍼스</option>
-                    </select>
-                  </div>
+                    {/* 휴대폰 번호 입력 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
+                        휴대폰 번호 *
+                      </label>
+                      <input
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                        placeholder="010-0000-0000"
+                      />
+                    </div>
 
-                  {/* 휴대폰 번호 입력 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
-                      휴대폰 번호 *
-                    </label>
-                    <input
-                      type="tel"
-                      value={manualInput.phoneNumber}
-                      onChange={(e) =>
-                        setManualInput({
-                          ...manualInput,
-                          phoneNumber: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
-                      placeholder="010-0000-0000"
-                    />
+                    {/* 인식 신뢰도 표시 */}
+                    {ocrResult.studentInfo.confidence && (
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center">
+                          <svg
+                            className="w-5 h-5 text-blue-500 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 102 0V6a1 1 0 00-1-1H9z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <span className="text-sm text-blue-700 korean-text">
+                            인식 정확도:{" "}
+                            {Math.round(ocrResult.studentInfo.confidence * 100)}
+                            %
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-red-500 mb-4">
+                      <svg
+                        className="w-12 h-12 mx-auto"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <p className="text-gray-600 korean-text mb-4">
+                      학생증 정보를 인식할 수 없습니다.
+                    </p>
+                    <p className="text-sm text-gray-500 korean-text">
+                      다른 이미지로 다시 시도해주세요.
+                    </p>
+                  </div>
+                )}
 
                 {/* 버튼들 */}
-                <div className="flex flex-col sm:flex-row gap-3 mt-8">
-                  <motion.button
-                    onClick={handleValidateAndSave}
-                    disabled={isLoading}
-                    className="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed korean-text"
-                    whileHover={{ scale: isLoading ? 1 : 1.05 }}
-                    whileTap={{ scale: isLoading ? 1 : 0.95 }}
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white/30 rounded-full animate-spin border-t-white mr-3"></div>
-                        인증 중...
-                      </>
-                    ) : (
-                      <>
-                        <svg
-                          className="w-5 h-5 mr-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        인증 완료
-                      </>
-                    )}
-                  </motion.button>
+                {ocrResult.success && ocrResult.studentInfo && (
+                  <div className="flex flex-col sm:flex-row gap-3 mt-8">
+                    <motion.button
+                      onClick={handleValidateAndSave}
+                      disabled={isLoading}
+                      className="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed korean-text"
+                      whileHover={{ scale: isLoading ? 1 : 1.05 }}
+                      whileTap={{ scale: isLoading ? 1 : 0.95 }}
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white/30 rounded-full animate-spin border-t-white mr-3"></div>
+                          인증 중...
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-5 h-5 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          인증 완료
+                        </>
+                      )}
+                    </motion.button>
 
-                  <motion.button
-                    onClick={handleRemoveFile}
-                    className="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-md korean-text"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    다시 선택
-                  </motion.button>
-                </div>
+                    <motion.button
+                      onClick={handleRemoveFile}
+                      className="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-md korean-text"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      다시 선택
+                    </motion.button>
+                  </div>
+                )}
               </motion.div>
             )}
           </motion.div>
