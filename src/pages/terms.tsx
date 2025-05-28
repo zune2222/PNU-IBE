@@ -98,15 +98,10 @@ const Terms: NextPage = () => {
                   4.2 물품 대여 기간 및 연장
                 </h3>
                 <ol className="list-decimal ml-6 space-y-2 text-gray-600">
-                  <li>물품 대여 기간은 원칙적으로 최대 7일입니다.</li>
+                  <li>물품 대여 기간은 원칙적으로 최대 1일입니다.</li>
                   <li>
-                    대여 연장을 원할 경우 반납 기한 전에 웹사이트를 통해 연장
-                    신청을 해야 하며, 다른 대여 예약이 없는 경우에 한해 최대
-                    7일까지 추가 연장이 가능합니다.
-                  </li>
-                  <li>
-                    연장 신청 없이 반납 기한을 초과할 경우, 대여 서비스 이용에
-                    제한이 있을 수 있습니다.
+                    반납 기한을 초과할 경우, 대여 서비스 이용에 제한이 있을 수
+                    있습니다.
                   </li>
                 </ol>
 
@@ -115,8 +110,7 @@ const Terms: NextPage = () => {
                 </h3>
                 <ol className="list-decimal ml-6 space-y-2 text-gray-600">
                   <li>
-                    대여 신청 후 학생회에서 승인하면 지정된 장소에서 물품을
-                    수령할 수 있습니다.
+                    대여 신청 후 지정된 장소에서 물품을 수령할 수 있습니다.
                   </li>
                   <li>
                     물품 수령 시 물품의 상태를 확인하고, 문제가 있을 경우 즉시
@@ -209,7 +203,7 @@ const Terms: NextPage = () => {
 
             <div className="mt-8 pt-6 border-t border-gray-200">
               <p className="text-gray-600">
-                본 약관은 2023년 1월 1일부터 시행합니다.
+                본 약관은 2025년 5월 28일부터 시행합니다.
               </p>
             </div>
           </div>
