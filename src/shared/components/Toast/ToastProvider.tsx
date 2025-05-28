@@ -185,7 +185,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
       {children}
 
       {/* Toast Container */}
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 space-y-2 pointer-events-none">
+      <div className="fixed bottom-4 w-full left-1/2 transform -translate-x-1/2 z-50 space-y-2 pointer-events-none">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
@@ -200,7 +200,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
                 duration: 0.3,
               }}
               className={`
-                relative max-w-sm w-full mx-auto pointer-events-auto
+                relative max-w-xs sm:w-4/5 md:max-w-sm w-full mx-auto pointer-events-auto
                 bg-gradient-to-r ${getToastColors(toast.type)}
                 backdrop-blur-xl border rounded-2xl shadow-2xl
                 p-4 overflow-hidden

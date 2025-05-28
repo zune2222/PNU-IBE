@@ -7,11 +7,13 @@ import {
   OcrResult,
 } from "../../shared/services/clientOcrService";
 import { clientOcrService } from "../../shared/services/clientOcrService";
+import { uploadStudentIdPhoto } from "../RentalApplication/services";
+import { useAuth } from "../../shared/contexts/AuthContext";
 
 // 확장된 학생 정보 인터페이스 (휴대폰 번호 포함)
 interface ExtendedStudentIdInfo extends StudentIdInfo {
   phoneNumber: string;
-  studentIdPhotoFile?: File; // 학생증 사진 파일 추가
+  studentIdPhotoUrl?: string; // File 대신 URL 사용
 }
 
 interface StudentIdUploadProps {
@@ -25,6 +27,7 @@ const STORAGE_KEYS = {
   OCR_RESULT: "studentIdOcrResult",
   PHONE_NUMBER: "studentIdPhoneNumber",
   PREVIEW_URL: "studentIdPreviewUrl",
+  STUDENT_ID_PHOTO_URL: "studentIdPhotoUrl", // 업로드된 사진 URL
 } as const;
 
 // 상태 저장 함수
@@ -71,10 +74,14 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
   onError,
 }) => {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(() =>
     loadFromStorage(STORAGE_KEYS.PREVIEW_URL, null)
+  );
+  const [studentIdPhotoUrl, setStudentIdPhotoUrl] = useState<string | null>(
+    () => loadFromStorage(STORAGE_KEYS.STUDENT_ID_PHOTO_URL, null)
   );
   const [ocrResult, setOcrResult] = useState<OcrResult | null>(() =>
     loadFromStorage(STORAGE_KEYS.OCR_RESULT, null)
@@ -101,8 +108,14 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
     saveToStorage(STORAGE_KEYS.PREVIEW_URL, previewUrl);
   }, [previewUrl]);
 
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.STUDENT_ID_PHOTO_URL, studentIdPhotoUrl);
+  }, [studentIdPhotoUrl]);
+
   // 파일 선택 처리
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -118,15 +131,44 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       return;
     }
 
+    // 사용자가 로그인되어 있는지 확인
+    if (!user) {
+      showToast({
+        type: "error",
+        message: "로그인이 필요합니다.",
+      });
+      return;
+    }
+
     setSelectedFile(file);
+    setIsLoading(true);
 
-    // 미리보기 URL 생성
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
+    try {
+      // 미리보기 URL 생성
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
 
-    // 이전 결과 초기화
-    setOcrResult(null);
-    setPhoneNumber("");
+      // Firebase Storage에 바로 업로드
+      const uploadedUrl = await uploadStudentIdPhoto(file, user.uid);
+      setStudentIdPhotoUrl(uploadedUrl);
+
+      showToast({
+        type: "success",
+        message: "학생증 사진이 업로드되었습니다.",
+      });
+
+      // 이전 결과 초기화
+      setOcrResult(null);
+      setPhoneNumber("");
+    } catch (error) {
+      console.error("학생증 사진 업로드 오류:", error);
+      showToast({
+        type: "error",
+        message: "사진 업로드에 실패했습니다. 다시 시도해주세요.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // OCR 처리 실행
@@ -244,7 +286,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
         phoneNumber: phoneNumber
           .replace(/[^0-9]/g, "")
           .replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3"),
-        studentIdPhotoFile: selectedFile || undefined,
+        studentIdPhotoUrl: studentIdPhotoUrl || undefined,
       };
 
       // localStorage 정리 (인증 성공 시)

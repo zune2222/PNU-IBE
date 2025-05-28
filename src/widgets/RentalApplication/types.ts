@@ -3,7 +3,7 @@ import { StudentIdInfo } from "../../shared/services/clientOcrService";
 // 확장된 학생 정보 인터페이스 (휴대폰 번호 포함)
 export interface ExtendedStudentIdInfo extends StudentIdInfo {
   phoneNumber: string;
-  studentIdPhotoFile?: File;
+  studentIdPhotoUrl?: string;
 }
 
 // 대여 신청 단계

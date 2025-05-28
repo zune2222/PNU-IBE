@@ -15,7 +15,7 @@ import {
   RentalApplicationForm,
   RentalPhotos,
 } from "./types";
-import { uploadStudentIdPhoto, uploadRentalPhotos } from "./services";
+import { uploadRentalPhotos } from "./services";
 
 // localStorage 키 상수
 const STORAGE_KEYS = {
@@ -24,7 +24,7 @@ const STORAGE_KEYS = {
   SELECTED_ITEM: "rentalSelectedItem",
   VERIFIED_STUDENT_INFO: "rentalVerifiedStudentInfo",
   APPLICATION_FORM: "rentalApplicationForm",
-  PHOTOS: "rentalPhotos",
+  // PHOTOS: "rentalPhotos", // File 객체는 localStorage에 저장할 수 없음
   CREATED_RENTAL_ID: "rentalCreatedRentalId",
   RENTAL_DUE_DATE: "rentalDueDate",
 } as const;
@@ -62,6 +62,8 @@ const clearRentalStorage = () => {
       Object.values(STORAGE_KEYS).forEach((key) => {
         localStorage.removeItem(key);
       });
+      // 기존에 잘못 저장된 photos 데이터도 정리
+      localStorage.removeItem("rentalPhotos");
     }
   } catch (error) {
     console.warn("localStorage 삭제 실패:", error);
@@ -94,11 +96,8 @@ export const useRentalApplication = () => {
       loadFromStorage(STORAGE_KEYS.APPLICATION_FORM, { agreement: false })
     );
   const [photos, setPhotosState] = useState<RentalPhotos>(() =>
-    loadFromStorage(STORAGE_KEYS.PHOTOS, {
-      itemCondition: null,
-      itemLabel: null,
-      lockboxSecured: null,
-    })
+    // File 객체는 localStorage에 저장할 수 없으므로 항상 기본값 사용
+    ({ itemCondition: null, itemLabel: null, lockboxSecured: null })
   );
   const [createdRentalId, setCreatedRentalIdState] = useState<string | null>(
     () => loadFromStorage(STORAGE_KEYS.CREATED_RENTAL_ID, null)
@@ -131,7 +130,7 @@ export const useRentalApplication = () => {
 
   const setPhotos = (photos: RentalPhotos) => {
     setPhotosState(photos);
-    saveToStorage(STORAGE_KEYS.PHOTOS, photos);
+    // File 객체는 localStorage에 저장할 수 없으므로 저장하지 않음
   };
 
   const setCreatedRentalId = (id: string | null) => {
@@ -309,28 +308,9 @@ export const useRentalApplication = () => {
 
     setIsLoading(true);
     try {
-      // 학생증 사진 업로드
-      let studentIdPhotoUrl = "temp_student_id_photo_url";
-      if (
-        verifiedStudentInfo.studentIdPhotoFile &&
-        verifiedStudentInfo.studentIdPhotoFile instanceof File
-      ) {
-        try {
-          studentIdPhotoUrl = await uploadStudentIdPhoto(
-            verifiedStudentInfo.studentIdPhotoFile,
-            user.uid
-          );
-          console.log("학생증 사진 업로드 완료:", studentIdPhotoUrl);
-        } catch (uploadError) {
-          console.error("학생증 사진 업로드 실패:", uploadError);
-          showToast({
-            type: "error",
-            message: "학생증 사진 업로드에 실패했습니다. 다시 시도해주세요.",
-          });
-          return;
-        }
-      } else {
-        console.warn("학생증 사진 파일이 없거나 유효하지 않습니다.");
+      // 학생증 사진 URL 확인
+      const studentIdPhotoUrl = verifiedStudentInfo.studentIdPhotoUrl;
+      if (!studentIdPhotoUrl) {
         showToast({
           type: "error",
           message: "학생증 사진이 필요합니다. 다시 인증해주세요.",
