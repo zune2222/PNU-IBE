@@ -311,12 +311,31 @@ export const useRentalApplication = () => {
     try {
       // 학생증 사진 업로드
       let studentIdPhotoUrl = "temp_student_id_photo_url";
-      if (verifiedStudentInfo.studentIdPhotoFile) {
-        studentIdPhotoUrl = await uploadStudentIdPhoto(
-          verifiedStudentInfo.studentIdPhotoFile,
-          user.uid
-        );
-        console.log("학생증 사진 업로드 완료:", studentIdPhotoUrl);
+      if (
+        verifiedStudentInfo.studentIdPhotoFile &&
+        verifiedStudentInfo.studentIdPhotoFile instanceof File
+      ) {
+        try {
+          studentIdPhotoUrl = await uploadStudentIdPhoto(
+            verifiedStudentInfo.studentIdPhotoFile,
+            user.uid
+          );
+          console.log("학생증 사진 업로드 완료:", studentIdPhotoUrl);
+        } catch (uploadError) {
+          console.error("학생증 사진 업로드 실패:", uploadError);
+          showToast({
+            type: "error",
+            message: "학생증 사진 업로드에 실패했습니다. 다시 시도해주세요.",
+          });
+          return;
+        }
+      } else {
+        console.warn("학생증 사진 파일이 없거나 유효하지 않습니다.");
+        showToast({
+          type: "error",
+          message: "학생증 사진이 필요합니다. 다시 인증해주세요.",
+        });
+        return;
       }
 
       // 현재 시간을 대여 시작 시간으로 설정

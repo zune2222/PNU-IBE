@@ -103,7 +103,7 @@ export const ItemSelection: React.FC<ItemSelectionProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto">
         {[
           {
-            id: "busan",
+            id: "jangjeom",
             name: "장전캠퍼스",
             icon: "🏛️",
             description: "부산 금정구 장전동",
@@ -159,7 +159,7 @@ export const ItemSelection: React.FC<ItemSelectionProps> = ({
           카테고리를 선택하세요
         </h2>
         <p className="text-sm sm:text-base text-gray-600">
-          {selectedCampus === "busan" ? "장전캠퍼스" : "양산캠퍼스"}에서 대여
+          {selectedCampus === "jangjeom" ? "장전캠퍼스" : "양산캠퍼스"}에서 대여
           가능한 카테고리입니다
         </p>
       </div>
@@ -268,7 +268,7 @@ export const ItemSelection: React.FC<ItemSelectionProps> = ({
           {selectedCategory} 카테고리
         </h2>
         <p className="text-sm sm:text-base text-gray-600">
-          {selectedCampus === "busan" ? "장전캠퍼스" : "양산캠퍼스"} • 원하는
+          {selectedCampus === "jangjeom" ? "장전캠퍼스" : "양산캠퍼스"} • 원하는
           물품을 선택하여 대여 신청을 진행하세요
         </p>
       </div>

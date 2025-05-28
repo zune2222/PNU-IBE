@@ -8,9 +8,14 @@ export const uploadStudentIdPhoto = async (
   userId: string
 ): Promise<string> => {
   try {
+    // 파일 유효성 검증
+    if (!file || !file.name) {
+      throw new Error("유효하지 않은 파일입니다.");
+    }
+
     // 파일명 생성 (사용자ID_timestamp_studentid.확장자)
     const timestamp = Date.now();
-    const extension = file.name.split(".").pop();
+    const extension = file.name.split(".").pop() || "jpg"; // 기본값으로 jpg 사용
     const fileName = `student-ids/${userId}_${timestamp}_studentid.${extension}`;
 
     // Firebase Storage 참조 생성
@@ -36,13 +41,25 @@ export const uploadRentalPhotos = async (
   rentalId: string
 ): Promise<UploadedRentalPhotos> => {
   try {
+    // 파일 유효성 검증
+    if (
+      !photos.itemCondition ||
+      !photos.itemCondition.name ||
+      !photos.itemLabel ||
+      !photos.itemLabel.name ||
+      !photos.lockboxSecured ||
+      !photos.lockboxSecured.name
+    ) {
+      throw new Error("유효하지 않은 파일이 포함되어 있습니다.");
+    }
+
     const timestamp = Date.now();
 
     // 각 사진 업로드
     const uploadPromises = [
       // 물품 상태 사진
       (async () => {
-        const extension = photos.itemCondition.name.split(".").pop();
+        const extension = photos.itemCondition.name.split(".").pop() || "jpg";
         const fileName = `rentals/${userId}/${rentalId}_${timestamp}_item_condition.${extension}`;
         const storageRef = ref(storage, fileName);
         const snapshot = await uploadBytes(storageRef, photos.itemCondition);
@@ -51,7 +68,7 @@ export const uploadRentalPhotos = async (
 
       // 물품 라벨 사진
       (async () => {
-        const extension = photos.itemLabel.name.split(".").pop();
+        const extension = photos.itemLabel.name.split(".").pop() || "jpg";
         const fileName = `rentals/${userId}/${rentalId}_${timestamp}_item_label.${extension}`;
         const storageRef = ref(storage, fileName);
         const snapshot = await uploadBytes(storageRef, photos.itemLabel);
@@ -60,7 +77,7 @@ export const uploadRentalPhotos = async (
 
       // 잠금함 보안 사진
       (async () => {
-        const extension = photos.lockboxSecured.name.split(".").pop();
+        const extension = photos.lockboxSecured.name.split(".").pop() || "jpg";
         const fileName = `rentals/${userId}/${rentalId}_${timestamp}_lockbox_secured.${extension}`;
         const storageRef = ref(storage, fileName);
         const snapshot = await uploadBytes(storageRef, photos.lockboxSecured);
