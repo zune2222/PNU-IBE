@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Button from "../../shared/ui/Button";
 import Image from "next/image";
+import Link from "next/link";
 
 export function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -160,20 +161,24 @@ export function Hero() {
             </div>
 
             <div className="flex flex-wrap gap-5 justify-center md:justify-start">
-              <Button
-                variant="secondary"
-                size="lg"
-                className="shadow-xl hover:shadow-secondary/20 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 font-semibold px-8 rounded-full korean-text"
-              >
-                학생회 소개
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-2 border-white text-white hover:bg-white/10 backdrop-blur-md font-semibold rounded-full hover:-translate-y-1 transition-all duration-300 px-8 korean-text"
-              >
-                공지사항 보기
-              </Button>
+              <Link href="/about">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="shadow-xl hover:shadow-secondary/20 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 font-semibold px-8 rounded-full korean-text"
+                >
+                  학생회 소개
+                </Button>
+              </Link>
+              <Link href="/notice">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-white text-white hover:bg-white/10 backdrop-blur-md font-semibold rounded-full hover:-translate-y-1 transition-all duration-300 px-8 korean-text"
+                >
+                  공지사항 보기
+                </Button>
+              </Link>
             </div>
           </motion.div>
 
