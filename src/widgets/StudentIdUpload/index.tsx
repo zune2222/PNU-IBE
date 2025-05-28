@@ -388,14 +388,14 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               {/* 갤러리에서 선택 버튼 */}
-              <label className="cursor-pointer group">
+              <label className="cursor-pointer group flex-1 sm:flex-initial">
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform group-hover:scale-105 shadow-lg korean-text">
+                <div className="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform group-hover:scale-105 shadow-lg korean-text w-full sm:w-48">
                   <svg
                     className="w-5 h-5 mr-2"
                     fill="none"
@@ -414,7 +414,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
               </label>
 
               {/* 카메라로 촬영 버튼 */}
-              <label className="cursor-pointer group">
+              <label className="cursor-pointer group flex-1 sm:flex-initial">
                 <input
                   type="file"
                   accept="image/*"
@@ -422,7 +422,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <div className="inline-flex items-center px-6 py-3 bg-white text-primary font-semibold rounded-xl hover:bg-gray-50 transition-all duration-300 transform group-hover:scale-105 shadow-lg border-2 border-primary/20 korean-text">
+                <div className="flex items-center justify-center px-6 py-3 bg-white text-primary font-semibold rounded-xl hover:bg-gray-50 transition-all duration-300 transform group-hover:scale-105 shadow-lg border-2 border-primary/20 korean-text w-full sm:w-48">
                   <svg
                     className="w-5 h-5 mr-2"
                     fill="none"

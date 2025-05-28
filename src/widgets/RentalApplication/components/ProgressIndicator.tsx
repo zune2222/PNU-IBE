@@ -50,7 +50,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
             </div>
 
             {/* 현재 단계 표시 */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <motion.div
                 key={step}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -65,7 +65,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                   {currentStepIndex + 1}단계: {steps[currentStepIndex]?.label}
                 </span>
               </motion.div>
-            </div>
+            </div> */}
           </motion.div>
         </div>
 
