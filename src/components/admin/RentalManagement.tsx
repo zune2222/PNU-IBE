@@ -1,9 +1,10 @@
 import React from "react";
+import Image from "next/image";
 import {
   FirestoreRentalApplication,
   FirestoreRentalItem,
   rentalApplicationService,
-} from "../../../shared/services/firestore";
+} from "../../shared/services/firestore";
 
 interface RentalManagementProps {
   rentalApplications: FirestoreRentalApplication[];
@@ -222,9 +223,11 @@ export default function RentalManagement({
                       <div className="flex flex-wrap gap-1 sm:gap-2">
                         {application.studentIdPhotoUrl && (
                           <div className="relative group">
-                            <img
+                            <Image
                               src={application.studentIdPhotoUrl}
                               alt="학생증"
+                              width={32}
+                              height={32}
                               className="w-8 h-8 sm:w-12 sm:h-12 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-blue-500 transition-colors"
                               onClick={() =>
                                 openPhotoModal(
@@ -240,9 +243,11 @@ export default function RentalManagement({
                         )}
                         {application.itemConditionPhotoUrl && (
                           <div className="relative group">
-                            <img
+                            <Image
                               src={application.itemConditionPhotoUrl}
                               alt="대여 시 물품 상태"
+                              width={32}
+                              height={32}
                               className="w-8 h-8 sm:w-12 sm:h-12 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-blue-500 transition-colors"
                               onClick={() =>
                                 openPhotoModal(
@@ -258,9 +263,11 @@ export default function RentalManagement({
                         )}
                         {application.lockboxSecuredPhotoUrl && (
                           <div className="relative group">
-                            <img
+                            <Image
                               src={application.lockboxSecuredPhotoUrl}
                               alt="대여 시 자물쇠"
+                              width={32}
+                              height={32}
                               className="w-8 h-8 sm:w-12 sm:h-12 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-purple-500 transition-colors"
                               onClick={() =>
                                 openPhotoModal(
@@ -276,9 +283,11 @@ export default function RentalManagement({
                         )}
                         {application.returnItemConditionPhotoUrl && (
                           <div className="relative group">
-                            <img
+                            <Image
                               src={application.returnItemConditionPhotoUrl}
                               alt="반납 시 물품 상태"
+                              width={32}
+                              height={32}
                               className="w-8 h-8 sm:w-12 sm:h-12 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-green-500 transition-colors"
                               onClick={() =>
                                 openPhotoModal(
@@ -294,9 +303,11 @@ export default function RentalManagement({
                         )}
                         {application.returnLockboxSecuredPhotoUrl && (
                           <div className="relative group">
-                            <img
+                            <Image
                               src={application.returnLockboxSecuredPhotoUrl}
                               alt="반납 시 자물쇠"
+                              width={32}
+                              height={32}
                               className="w-8 h-8 sm:w-12 sm:h-12 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-teal-500 transition-colors"
                               onClick={() =>
                                 openPhotoModal(

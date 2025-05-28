@@ -8,7 +8,6 @@ import {
 } from "../../shared/services/clientOcrService";
 import { clientOcrService } from "../../shared/services/clientOcrService";
 import { uploadStudentIdPhoto } from "../RentalApplication/services";
-import { useAuth } from "../../shared/contexts/AuthContext";
 
 // 확장된 학생 정보 인터페이스 (휴대폰 번호 포함)
 interface ExtendedStudentIdInfo extends StudentIdInfo {
@@ -74,7 +73,6 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
   onError,
 }) => {
   const { showToast } = useToast();
-  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(() =>
@@ -156,13 +154,6 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
     }
 
     // 사용자가 로그인되어 있는지 확인
-    if (!user) {
-      showToast({
-        type: "error",
-        message: "로그인이 필요합니다.",
-      });
-      return;
-    }
 
     setSelectedFile(file);
     setIsLoading(true);
@@ -173,7 +164,7 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       setPreviewUrl(url);
 
       // Firebase Storage에 바로 업로드
-      const uploadedUrl = await uploadStudentIdPhoto(file, user.uid);
+      const uploadedUrl = await uploadStudentIdPhoto(file, "studentIdPhoto");
       setStudentIdPhotoUrl(uploadedUrl);
 
       showToast({

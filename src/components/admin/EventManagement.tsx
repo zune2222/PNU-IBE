@@ -1,9 +1,6 @@
 import React, { useState } from "react";
-import {
-  FirestoreEvent,
-  eventService,
-} from "../../../shared/services/firestore";
-import { storageService } from "../../../shared/services/storage";
+import { FirestoreEvent, eventService } from "../../shared/services/firestore";
+import { storageService } from "../../shared/services/storage";
 
 interface EventManagementProps {
   events: FirestoreEvent[];

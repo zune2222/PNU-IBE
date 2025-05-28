@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   FirestoreLockboxPassword,
   lockboxPasswordService,
-} from "../../../shared/services/firestore";
+} from "../../shared/services/firestore";
 
 interface LockboxManagementProps {
   lockboxPasswords: FirestoreLockboxPassword[];

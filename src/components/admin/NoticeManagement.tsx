@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   FirestoreNotice,
   noticeService,
-} from "../../../shared/services/firestore";
+} from "../../shared/services/firestore";
 
 interface NoticeManagementProps {
   notices: FirestoreNotice[];

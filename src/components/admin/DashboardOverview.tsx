@@ -1,8 +1,8 @@
 import React from "react";
-import { FirestoreRentalApplication } from "../../../shared/services/firestore";
-import { discordService } from "../../../shared/services/discordService";
-import { penaltySystem } from "../../../shared/services/penaltySystem";
-import { DashboardStats, ActiveTab } from "../types/dashboard";
+import { FirestoreRentalApplication } from "../../shared/services/firestore";
+import { discordService } from "../../shared/services/discordService";
+import { penaltySystem } from "../../shared/services/penaltySystem";
+import { DashboardStats, ActiveTab } from "../../shared/types/dashboard";
 
 interface DashboardOverviewProps {
   dashboardStats: DashboardStats;

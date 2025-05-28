@@ -3,8 +3,8 @@ import Image from "next/image";
 import {
   FirestoreRentalItem,
   rentalItemService,
-} from "../../../shared/services/firestore";
-import { storageService } from "../../../shared/services/storage";
+} from "../../shared/services/firestore";
+import { storageService } from "../../shared/services/storage";
 
 interface ItemManagementProps {
   rentalItems: { [id: string]: FirestoreRentalItem };

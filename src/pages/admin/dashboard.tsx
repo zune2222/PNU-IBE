@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Head from "next/head";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuth } from "../../shared/contexts/AuthContext";
 import {
@@ -18,15 +19,19 @@ import {
 } from "../../shared/services/firestore";
 
 // 컴포넌트 imports
-import DashboardOverview from "./components/DashboardOverview";
-import RentalManagement from "./components/RentalManagement";
-import NoticeManagement from "./components/NoticeManagement";
-import EventManagement from "./components/EventManagement";
-import LockboxManagement from "./components/LockboxManagement";
-import ItemManagement from "./components/ItemManagement";
+import DashboardOverview from "../../components/admin/DashboardOverview";
+import RentalManagement from "../../components/admin/RentalManagement";
+import NoticeManagement from "../../components/admin/NoticeManagement";
+import EventManagement from "../../components/admin/EventManagement";
+import LockboxManagement from "../../components/admin/LockboxManagement";
+import ItemManagement from "../../components/admin/ItemManagement";
 
 // 타입 imports
-import { DashboardStats, ActiveTab, PhotoModal } from "./types/dashboard";
+import {
+  DashboardStats,
+  ActiveTab,
+  PhotoModal,
+} from "../../shared/types/dashboard";
 
 export default function AdminDashboard() {
   const { user, loading, signOut, isAdmin } = useAuth();
@@ -91,22 +96,7 @@ export default function AdminDashboard() {
     }
   }, [user, loading, isAdmin, router]);
 
-  // 데이터 로드
-  useEffect(() => {
-    if (isAdmin) {
-      loadData();
-    }
-  }, [isAdmin]);
-
-  // 실시간 데이터 업데이트 (30초마다)
-  useEffect(() => {
-    if (isAdmin && activeTab === "overview") {
-      const interval = setInterval(loadData, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [isAdmin, activeTab]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [
@@ -150,7 +140,22 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  // 데이터 로드
+  useEffect(() => {
+    if (isAdmin) {
+      loadData();
+    }
+  }, [isAdmin, loadData]);
+
+  // 실시간 데이터 업데이트 (30초마다)
+  useEffect(() => {
+    if (isAdmin && activeTab === "overview") {
+      const interval = setInterval(loadData, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAdmin, activeTab, loadData]);
 
   const calculateDashboardStats = (
     applications: FirestoreRentalApplication[],
@@ -508,9 +513,11 @@ export default function AdminDashboard() {
                 </h3>
               </div>
               <div className="p-3 sm:p-4 max-h-[70vh] overflow-auto">
-                <img
+                <Image
                   src={photoModal.imageUrl}
                   alt={photoModal.title}
+                  width={500}
+                  height={500}
                   className="max-w-full max-h-full object-contain mx-auto"
                 />
               </div>
