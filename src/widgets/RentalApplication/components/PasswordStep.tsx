@@ -7,6 +7,8 @@ import {
   lockboxPasswordService,
 } from "../../../shared/services/firestore";
 import { RentalApplicationForm } from "../types";
+import { TermsContent } from "../../../pages/terms";
+import { PrivacyContent } from "../../../pages/privacy";
 
 interface PasswordStepProps {
   selectedItem: FirestoreRentalItem;
@@ -22,7 +24,8 @@ const Modal: React.FC<{
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-}> = ({ isOpen, onClose, title, children }) => {
+  onAgree: () => void;
+}> = ({ isOpen, onClose, title, children, onAgree }) => {
   if (!isOpen) return null;
 
   return (
@@ -40,11 +43,7 @@ const Modal: React.FC<{
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[80vh] overflow-hidden"
-            style={{
-              marginBottom: "env(safe-area-inset-bottom, 0)",
-              marginTop: "env(safe-area-inset-top, 0)",
-            }}
+            className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-4 border-b">
@@ -68,8 +67,16 @@ const Modal: React.FC<{
                 </svg>
               </button>
             </div>
-            <div className="p-4 overflow-y-auto max-h-[calc(80vh-8rem)]">
-              {children}
+            <div className="p-4 overflow-y-auto flex-grow">{children}</div>
+            <div className="p-4 border-t mt-auto bg-gray-50">
+              <div className="flex justify-end">
+                <button
+                  onClick={onAgree}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors korean-text"
+                >
+                  동의합니다
+                </button>
+              </div>
             </div>
           </motion.div>
         </motion.div>
@@ -546,23 +553,12 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
         isOpen={showTermsModal}
         onClose={() => setShowTermsModal(false)}
         title="이용약관"
+        onAgree={() => {
+          setTermsAgreed(true);
+          setShowTermsModal(false);
+        }}
       >
-        <iframe
-          src="/terms"
-          className="w-full h-[60vh] border-0 rounded"
-          title="이용약관"
-        />
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={() => {
-              setTermsAgreed(true);
-              setShowTermsModal(false);
-            }}
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors korean-text"
-          >
-            약관에 동의합니다
-          </button>
-        </div>
+        <TermsContent />
       </Modal>
 
       {/* 개인정보처리방침 모달 */}
@@ -570,23 +566,12 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
         isOpen={showPrivacyModal}
         onClose={() => setShowPrivacyModal(false)}
         title="개인정보처리방침"
+        onAgree={() => {
+          setPrivacyAgreed(true);
+          setShowPrivacyModal(false);
+        }}
       >
-        <iframe
-          src="/privacy"
-          className="w-full h-[60vh] border-0 rounded"
-          title="개인정보처리방침"
-        />
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={() => {
-              setPrivacyAgreed(true);
-              setShowPrivacyModal(false);
-            }}
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors korean-text"
-          >
-            방침에 동의합니다
-          </button>
-        </div>
+        <PrivacyContent />
       </Modal>
     </motion.div>
   );
