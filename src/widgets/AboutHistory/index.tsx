@@ -187,34 +187,6 @@ export function AboutHistory() {
             ))}
           </div>
         </div>
-
-        {/* CTA 버튼 */}
-        <div className="text-center">
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 sm:px-8 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 shadow-md korean-text"
-          >
-            전체 연혁 보기
-            <svg
-              className="ml-2 h-4 w-4 sm:h-5 sm:w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M14 5l7 7m0 0l-7 7m7-7H3"
-              />
-            </svg>
-          </motion.button>
-        </div>
       </div>
     </section>
   );

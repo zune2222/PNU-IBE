@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 // 학생회 활동 데이터
 const activitiesData = [
@@ -188,13 +189,15 @@ export function AboutActivities() {
               </div>
 
               <div className="flex-shrink-0 w-full lg:w-auto">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-white/95 backdrop-blur-sm text-secondary py-3 px-6 rounded-xl font-semibold hover:bg-white transition-all duration-300 shadow-lg hover:shadow-xl w-full lg:w-auto korean-text"
-                >
-                  참여 문의하기
-                </motion.button>
+                <Link href="/notice">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-white/95 backdrop-blur-sm text-secondary py-3 px-6 rounded-xl font-semibold hover:bg-white transition-all duration-300 shadow-lg hover:shadow-xl w-full lg:w-auto korean-text"
+                  >
+                    참여 문의하기
+                  </motion.button>
+                </Link>
               </div>
             </div>
           </div>

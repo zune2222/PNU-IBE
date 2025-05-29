@@ -9,7 +9,7 @@ const leadershipData = [
     position: "학생회장",
     department: "정보의생명공학대학",
     grade: "21학번",
-    image: "/images/member1.jpg",
+    image: "/images/member1.png",
     quote: "모든 학우들의 목소리에 귀 기울이는 학생회가 되겠습니다.",
     color: "from-blue-500 to-cyan-500",
   },
@@ -18,7 +18,7 @@ const leadershipData = [
     position: "부학생회장",
     department: "정보의생명공학대학",
     grade: "20학번",
-    image: "/images/member2.jpg",
+    image: "/images/member2.png",
     quote: "학우들의 권익 향상을 위해 최선을 다하겠습니다.",
     color: "from-indigo-500 to-purple-500",
   },
@@ -30,7 +30,7 @@ const departments = [
     name: "소통홍보국",
     description: "학생회 활동 홍보 및 소통 창구 역할",
     members: 4,
-    image: "/images/department1.jpg", // 국별 단체사진
+    image: "/images/department1.png", // 국별 단체사진
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -57,7 +57,7 @@ const departments = [
     name: "문화기획국",
     description: "다양한 문화 행사 기획 및 운영",
     members: 6,
-    image: "/images/department2.jpg",
+    image: "/images/department2.png",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -85,7 +85,7 @@ const departments = [
     name: "재정사무국",
     description: "학생회비 관리 및 재정 운영, 회계 담당",
     members: 6,
-    image: "/images/department3.jpg",
+    image: "/images/department3.png",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -113,7 +113,7 @@ const departments = [
     name: "학생복지국",
     description: "학생 복지 향상 및 편의 시설 관리",
     members: 5,
-    image: "/images/department4.jpg",
+    image: "/images/department4.png",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"

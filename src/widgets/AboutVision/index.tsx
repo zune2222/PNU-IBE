@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const visionData = [
   {
@@ -192,13 +193,15 @@ export function AboutVision() {
               </div>
 
               <div className="flex-shrink-0 w-full lg:w-auto">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-white/95 backdrop-blur-sm text-primary py-3 px-6 rounded-xl font-semibold hover:bg-white transition-all duration-300 shadow-lg hover:shadow-xl w-full lg:w-auto korean-text"
-                >
-                  활동 자세히 보기
-                </motion.button>
+                <Link href="/events">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-white/95 backdrop-blur-sm text-primary py-3 px-6 rounded-xl font-semibold hover:bg-white transition-all duration-300 shadow-lg hover:shadow-xl w-full lg:w-auto korean-text"
+                  >
+                    활동 자세히 보기
+                  </motion.button>
+                </Link>
               </div>
             </div>
           </div>
