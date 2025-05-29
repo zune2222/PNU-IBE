@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "../../../shared/components/Toast";
 import {
   FirestoreRentalItem,
@@ -16,6 +16,68 @@ interface PasswordStepProps {
   onReset: () => void;
 }
 
+// 모달 컴포넌트
+const Modal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}> = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[80vh] overflow-hidden"
+            style={{
+              marginBottom: "env(safe-area-inset-bottom, 0)",
+              marginTop: "env(safe-area-inset-top, 0)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-[calc(80vh-8rem)]">
+              {children}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 export const PasswordStep: React.FC<PasswordStepProps> = ({
   selectedItem,
   applicationForm,
@@ -26,6 +88,12 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
   const { showToast } = useToast();
   const [lockboxPassword, setLockboxPassword] = useState<string>("1234");
   const [isLoadingPassword, setIsLoadingPassword] = useState(true);
+
+  // 모달 관련 상태
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [privacyAgreed, setPrivacyAgreed] = useState(false);
 
   // 컴포넌트 마운트 시 자물쇠 비밀번호 가져오기
   useEffect(() => {
@@ -65,12 +133,27 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
     fetchLockboxPassword();
   }, [selectedItem.campus, showToast]);
 
+  // 약관 동의 변경 시 agreement 값도 함께 변경
+  useEffect(() => {
+    if (termsAgreed && privacyAgreed) {
+      onApplicationFormChange({
+        ...applicationForm,
+        agreement: true,
+      });
+    } else {
+      onApplicationFormChange({
+        ...applicationForm,
+        agreement: false,
+      });
+    }
+  }, [termsAgreed, privacyAgreed, onApplicationFormChange]);
+
   const handleSubmit = () => {
     // 신청 정보 유효성 검사
-    if (!applicationForm.agreement) {
+    if (!termsAgreed || !privacyAgreed) {
       showToast({
         type: "error",
-        message: "약관에 동의해주세요.",
+        message: "이용약관 및 개인정보처리방침에 모두 동의해주세요.",
       });
       return;
     }
@@ -264,10 +347,11 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
       >
         <h3 className="font-semibold text-gray-900 mb-6 korean-text flex items-center">
           <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
-          대여 신청 정보
+          약관 동의
         </h3>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
+          {/* 이용약관 동의 */}
           <motion.div
             className="flex items-start space-x-4"
             whileHover={{ scale: 1.01 }}
@@ -275,20 +359,15 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
           >
             <motion.div
               className={`flex items-center justify-center w-6 h-6 border-2 rounded-lg cursor-pointer transition-all duration-300 ${
-                applicationForm.agreement
+                termsAgreed
                   ? "bg-gradient-to-br from-primary to-secondary border-primary shadow-lg"
                   : "bg-white border-gray-300 hover:border-primary/50 shadow-sm"
               }`}
-              onClick={() =>
-                onApplicationFormChange({
-                  ...applicationForm,
-                  agreement: !applicationForm.agreement,
-                })
-              }
+              onClick={() => setShowTermsModal(true)}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              {applicationForm.agreement && (
+              {termsAgreed && (
                 <motion.svg
                   className="w-4 h-4 text-white"
                   fill="currentColor"
@@ -306,19 +385,76 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
               )}
             </motion.div>
             <div className="flex-1">
-              <label
-                className="font-medium text-gray-700 cursor-pointer korean-text"
-                onClick={() =>
-                  onApplicationFormChange({
-                    ...applicationForm,
-                    agreement: !applicationForm.agreement,
-                  })
-                }
-              >
-                대여 약관에 동의합니다
-              </label>
+              <div className="flex items-center">
+                <label
+                  className="font-medium text-gray-700 cursor-pointer korean-text"
+                  onClick={() => setShowTermsModal(true)}
+                >
+                  이용약관에 동의합니다
+                </label>
+                <button
+                  onClick={() => setShowTermsModal(true)}
+                  className="ml-2 text-primary hover:text-secondary underline text-sm transition-colors duration-200 korean-text"
+                >
+                  보기
+                </button>
+              </div>
               <p className="text-sm text-gray-500 mt-1 korean-text">
-                물품 손상 시 수리비 부담, 연체 시 벌점 부과 등에 동의합니다
+                물품 대여 서비스 이용을 위한 약관에 동의합니다
+              </p>
+            </div>
+          </motion.div>
+
+          {/* 개인정보처리방침 동의 */}
+          <motion.div
+            className="flex items-start space-x-4"
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className={`flex items-center justify-center w-6 h-6 border-2 rounded-lg cursor-pointer transition-all duration-300 ${
+                privacyAgreed
+                  ? "bg-gradient-to-br from-primary to-secondary border-primary shadow-lg"
+                  : "bg-white border-gray-300 hover:border-primary/50 shadow-sm"
+              }`}
+              onClick={() => setShowPrivacyModal(true)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              {privacyAgreed && (
+                <motion.svg
+                  className="w-4 h-4 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </motion.svg>
+              )}
+            </motion.div>
+            <div className="flex-1">
+              <div className="flex items-center">
+                <label
+                  className="font-medium text-gray-700 cursor-pointer korean-text"
+                  onClick={() => setShowPrivacyModal(true)}
+                >
+                  개인정보처리방침에 동의합니다
+                </label>
+                <button
+                  onClick={() => setShowPrivacyModal(true)}
+                  className="ml-2 text-primary hover:text-secondary underline text-sm transition-colors duration-200 korean-text"
+                >
+                  보기
+                </button>
+              </div>
+              <p className="text-sm text-gray-500 mt-1 korean-text">
+                개인정보 수집 및 이용에 동의합니다
               </p>
             </div>
           </motion.div>
@@ -332,30 +468,30 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
           >
             <h4 className="font-semibold text-gray-900 mb-4 korean-text flex items-center">
               <span className="text-lg mr-2">📋</span>
-              대여 약관 상세 내용
+              대여 유의사항 요약
             </h4>
             <div className="space-y-3 text-sm text-gray-700">
               {[
                 { title: "대여 기간", content: "24시간 (익일 같은 시간까지)" },
                 {
-                  title: "연체 시",
-                  content: "하루당 벌점 1점 부과, 3회 연체 시 한 달 이용 정지",
+                  title: "반납 지연 시",
+                  content:
+                    "30분 이내: 경고 1회 / 30분 초과: 1주일 대여 제한 / 2시간 초과: 1개월 대여 제한 / 24시간 초과: 영구 대여 제한",
                 },
                 {
-                  title: "물품 손상 시",
-                  content: "수리비 실비 부담 (영수증 제공)",
+                  title: "손상 시",
+                  content:
+                    "약간의 손상: 책임 없음 / 사용 불가능한 손상: 동일 물품 구매 제출",
                 },
                 {
-                  title: "물품 분실 시",
-                  content: "동일 물품 재구매 비용 부담",
+                  title: "분실 시",
+                  content:
+                    "동일 물품 구매 제출 (불이행 시 영구 대여 제한 및 학생회 행사 참여 제한)",
                 },
                 {
-                  title: "주의사항",
-                  content: "대여 중 제3자에게 양도 금지, 타인 명의 대여 금지",
-                },
-                {
-                  title: "문의",
-                  content: "정보대학 학생회 (양산캠퍼스 학생회실)",
+                  title: "유의사항",
+                  content:
+                    "손상 및 분실 여부에 대한 최종 판단은 담당자에게 있음",
                 },
               ].map((item, index) => (
                 <motion.div
@@ -404,6 +540,54 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
           사진 촬영하기
         </motion.button>
       </motion.div>
+
+      {/* 이용약관 모달 */}
+      <Modal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        title="이용약관"
+      >
+        <iframe
+          src="/terms"
+          className="w-full h-[60vh] border-0 rounded"
+          title="이용약관"
+        />
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={() => {
+              setTermsAgreed(true);
+              setShowTermsModal(false);
+            }}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors korean-text"
+          >
+            약관에 동의합니다
+          </button>
+        </div>
+      </Modal>
+
+      {/* 개인정보처리방침 모달 */}
+      <Modal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+        title="개인정보처리방침"
+      >
+        <iframe
+          src="/privacy"
+          className="w-full h-[60vh] border-0 rounded"
+          title="개인정보처리방침"
+        />
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={() => {
+              setPrivacyAgreed(true);
+              setShowPrivacyModal(false);
+            }}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors korean-text"
+          >
+            방침에 동의합니다
+          </button>
+        </div>
+      </Modal>
     </motion.div>
   );
 };
