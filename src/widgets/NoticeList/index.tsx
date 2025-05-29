@@ -238,10 +238,10 @@ export function NoticeList() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="mb-12"
+          className="mb-12 min-h-[600px]"
         >
           {/* 데스크톱 테이블 뷰 */}
-          <div className="hidden md:block bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden">
+          <div className="hidden md:block bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden min-h-[400px]">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200/50">
                 <thead className="bg-gradient-to-r from-gray-50/80 to-blue-50/80 backdrop-blur-sm">
@@ -279,109 +279,155 @@ export function NoticeList() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200/50">
-                  {currentItems.map((notice) => (
-                    <tr
-                      key={notice.id}
-                      className="hover:bg-blue-50/50 transition-colors cursor-pointer"
-                    >
-                      <Link href={`/notice/${notice.id}`} legacyBehavior>
-                        <a
-                          className="contents"
-                          onClick={() => handleNoticeClick(notice)}
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-center">
-                              {notice.important ? (
-                                <span className="inline-flex items-center justify-center w-8 h-8 bg-red-100 rounded-full text-red-700 font-bold text-xs korean-text">
-                                  중요
-                                </span>
-                              ) : (
-                                <span className="text-gray-500 korean-text">
-                                  {filteredNotices.indexOf(notice) + 1}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col">
-                              <div className="text-sm font-medium text-gray-900 korean-text">
-                                {notice.title}
+                  {currentItems.length > 0 ? (
+                    currentItems.map((notice) => (
+                      <tr
+                        key={notice.id}
+                        className="hover:bg-blue-50/50 transition-colors cursor-pointer"
+                      >
+                        <Link href={`/notice/${notice.id}`} legacyBehavior>
+                          <a
+                            className="contents"
+                            onClick={() => handleNoticeClick(notice)}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-center">
+                                {notice.important ? (
+                                  <span className="inline-flex items-center justify-center w-8 h-8 bg-red-100 rounded-full text-red-700 font-bold text-xs korean-text">
+                                    중요
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-500 korean-text">
+                                    {filteredNotices.indexOf(notice) + 1}
+                                  </span>
+                                )}
                               </div>
-                              <div className="mt-1 text-xs text-gray-500 line-clamp-1 korean-text">
-                                {notice.preview}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex flex-col">
+                                <div className="text-sm font-medium text-gray-900 korean-text">
+                                  {notice.title}
+                                </div>
+                                <div className="mt-1 text-xs text-gray-500 line-clamp-1 korean-text">
+                                  {notice.preview}
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(
-                                notice.category
-                              )}`}
-                            >
-                              {notice.category}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 korean-text">
-                            {formatDate(notice.createdAt)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 korean-text">
-                            {notice.views}
-                          </td>
-                        </a>
-                      </Link>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span
+                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+                                  notice.category
+                                )}`}
+                              >
+                                {notice.category}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 korean-text">
+                              {formatDate(notice.createdAt)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 korean-text">
+                              {notice.views}
+                            </td>
+                          </a>
+                        </Link>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-6 text-center">
+                        <div className="flex flex-col items-center justify-center min-h-[300px]">
+                          <svg
+                            className="w-12 h-12 text-gray-400 mb-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                          <p className="text-gray-500 korean-text">
+                            검색 결과가 없습니다.
+                          </p>
+                        </div>
+                      </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
 
           {/* 모바일 카드 뷰 */}
-          <div className="md:hidden space-y-4">
-            {currentItems.map((notice) => (
-              <Link
-                key={notice.id}
-                href={`/notice/${notice.id}`}
-                className="block"
-                onClick={() => handleNoticeClick(notice)}
-              >
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-white/50 p-4 transition-all"
+          <div className="md:hidden space-y-4 min-h-[600px]">
+            {currentItems.length > 0 ? (
+              currentItems.map((notice) => (
+                <Link
+                  key={notice.id}
+                  href={`/notice/${notice.id}`}
+                  className="block"
+                  onClick={() => handleNoticeClick(notice)}
                 >
-                  <div className="flex items-center mb-2 gap-2">
-                    {notice.important ? (
-                      <span className="inline-flex items-center justify-center w-8 h-8 bg-red-100 rounded-full text-red-700 font-bold text-xs korean-text">
-                        중요
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-white/50 p-4 transition-all"
+                  >
+                    <div className="flex items-center mb-2 gap-2">
+                      {notice.important ? (
+                        <span className="inline-flex items-center justify-center w-8 h-8 bg-red-100 rounded-full text-red-700 font-bold text-xs korean-text">
+                          중요
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-gray-700 font-medium text-xs korean-text">
+                          {filteredNotices.indexOf(notice) + 1}
+                        </span>
+                      )}
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ml-2 ${getCategoryColor(
+                          notice.category
+                        )}`}
+                      >
+                        {notice.category}
                       </span>
-                    ) : (
-                      <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-gray-700 font-medium text-xs korean-text">
-                        {filteredNotices.indexOf(notice) + 1}
+                      <span className="ml-auto text-xs text-gray-500 korean-text">
+                        {formatDate(notice.createdAt)}
                       </span>
-                    )}
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ml-2 ${getCategoryColor(
-                        notice.category
-                      )}`}
-                    >
-                      {notice.category}
-                    </span>
-                    <span className="ml-auto text-xs text-gray-500 korean-text">
-                      {formatDate(notice.createdAt)}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-medium text-gray-900 mb-1 korean-text">
-                    {notice.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 line-clamp-1 korean-text">
-                    {notice.preview}
-                  </p>
-                  <div className="mt-2 text-xs text-gray-500 korean-text">
-                    조회: {notice.views}
-                  </div>
-                </motion.div>
-              </Link>
-            ))}
+                    </div>
+                    <h3 className="text-base font-medium text-gray-900 mb-1 korean-text">
+                      {notice.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 line-clamp-1 korean-text">
+                      {notice.preview}
+                    </p>
+                    <div className="mt-2 text-xs text-gray-500 korean-text">
+                      조회: {notice.views}
+                    </div>
+                  </motion.div>
+                </Link>
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center min-h-[400px] bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-white/50">
+                <svg
+                  className="w-12 h-12 text-gray-400 mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <p className="text-gray-500 korean-text">
+                  검색 결과가 없습니다.
+                </p>
+              </div>
+            )}
           </div>
         </motion.div>
 

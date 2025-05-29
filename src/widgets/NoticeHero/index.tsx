@@ -146,7 +146,7 @@ export function NoticeHero() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M15 17h5l-5 5v-5zM4 19h6v-2H4v2zM4 15h8v-2H4v2zM4 11h10V9H4v2zM4 7h10V5H4v2z"
+                      d="M4 6h16M4 10h16M4 14h16M4 18h16"
                     />
                   </svg>
                 </div>
