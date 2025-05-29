@@ -2,8 +2,8 @@ import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-// 학생회 구성원 데이터
-const membersData = [
+// 학생회 구성원 데이터 (학생회장단만)
+const leadershipData = [
   {
     name: "신태일",
     position: "학생회장",
@@ -22,83 +22,15 @@ const membersData = [
     quote: "학우들의 권익 향상을 위해 최선을 다하겠습니다.",
     color: "from-indigo-500 to-purple-500",
   },
-  {
-    name: "김혜은",
-    position: "문화기획국장",
-    department: "정보의생명공학대학",
-    grade: "22학번",
-    image: "/images/member3.jpg",
-    quote: "다양한 문화 행사로 즐거운 대학 생활을 만들겠습니다.",
-    color: "from-pink-500 to-rose-500",
-  },
-  {
-    name: "서호영",
-    position: "재정사무국장",
-    department: "정보의생명공학대학",
-    grade: "20학번",
-    image: "/images/member4.jpg",
-    quote: "투명한 재정 관리로 신뢰받는 학생회를 만들겠습니다.",
-    color: "from-emerald-500 to-teal-500",
-  },
-  {
-    name: "윤대한",
-    position: "학생복지국장",
-    department: "정보의생명공학대학",
-    grade: "21학번",
-    image: "/images/member5.jpg",
-    quote: "학우들의 복지 향상을 위해 최선을 다하겠습니다.",
-    color: "from-orange-500 to-amber-500",
-  },
-  {
-    name: "이연지",
-    position: "소통홍보국장",
-    department: "정보의생명공학대학",
-    grade: "22학번",
-    image: "/images/member6.jpg",
-    quote: "학생회의 활동을 널리 알리고 학우들과 소통하겠습니다.",
-    color: "from-violet-500 to-purple-500",
-  },
-  {
-    name: "손정훈",
-    position: "총무",
-    department: "정보의생명공학대학",
-    grade: "23학번",
-    image: "/images/member5.jpg",
-    quote: "체계적인 행정 지원으로 학생회 활동을 뒷받침하겠습니다.",
-    color: "from-slate-500 to-gray-500",
-  },
 ];
 
 // 학생회 조직도 데이터
 const departments = [
   {
-    name: "학생회장단",
-    description: "학생회를 대표하고 전체적인 운영과 방향성을 결정",
-    members: 2,
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5 sm:h-6 sm:w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-        />
-      </svg>
-    ),
-    memberList: "회장: 신태일(21학번), 부회장: 강재한(20학번)",
-    color: "from-blue-500 to-cyan-500",
-    bgColor: "from-blue-400/20 to-cyan-400/20",
-  },
-  {
     name: "소통홍보국",
     description: "학생회 활동 홍보 및 소통 창구 역할",
     members: 4,
+    image: "/images/department1.jpg", // 국별 단체사진
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -115,8 +47,9 @@ const departments = [
         />
       </svg>
     ),
-    memberList:
-      "국장: 이연지(22학번), 국원: 설대연(25학번), 김현지(24학번), 박준이(21학번)",
+    leader: "이연지",
+    leaderGrade: "22학번",
+    memberList: "국원: 설대연(25학번), 김현지(24학번), 박준이(21학번)",
     color: "from-violet-500 to-purple-500",
     bgColor: "from-violet-400/20 to-purple-400/20",
   },
@@ -124,6 +57,7 @@ const departments = [
     name: "문화기획국",
     description: "다양한 문화 행사 기획 및 운영",
     members: 6,
+    image: "/images/department2.jpg",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -140,8 +74,10 @@ const departments = [
         />
       </svg>
     ),
+    leader: "김혜은",
+    leaderGrade: "22학번",
     memberList:
-      "국장: 김혜은(22학번), 국원: 전동훈(21학번), 이현호(22학번), 현승민(22학번), 황보원(25학번), 허민(25학번)",
+      "국원: 전동훈(21학번), 이현호(22학번), 현승민(22학번), 황보원(25학번), 허민(25학번)",
     color: "from-pink-500 to-rose-500",
     bgColor: "from-pink-400/20 to-rose-400/20",
   },
@@ -149,6 +85,7 @@ const departments = [
     name: "재정사무국",
     description: "학생회비 관리 및 재정 운영, 회계 담당",
     members: 6,
+    image: "/images/department3.jpg",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -165,8 +102,10 @@ const departments = [
         />
       </svg>
     ),
+    leader: "서호영",
+    leaderGrade: "20학번",
     memberList:
-      "국장: 서호영(20학번), 총무: 손정훈(23학번), 국원: 이나연(24학번), 홍지수(23학번), 우영지(25학번), 김도훈(25학번)",
+      "총무: 손정훈(23학번), 국원: 이나연(24학번), 홍지수(23학번), 우영지(25학번), 김도훈(25학번)",
     color: "from-emerald-500 to-teal-500",
     bgColor: "from-emerald-400/20 to-teal-400/20",
   },
@@ -174,6 +113,7 @@ const departments = [
     name: "학생복지국",
     description: "학생 복지 향상 및 편의 시설 관리",
     members: 5,
+    image: "/images/department4.jpg",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -190,8 +130,10 @@ const departments = [
         />
       </svg>
     ),
+    leader: "윤대한",
+    leaderGrade: "21학번",
     memberList:
-      "국장: 윤대한(21학번), 국원: 서완준(21학번), 박영주(21학번), 이지혜(25학번), 최지우(25학번)",
+      "국원: 서완준(21학번), 박영주(21학번), 이지혜(25학번), 최지우(25학번)",
     color: "from-orange-500 to-amber-500",
     bgColor: "from-orange-400/20 to-amber-400/20",
   },
@@ -241,9 +183,9 @@ export function AboutMembers() {
           </motion.p>
         </div>
 
-        {/* 주요 구성원 소개 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16 sm:mb-20">
-          {membersData.map((member, index) => (
+        {/* 학생회장단 소개 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-16 sm:mb-20 max-w-4xl mx-auto">
+          {leadershipData.map((member, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
@@ -256,7 +198,7 @@ export function AboutMembers() {
               }}
               className="group relative bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg border border-white/50 hover:shadow-xl transition-all duration-300"
             >
-              <div className="relative h-48 sm:h-56 md:h-64 overflow-hidden">
+              <div className="relative h-64 sm:h-72 md:h-80 overflow-hidden">
                 <Image
                   src={member.image}
                   alt={`${member.name} - ${member.position}`}
@@ -265,11 +207,11 @@ export function AboutMembers() {
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                <div className="absolute bottom-0 left-0 p-4 sm:p-6 text-white">
-                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold korean-text leading-tight">
+                <div className="absolute bottom-0 left-0 p-6 text-white">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold korean-text leading-tight">
                     {member.name}
                   </h3>
-                  <p className="text-white/90 text-sm sm:text-base korean-text">
+                  <p className="text-white/90 text-base sm:text-lg korean-text">
                     {member.position}
                   </p>
                 </div>
@@ -279,18 +221,18 @@ export function AboutMembers() {
                 ></div>
               </div>
 
-              <div className="relative p-4 sm:p-6">
-                <div className="flex justify-between items-center mb-3 sm:mb-4">
-                  <span className="text-xs sm:text-sm text-gray-600 korean-text">
+              <div className="relative p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-sm text-gray-600 korean-text">
                     {member.department}
                   </span>
                   <span
-                    className={`text-xs sm:text-sm font-semibold bg-gradient-to-r ${member.color} bg-clip-text text-transparent`}
+                    className={`text-sm font-semibold bg-gradient-to-r ${member.color} bg-clip-text text-transparent`}
                   >
                     {member.grade}
                   </span>
                 </div>
-                <p className="text-sm sm:text-base text-gray-700 italic leading-relaxed korean-text">
+                <p className="text-base text-gray-700 italic leading-relaxed korean-text">
                   &quot;{member.quote}&quot;
                 </p>
               </div>
@@ -298,19 +240,18 @@ export function AboutMembers() {
           ))}
         </div>
 
-        {/* 학생회 조직도 */}
+        {/* 각 국별 소개 */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 shadow-xl border border-white/50"
         >
           <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-8 sm:mb-12 text-center korean-text">
-            학생회 조직도
+            각 국별 소개
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             {departments.map((dept, index) => (
               <motion.div
                 key={index}
@@ -322,56 +263,63 @@ export function AboutMembers() {
                   y: -3,
                   transition: { duration: 0.3 },
                 }}
-                className="group relative bg-white/90 backdrop-blur-sm rounded-xl p-4 sm:p-6 shadow-lg border border-white/50 hover:shadow-xl transition-all duration-300 flex flex-col"
+                className="group relative bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg border border-white/50 hover:shadow-xl transition-all duration-300"
               >
-                {/* 배경 그라디언트 효과 */}
-                <div className="absolute inset-0 overflow-hidden rounded-xl">
-                  <div
-                    className={`absolute w-24 h-24 -top-12 -right-12 bg-gradient-to-br ${dept.bgColor} rounded-full blur-2xl group-hover:blur-xl transition-all duration-500`}
-                  ></div>
-                </div>
+                {/* 국별 단체사진 */}
+                <div className="relative h-48 sm:h-56 overflow-hidden">
+                  <Image
+                    src={dept.image}
+                    alt={`${dept.name} 단체사진`}
+                    width={600}
+                    height={300}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
 
-                <div className="relative">
-                  <div className="flex items-center mb-3 sm:mb-4">
+                  {/* 국 이름과 아이콘 */}
+                  <div className="absolute bottom-4 left-4 flex items-center gap-3">
                     <div
-                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${dept.color} flex items-center justify-center text-white mr-3 sm:mr-4 shadow-lg group-hover:scale-105 transition-transform duration-300`}
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${dept.color} flex items-center justify-center text-white shadow-lg`}
                     >
                       {dept.icon}
                     </div>
-                    <h4 className="text-base sm:text-lg font-bold text-gray-900 korean-text">
+                    <h4 className="text-lg sm:text-xl font-bold text-white korean-text">
                       {dept.name}
                     </h4>
                   </div>
 
-                  <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 flex-grow leading-relaxed korean-text">
+                  {/* 구성원 수 */}
+                  <div className="absolute top-4 right-4">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm font-medium">
+                      {dept.members}명
+                    </div>
+                  </div>
+                </div>
+
+                {/* 국 정보 */}
+                <div className="p-6">
+                  <p className="text-gray-600 mb-4 leading-relaxed korean-text">
                     {dept.description}
                   </p>
 
-                  <div className="text-xs sm:text-sm text-gray-700 mt-2">
-                    <p className="font-medium leading-relaxed korean-text">
-                      {dept.memberList}
-                    </p>
-                  </div>
-
-                  <div className="text-xs sm:text-sm text-gray-500 flex items-center mt-3 sm:mt-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 5.197v1M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                      />
-                    </svg>
-                    <span className="korean-text">
-                      {dept.members}명의 구성원
+                  {/* 국장 정보 */}
+                  <div className="mb-3">
+                    <span className="text-sm font-semibold text-gray-800 korean-text">
+                      국장: {dept.leader} ({dept.leaderGrade})
                     </span>
                   </div>
+
+                  {/* 구성원 목록 */}
+                  <div className="text-sm text-gray-600 leading-relaxed korean-text">
+                    {dept.memberList}
+                  </div>
+                </div>
+
+                {/* 배경 그라디언트 효과 */}
+                <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+                  <div
+                    className={`absolute w-24 h-24 -top-12 -right-12 bg-gradient-to-br ${dept.bgColor} rounded-full blur-2xl group-hover:blur-xl transition-all duration-500`}
+                  ></div>
                 </div>
               </motion.div>
             ))}
