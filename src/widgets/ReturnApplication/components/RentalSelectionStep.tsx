@@ -120,7 +120,7 @@ export default function RentalSelectionStep({
                 whileTap={{ scale: 0.98 }}
               >
                 {/* 모바일: 세로 레이아웃, 태블릿+: 가로 레이아웃 */}
-                <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <div className="flex flex-col space-y-4 ">
                   {/* 이미지와 제목 */}
                   <div className="flex items-center space-x-4">
                     {item?.image && (
@@ -155,7 +155,7 @@ export default function RentalSelectionStep({
                   <div className="flex-1 space-y-2">
                     <div className="text-sm text-gray-600 space-y-2">
                       <div className="flex flex-col space-y-1">
-                        <span className="font-medium text-gray-700">
+                        <span className="font-medium text-gray-700 mt-2">
                           대여기간
                         </span>
                         <span className="text-gray-600">
