@@ -21,7 +21,7 @@ const PENALTY_RULES = {
 };
 
 // 반납 지연 시간별 처벌 규칙 (제6조 기준)
-const RETURN_DELAY_RULES = {
+export const RETURN_DELAY_RULES = {
   WARNING_THRESHOLD: 30 * 60 * 1000, // 30분 (밀리초)
   WEEK_BAN_THRESHOLD: 30 * 60 * 1000, // 30분 초과
   MONTH_BAN_THRESHOLD: 2 * 60 * 60 * 1000, // 2시간 초과

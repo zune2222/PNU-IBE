@@ -1429,7 +1429,7 @@ export const studentSanctionService = {
       // 기존 제재 업데이트
       const sanctionRef = doc(db, "student_sanctions", existingSanction.id!);
       
-      let updateData: Partial<FirestoreStudentSanction> = {
+      const updateData: Partial<FirestoreStudentSanction> = {
         sanctionType,
         sanctionReason: reason,
         sanctionStartDate: today,
@@ -1462,7 +1462,7 @@ export const studentSanctionService = {
       return existingSanction.id!;
     } else {
       // 새 제재 생성
-      let sanctionData: Omit<FirestoreStudentSanction, "id"> = {
+      const sanctionData: Omit<FirestoreStudentSanction, "id"> = {
         studentId,
         studentName,
         sanctionType,
