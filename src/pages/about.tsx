@@ -6,7 +6,7 @@ import { AboutHero } from "../widgets/AboutHero";
 import { AboutVision } from "../widgets/AboutVision";
 import { AboutMembers } from "../widgets/AboutMembers";
 import { AboutHistory } from "../widgets/AboutHistory";
-import { AboutActivities } from "../widgets/AboutActivities";
+// import { AboutActivities } from "../widgets/AboutActivities";
 
 export default function AboutPage() {
   return (
@@ -26,7 +26,7 @@ export default function AboutPage() {
         <AboutVision />
         <AboutMembers />
         <AboutHistory />
-        <AboutActivities />
+        {/* <AboutActivities /> */}
       </main>
 
       <Footer />

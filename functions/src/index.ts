@@ -13,9 +13,9 @@ import * as admin from "firebase-admin";
 
 // Discord 스케줄러 함수들 가져오기
 import {
-  checkOverdueRentals,
   sendDailySummary,
   systemHealthCheck,
+  checkReturnDelays,
 } from "./discord-scheduler";
 
 // Start writing functions
@@ -43,13 +43,13 @@ export const healthCheck = onRequest(
       timestamp: new Date().toISOString(),
       functions: [
         "healthCheck",
-        "checkOverdueRentals",
         "sendDailySummary",
         "systemHealthCheck",
+        "checkReturnDelays",
       ],
     });
   }
 );
 
 // Discord 스케줄러 함수들 export
-export { checkOverdueRentals, sendDailySummary, systemHealthCheck };
+export { sendDailySummary, systemHealthCheck, checkReturnDelays };

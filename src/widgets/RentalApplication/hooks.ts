@@ -5,6 +5,7 @@ import {
   rentalItemService,
   FirestoreRentalItem,
   rentalApplicationService,
+  studentSanctionService,
 } from "../../shared/services/firestore";
 import { discordService } from "../../shared/services/discordService";
 import type { RentalNotificationData } from "../../shared/services/discordService";
@@ -242,6 +243,20 @@ export const useRentalApplication = () => {
 
     setIsLoading(true);
     try {
+      // 제재 상태 확인
+      const eligibilityCheck = await studentSanctionService.checkEligibility(
+        verifiedStudentInfo.studentId
+      );
+
+      if (!eligibilityCheck.eligible) {
+        showToast({
+          type: "error",
+          message: eligibilityCheck.reason || "대여가 제한된 상태입니다.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       showToast({
         type: "info",
         message: "대여를 진행하고 있습니다...",

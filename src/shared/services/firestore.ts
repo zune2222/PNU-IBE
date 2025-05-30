@@ -113,7 +113,38 @@ export interface FirestoreUser {
   sanctionType?: string | null; // warning, suspension_1_month, suspension_3_months, permanent_ban
   sanctionEndDate?: string | null; // 제재 종료일
   sanctionAppliedAt?: string | null; // 제재 적용일
+  
+  // 경고 시스템 (반납 지연용)
+  warningCount?: number; // 경고 누적 횟수 (30분 이내 지연)
+  lastWarningDate?: string; // 마지막 경고 부여일
 
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+// 학번 기반 제재 기록 (회원가입 없는 서비스용)
+export interface FirestoreStudentSanction {
+  id?: string;
+  studentId: string; // 학번
+  studentName: string; // 학생 이름
+  
+  // 제재 정보
+  sanctionType: "warning" | "suspension_1_week" | "suspension_1_month" | "permanent_ban";
+  sanctionReason: string; // 제재 사유
+  sanctionStartDate: string; // 제재 시작일
+  sanctionEndDate?: string; // 제재 종료일 (영구제재시 null)
+  
+  // 경고 누적 (30분 이내 지연용)
+  warningCount: number; // 현재 경고 누적 횟수
+  totalWarnings: number; // 전체 경고 누적 횟수
+  lastWarningDate?: string; // 마지막 경고 부여일
+  
+  // 관련 대여 신청
+  relatedRentalId?: string; // 제재 원인이 된 대여 신청 ID
+  
+  // 상태
+  isActive: boolean; // 현재 제재 활성 상태
+  
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -1357,5 +1388,220 @@ export const lockboxPasswordService = {
         } as FirestoreLockboxPassword)
     );
     return passwords.sort((a, b) => a.campus.localeCompare(b.campus));
+  },
+};
+
+// 학번 기반 제재 관리 서비스
+export const studentSanctionService = {
+  // 학번으로 현재 활성 제재 조회
+  async getActiveByStudentId(studentId: string): Promise<FirestoreStudentSanction | null> {
+    const q = query(
+      collection(db, "student_sanctions"),
+      where("studentId", "==", studentId),
+      where("isActive", "==", true)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      return {
+        id: querySnapshot.docs[0].id,
+        ...querySnapshot.docs[0].data(),
+      } as FirestoreStudentSanction;
+    }
+    return null;
+  },
+
+  // 제재 기록 생성/업데이트
+  async createOrUpdateSanction(
+    studentId: string,
+    studentName: string,
+    sanctionType: "warning" | "suspension_1_week" | "suspension_1_month" | "permanent_ban",
+    reason: string,
+    relatedRentalId?: string
+  ): Promise<string> {
+    const now = Timestamp.now();
+    const today = new Date().toISOString();
+    
+    // 기존 제재 확인
+    const existingSanction = await this.getActiveByStudentId(studentId);
+    
+    if (existingSanction) {
+      // 기존 제재 업데이트
+      const sanctionRef = doc(db, "student_sanctions", existingSanction.id!);
+      
+      let updateData: Partial<FirestoreStudentSanction> = {
+        sanctionType,
+        sanctionReason: reason,
+        sanctionStartDate: today,
+        updatedAt: now,
+      };
+      
+      // 경고인 경우 카운트 증가
+      if (sanctionType === "warning") {
+        updateData.warningCount = (existingSanction.warningCount || 0) + 1;
+        updateData.totalWarnings = (existingSanction.totalWarnings || 0) + 1;
+        updateData.lastWarningDate = today;
+      } else {
+        // 다른 제재인 경우 종료일 설정
+        const endDate = new Date();
+        if (sanctionType === "suspension_1_week") {
+          endDate.setDate(endDate.getDate() + 7);
+          updateData.sanctionEndDate = endDate.toISOString();
+        } else if (sanctionType === "suspension_1_month") {
+          endDate.setMonth(endDate.getMonth() + 1);
+          updateData.sanctionEndDate = endDate.toISOString();
+        }
+        // permanent_ban은 종료일 없음
+      }
+      
+      if (relatedRentalId) {
+        updateData.relatedRentalId = relatedRentalId;
+      }
+      
+      await updateDoc(sanctionRef, updateData);
+      return existingSanction.id!;
+    } else {
+      // 새 제재 생성
+      let sanctionData: Omit<FirestoreStudentSanction, "id"> = {
+        studentId,
+        studentName,
+        sanctionType,
+        sanctionReason: reason,
+        sanctionStartDate: today,
+        warningCount: sanctionType === "warning" ? 1 : 0,
+        totalWarnings: sanctionType === "warning" ? 1 : 0,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      };
+      
+      // 제재 종료일 설정
+      if (sanctionType === "suspension_1_week") {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 7);
+        sanctionData.sanctionEndDate = endDate.toISOString();
+      } else if (sanctionType === "suspension_1_month") {
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + 1);
+        sanctionData.sanctionEndDate = endDate.toISOString();
+      }
+      
+      if (sanctionType === "warning") {
+        sanctionData.lastWarningDate = today;
+      }
+      
+      if (relatedRentalId) {
+        sanctionData.relatedRentalId = relatedRentalId;
+      }
+      
+      const docRef = await addDoc(collection(db, "student_sanctions"), sanctionData);
+      return docRef.id;
+    }
+  },
+
+  // 제재 해제
+  async deactivateSanction(studentId: string): Promise<void> {
+    const activeSanction = await this.getActiveByStudentId(studentId);
+    if (activeSanction) {
+      const sanctionRef = doc(db, "student_sanctions", activeSanction.id!);
+      await updateDoc(sanctionRef, {
+        isActive: false,
+        updatedAt: Timestamp.now(),
+      });
+    }
+  },
+
+  // 경고 3회 체크 후 1주일 제재 적용
+  async checkWarningThreshold(studentId: string, studentName: string): Promise<boolean> {
+    const activeSanction = await this.getActiveByStudentId(studentId);
+    
+    if (activeSanction && activeSanction.warningCount >= 3) {
+      // 경고 3회 도달 시 1주일 제재로 변경
+      await this.createOrUpdateSanction(
+        studentId,
+        studentName,
+        "suspension_1_week",
+        "경고 3회 누적으로 인한 1주일 대여 제한"
+      );
+      return true;
+    }
+    return false;
+  },
+
+  // 학번으로 대여 가능 여부 확인
+  async checkEligibility(studentId: string): Promise<{
+    eligible: boolean;
+    reason?: string;
+    sanctionEndDate?: string;
+  }> {
+    const activeSanction = await this.getActiveByStudentId(studentId);
+    
+    if (!activeSanction) {
+      return { eligible: true };
+    }
+    
+    // 제재 종료일 확인
+    if (activeSanction.sanctionEndDate) {
+      const endDate = new Date(activeSanction.sanctionEndDate);
+      const now = new Date();
+      
+      if (now >= endDate) {
+        // 제재 기간 만료 - 비활성화
+        await this.deactivateSanction(studentId);
+        return { eligible: true };
+      }
+      
+      // 아직 제재 중
+      const sanctionTypeMap: Record<string, string> = {
+        "warning": "경고",
+        "suspension_1_week": "1주일",
+        "suspension_1_month": "1개월",
+        "permanent_ban": "영구"
+      };
+      
+      return {
+        eligible: false,
+        reason: `${sanctionTypeMap[activeSanction.sanctionType] || activeSanction.sanctionType} 대여 제한 중입니다. (해제일: ${endDate.toLocaleDateString()})`,
+        sanctionEndDate: activeSanction.sanctionEndDate,
+      };
+    }
+    
+    // 영구 제재
+    if (activeSanction.sanctionType === "permanent_ban") {
+      return {
+        eligible: false,
+        reason: "영구 대여 제한 상태입니다. 학생회에 문의하세요.",
+      };
+    }
+    
+    // 경고는 대여 가능
+    if (activeSanction.sanctionType === "warning") {
+      return { eligible: true };
+    }
+    
+    return { eligible: true };
+  },
+
+  // 모든 제재 기록 조회 (관리자용)
+  async getAllSanctions(): Promise<FirestoreStudentSanction[]> {
+    const querySnapshot = await getDocs(collection(db, "student_sanctions"));
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as FirestoreStudentSanction));
+  },
+
+  // 학번별 제재 이력 조회
+  async getSanctionHistory(studentId: string): Promise<FirestoreStudentSanction[]> {
+    const q = query(
+      collection(db, "student_sanctions"),
+      where("studentId", "==", studentId)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as FirestoreStudentSanction));
   },
 };

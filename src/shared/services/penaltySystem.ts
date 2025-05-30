@@ -20,6 +20,15 @@ const PENALTY_RULES = {
   MULTIPLE_OVERDUE: 5, // 다중 연체 (동시에 여러 물품 연체)
 };
 
+// 반납 지연 시간별 처벌 규칙 (제6조 기준)
+const RETURN_DELAY_RULES = {
+  WARNING_THRESHOLD: 30 * 60 * 1000, // 30분 (밀리초)
+  WEEK_BAN_THRESHOLD: 30 * 60 * 1000, // 30분 초과
+  MONTH_BAN_THRESHOLD: 2 * 60 * 60 * 1000, // 2시간 초과
+  PERMANENT_BAN_THRESHOLD: 24 * 60 * 60 * 1000, // 24시간 초과
+  MAX_WARNINGS: 3, // 최대 경고 횟수
+};
+
 // 제재 기준
 const PENALTY_THRESHOLDS = {
   WARNING: 10, // 경고
