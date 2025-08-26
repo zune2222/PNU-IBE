@@ -9,6 +9,7 @@ import { event as gaEvent } from "../../shared/lib/analytics";
 import { noticeService } from "../../shared/services/firestore";
 import { getCategoryColor } from "../../shared/data/noticeData";
 import { useQuery } from "@tanstack/react-query";
+import { GetStaticPaths, GetStaticProps } from "next";
 
 export default function NoticeDetail() {
   const router = useRouter();
@@ -22,19 +23,20 @@ export default function NoticeDetail() {
     enabled: !!id && typeof id === "string",
   });
 
+  // 현재 공지사항 데이터
+  const notice = noticeQuery.data;
+
   // 모든 공지사항 조회 쿼리
   const allNoticesQuery = useQuery({
     queryKey: ["notices"],
     queryFn: () => noticeService.getAll(),
-    enabled: !!noticeQuery.data, // 공지사항 상세가 로드된 후 실행
+    enabled: !!notice, // 공지사항 상세가 로드된 후 실행
   });
 
   // 관련 공지와 최근 공지 계산
   const relatedNotices =
     allNoticesQuery.data
-      ?.filter(
-        (item) => item.id !== id && item.category === noticeQuery.data?.category
-      )
+      ?.filter((item) => item.id !== id && item.category === notice?.category)
       .slice(0, 3) || [];
 
   const recentNotices =
@@ -176,7 +178,28 @@ export default function NoticeDetail() {
     );
   }
 
-  const notice = noticeQuery.data;
+  // notice가 없으면 로딩 상태 반환
+  if (!notice) {
+    return (
+      <>
+        <Head>
+          <title>공지사항 - 부산대학교 정보의생명공학대학 학생회</title>
+        </Head>
+        <Header />
+        <main className="pt-28 pb-16">
+          <div className="container-custom py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600 korean-text">
+                공지사항을 불러오는 중...
+              </p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -381,3 +404,47 @@ export default function NoticeDetail() {
     </>
   );
 }
+
+// 정적 경로 생성
+export const getStaticPaths: GetStaticPaths = async () => {
+  try {
+    // 모든 공지사항 ID를 가져와서 정적 경로 생성
+    const notices = await noticeService.getAll();
+    const paths = notices.map((notice) => ({
+      params: { id: notice.id },
+    }));
+
+    return {
+      paths,
+      fallback: false, // 정적 export를 위해 false로 설정
+    };
+  } catch (error) {
+    console.error("getStaticPaths error:", error);
+    return {
+      paths: [],
+      fallback: false,
+    };
+  }
+};
+
+// 정적 props 생성
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  try {
+    const id = params?.id as string;
+    if (!id) {
+      return {
+        notFound: true,
+      };
+    }
+
+    // 정적 빌드 시에는 빈 props를 반환
+    return {
+      props: {},
+    };
+  } catch (error) {
+    console.error("getStaticProps error:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
