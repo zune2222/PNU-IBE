@@ -87,6 +87,8 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
   const [phoneNumber, setPhoneNumber] = useState(() =>
     loadFromStorage(STORAGE_KEYS.PHONE_NUMBER, "")
   );
+  const [editableStudentId, setEditableStudentId] = useState("");
+  const [editableName, setEditableName] = useState("");
 
   // 전화번호 포맷팅 함수
   const formatPhoneNumber = (value: string) => {
@@ -175,6 +177,8 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       // 이전 결과 초기화
       setOcrResult(null);
       setPhoneNumber("");
+      setEditableStudentId("");
+      setEditableName("");
     } catch (error) {
       console.error("학생증 사진 업로드 오류:", error);
       showToast({
@@ -205,6 +209,9 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
           message: errorMessage,
         });
       } else {
+        // OCR 결과를 편집 가능한 상태로 설정
+        setEditableStudentId(result.studentInfo.studentId || "");
+        setEditableName(result.studentInfo.name || "");
         showToast({
           type: "success",
           message: "학생증 정보를 성공적으로 인식했습니다!",
@@ -235,11 +242,12 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
       return;
     }
 
-    const { studentId, name, department, campus } = ocrResult.studentInfo;
+    const { department, campus } = ocrResult.studentInfo;
+    const studentId = editableStudentId.trim();
+    const name = editableName.trim();
 
     if (!studentId || !name) {
-      const errorMessage =
-        "학번과 이름 정보가 인식되지 않았습니다. 다시 시도해주세요.";
+      const errorMessage = "학번과 이름을 모두 입력해주세요.";
       onError?.(errorMessage);
       showToast({
         type: "error",
@@ -292,8 +300,8 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
       // 성공 콜백 호출
       const studentInfo: ExtendedStudentIdInfo = {
-        studentId,
-        name,
+        studentId: studentId.trim(),
+        name: name.trim(),
         department: department || null,
         campus,
         grade: null,
@@ -571,24 +579,32 @@ export const StudentIdUpload: React.FC<StudentIdUploadProps> = ({
 
                 {ocrResult.success && ocrResult.studentInfo ? (
                   <div className="space-y-4">
-                    {/* 학번 (읽기 전용) */}
+                    {/* 학번 (편집 가능) */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
-                        학번
+                        학번 *
                       </label>
-                      <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700">
-                        {ocrResult.studentInfo.studentId || "인식되지 않음"}
-                      </div>
+                      <input
+                        type="text"
+                        value={editableStudentId}
+                        onChange={(e) => setEditableStudentId(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                        placeholder="학번을 입력하세요"
+                      />
                     </div>
 
-                    {/* 이름 (읽기 전용) */}
+                    {/* 이름 (편집 가능) */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
-                        이름
+                        이름 *
                       </label>
-                      <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700">
-                        {ocrResult.studentInfo.name || "인식되지 않음"}
-                      </div>
+                      <input
+                        type="text"
+                        value={editableName}
+                        onChange={(e) => setEditableName(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                        placeholder="이름을 입력하세요"
+                      />
                     </div>
 
                     {/* 학과 (읽기 전용) */}

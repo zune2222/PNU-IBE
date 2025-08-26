@@ -105,7 +105,7 @@ const departments = [
     leader: "서호영",
     leaderGrade: "20학번",
     memberList:
-      "총무: 손정훈(23학번), 국원: 이나연(24학번), 홍지수(23학번), 우영지(25학번), 김도훈(25학번)",
+      "총무: 손정훈(23학번), 국원: 이나연(24학번), 홍지수(22학번), 우영지(25학번), 김도훈(25학번)",
     color: "from-emerald-500 to-teal-500",
     bgColor: "from-emerald-400/20 to-teal-400/20",
   },
