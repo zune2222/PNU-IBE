@@ -206,12 +206,12 @@ export default function useReturnApplication() {
     setIsLoading(true);
 
     try {
-      // 학번으로 대여 중인 물품들 조회
+      // 학번으로 대여 중인 물품들 조회 (정상 대여 + 연체 물품 포함)
       const allRentals = await rentalApplicationService.getAllApplications();
       const userRentals = allRentals.filter(
         (rental: FirestoreRentalApplication) =>
           rental.studentId === studentData.studentId &&
-          rental.status === "rented"
+          (rental.status === "rented" || rental.status === "overdue")
       );
 
       setCurrentRentals(userRentals);
