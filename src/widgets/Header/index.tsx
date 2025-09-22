@@ -13,8 +13,10 @@ export function Header() {
   // 현재 페이지가 about 페이지인지 확인
   const isAboutPage = pathname === "/about/";
 
-  const isNoticeDetailPage = pathname?.startsWith("/notice/");
-  const isEventsDetailPage = pathname?.startsWith("/events/");
+  const isNoticeDetailPage =
+    pathname?.startsWith("/notice/") || pathname === "/notice";
+  const isEventsDetailPage =
+    pathname?.startsWith("/events/") || pathname === "/events";
   const isRentalPage = pathname === "/rental" || pathname === "/rental/";
 
   useEffect(() => {
