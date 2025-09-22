@@ -237,11 +237,14 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
             <p className="text-sm text-gray-600 line-clamp-2 korean-text leading-relaxed">
               {selectedItem.description}
             </p>
-            <div className="flex items-center mt-2">
+            <div className="flex items-center mt-2 space-x-2">
               <span className="px-2 py-1 bg-gradient-to-r from-primary/10 to-secondary/10 text-primary text-xs font-medium rounded-full border border-primary/20">
                 {selectedItem.campus === "yangsan"
                   ? "양산캠퍼스"
                   : "장전캠퍼스"}
+              </span>
+              <span className="px-2 py-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 text-xs font-medium rounded-full border border-gray-300">
+                ID: {selectedItem.uniqueId}
               </span>
             </div>
           </div>
