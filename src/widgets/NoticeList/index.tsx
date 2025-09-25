@@ -439,14 +439,14 @@ export function NoticeList() {
             transition={{ duration: 0.4, delay: 0.2 }}
             className="flex justify-center mt-10"
           >
-            <nav className="inline-flex shadow-sm rounded-lg overflow-hidden">
+            <nav className="inline-flex shadow-xl rounded-2xl overflow-hidden bg-white/80 backdrop-blur-sm border border-white/60">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`px-4 py-2 text-sm font-medium korean-text ${
+                className={`px-4 sm:px-6 py-3 text-sm font-medium korean-text transition-all duration-300 ${
                   currentPage === 1
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-white text-gray-700 hover:bg-blue-50 transition-colors"
+                    ? "bg-gray-100/80 text-gray-400 cursor-not-allowed"
+                    : "bg-white/90 text-gray-700 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 hover:text-primary"
                 }`}
               >
                 이전
@@ -482,10 +482,10 @@ export function NoticeList() {
                   <button
                     key={pageNum}
                     onClick={() => handlePageChange(pageNum as number)}
-                    className={`px-4 py-2 text-sm font-medium korean-text ${
+                    className={`px-4 sm:px-6 py-3 text-sm font-medium korean-text transition-all duration-300 ${
                       currentPage === pageNum
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-gray-700 hover:bg-blue-50 transition-colors"
+                        ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md"
+                        : "bg-white/90 text-gray-700 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 hover:text-primary"
                     }`}
                   >
                     {pageNum}
@@ -494,10 +494,10 @@ export function NoticeList() {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`px-4 py-2 text-sm font-medium korean-text ${
+                className={`px-4 sm:px-6 py-3 text-sm font-medium korean-text transition-all duration-300 ${
                   currentPage === totalPages
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-white text-gray-700 hover:bg-blue-50 transition-colors"
+                    ? "bg-gray-100/80 text-gray-400 cursor-not-allowed"
+                    : "bg-white/90 text-gray-700 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 hover:text-primary"
                 }`}
               >
                 다음

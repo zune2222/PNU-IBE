@@ -11,7 +11,7 @@ export function Header() {
   const pathname = usePathname();
 
   // 현재 페이지가 about 페이지인지 확인
-  const isAboutPage = pathname === "/about/";
+  const isAboutPage = pathname === "/about";
 
   const isNoticeDetailPage =
     pathname?.startsWith("/notice/") || pathname === "/notice";
