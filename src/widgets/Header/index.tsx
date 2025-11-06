@@ -18,6 +18,7 @@ export function Header() {
   const isEventsDetailPage =
     pathname?.startsWith("/events/") || pathname === "/events";
   const isRentalPage = pathname === "/rental" || pathname === "/rental/";
+  const isEsportsPage = pathname?.startsWith("/esports") || pathname === "/esports";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,21 +54,22 @@ export function Header() {
     isAboutPage ||
     isNoticeDetailPage ||
     isEventsDetailPage ||
-    isRentalPage;
+    isRentalPage ||
+    isEsportsPage;
 
   // about 페이지 및 rental 페이지에서는 항상 어두운 텍스트 색상 사용
   const getTextColor = () => {
-    if (isAboutPage || isRentalPage) return "text-gray-700";
+    if (isAboutPage || isRentalPage || isEsportsPage) return "text-gray-700";
     return shouldShowBackground ? "text-gray-700" : "text-white";
   };
 
   const getLogoTextColor = () => {
-    if (isAboutPage || isRentalPage) return "text-dark";
+    if (isAboutPage || isRentalPage || isEsportsPage) return "text-dark";
     return shouldShowBackground ? "text-dark" : "text-white";
   };
 
   const getHoverColor = () => {
-    if (isAboutPage || isRentalPage) return "hover:text-primary";
+    if (isAboutPage || isRentalPage || isEsportsPage) return "hover:text-primary";
     return shouldShowBackground ? "hover:text-primary" : "hover:text-tertiary";
   };
 
@@ -76,6 +78,7 @@ export function Header() {
     { href: "/notice", label: "공지사항" },
     { href: "/events", label: "행사 정보" },
     { href: "/rental", label: "물품 대여" },
+    { href: "/esports", label: "E-Sports" },
   ];
 
   return (
@@ -118,7 +121,7 @@ export function Header() {
           {/* 모바일 메뉴 버튼 */}
           <motion.button
             className={`md:hidden p-2 rounded-lg transition-all duration-300 ${
-              isAboutPage
+              isAboutPage || isEsportsPage
                 ? "text-dark hover:bg-gray-100"
                 : shouldShowBackground
                 ? "text-dark hover:bg-gray-100"
