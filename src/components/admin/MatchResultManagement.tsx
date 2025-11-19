@@ -71,7 +71,7 @@ export default function MatchResultManagement() {
 
   const fetchEvents = async () => {
     try {
-      const response = await apiClient.get<ESportsEvent[]>("/api/events");
+      const response = await apiClient.get<ESportsEvent[]>("/api/admin/events");
       setEvents(response);
     } catch (error) {
       console.error("이벤트 목록 조회 실패:", error);
