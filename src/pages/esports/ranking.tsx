@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
-import { Header } from '../../widgets/Header';
-import { Footer } from '../../widgets/Footer';
-import { apiClient } from '../../shared/services/api';
-import { esportsApiService } from '../../shared/services/esportsApi';
-import { useToast } from '../../shared/components/Toast';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Head from "next/head";
+import { Header } from "../../widgets/Header";
+import { Footer } from "../../widgets/Footer";
+import { apiClient } from "../../shared/services/api";
+import { esportsApiService } from "../../shared/services/esportsApi";
+import { useToast } from "../../shared/components/Toast";
 
 interface Event {
   eventId: number;
@@ -13,7 +13,7 @@ interface Event {
   status: string;
 }
 
-type GameType = 'LOL' | 'PUBG' | 'FIFA';
+type GameType = "LOL" | "PUBG" | "FIFA";
 
 interface RankingUser {
   studentId: string;
@@ -45,13 +45,18 @@ export default function ESportsRanking() {
   const router = useRouter();
   const { eventId } = router.query;
   const { showToast } = useToast();
-  
+
   const [event, setEvent] = useState<Event | null>(null);
-  const [selectedView, setSelectedView] = useState<'ranking' | 'results'>('ranking');
-  const [selectedGame, setSelectedGame] = useState<GameType>('LOL');
+  const [selectedView, setSelectedView] = useState<"ranking" | "results">(
+    "ranking"
+  );
+  const [selectedGame, setSelectedGame] = useState<GameType>("LOL");
   const [ranking, setRanking] = useState<RankingUser[]>([]);
-  const [gameResults, setGameResults] = useState<{[key in GameType]?: GameResult[]}>({});
-  const [myBettingPoints, setMyBettingPoints] = useState<BettingPointSummary | null>(null);
+  const [gameResults, setGameResults] = useState<{
+    [key in GameType]?: GameResult[];
+  }>({});
+  const [myBettingPoints, setMyBettingPoints] =
+    useState<BettingPointSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,23 +70,31 @@ export default function ESportsRanking() {
 
   const fetchEvent = async () => {
     try {
-      const response = await apiClient.get<{event_id: number; event_name: string; status: string}>(`/api/admin/events/${eventId}`);
+      const response = await apiClient.get<{
+        event_id: number;
+        event_name: string;
+        status: string;
+      }>(`/api/admin/events/${eventId}`);
       setEvent({
         eventId: response.event_id,
         eventName: response.event_name,
-        status: response.status
+        status: response.status,
       });
     } catch (error: unknown) {
-      console.error('이벤트 정보 조회 실패:', error);
-      if (error && typeof error === 'object' && 'message' in error && 
-           typeof (error as {message: unknown}).message === 'string' &&
-           ((error as {message: string}).message.includes('404') ||
-            (error as {message: string}).message.includes('찾을 수 없습니다'))) {
+      console.error("이벤트 정보 조회 실패:", error);
+      if (
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof (error as { message: unknown }).message === "string" &&
+        ((error as { message: string }).message.includes("404") ||
+          (error as { message: string }).message.includes("찾을 수 없습니다"))
+      ) {
         showToast({
-          type: 'error',
-          message: '이벤트를 찾을 수 없습니다. 이벤트 목록으로 돌아갑니다.',
+          type: "error",
+          message: "이벤트를 찾을 수 없습니다. 이벤트 목록으로 돌아갑니다.",
         });
-        router.push('/esports');
+        router.push("/esports");
       }
     }
   };
@@ -106,21 +119,21 @@ export default function ESportsRanking() {
         gameScores: {
           LOL: entry.lol_score || 0,
           PUBG: entry.pubg_score || 0,
-          FIFA: entry.fifa_score || 0
+          FIFA: entry.fifa_score || 0,
         },
-        rank: entry.rank
+        rank: entry.rank,
       }));
       setRanking(rankingData);
     } catch (error) {
-      console.error('순위 조회 실패:', error);
+      console.error("순위 조회 실패:", error);
     }
   };
 
   const fetchGameResults = async () => {
     try {
-      const results: {[key in GameType]?: GameResult[]} = {};
-      
-      for (const gameType of ['LOL', 'PUBG', 'FIFA'] as GameType[]) {
+      const results: { [key in GameType]?: GameResult[] } = {};
+
+      for (const gameType of ["LOL", "PUBG", "FIFA"] as GameType[]) {
         try {
           const response = await apiClient.get<{
             success: boolean;
@@ -134,17 +147,17 @@ export default function ESportsRanking() {
             results[gameType] = response.results.map((result) => ({
               teamId: result.team_id,
               teamName: result.team_name,
-              rank: result.rank
+              rank: result.rank,
             }));
           }
         } catch (error) {
           console.error(`${gameType} 결과 조회 실패:`, error);
         }
       }
-      
+
       setGameResults(results);
     } catch (error) {
-      console.error('게임 결과 조회 실패:', error);
+      console.error("게임 결과 조회 실패:", error);
     } finally {
       setLoading(false);
     }
@@ -155,34 +168,63 @@ export default function ESportsRanking() {
       const pointSummary = await esportsApiService.getMyPointSummary(eventId);
       setMyBettingPoints(pointSummary);
     } catch (error) {
-      console.error('내 베팅 포인트 조회 실패:', error);
+      console.error("내 베팅 포인트 조회 실패:", error);
       // 로그인하지 않은 경우에는 null 상태 유지
     }
   };
 
   const getRankColor = (rank: number) => {
     switch (rank) {
-      case 1: return 'text-yellow-600 bg-yellow-50';
-      case 2: return 'text-gray-600 bg-gray-50';
-      case 3: return 'text-orange-600 bg-orange-50';
-      default: return 'text-blue-600 bg-blue-50';
+      case 1:
+        return "text-yellow-600 bg-yellow-50";
+      case 2:
+        return "text-gray-600 bg-gray-50";
+      case 3:
+        return "text-orange-600 bg-orange-50";
+      default:
+        return "text-blue-600 bg-blue-50";
     }
   };
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
-      case 1: return '🥇';
-      case 2: return '🥈';
-      case 3: return '🥉';
-      default: return `${rank}위`;
+      case 1:
+        return "🥇";
+      case 2:
+        return "🥈";
+      case 3:
+        return "🥉";
+      default:
+        return `${rank}위`;
     }
   };
 
   const getGameIcon = (game: GameType) => {
     switch (game) {
-      case 'LOL': return '🎮';
-      case 'PUBG': return '🔫';
-      case 'FIFA': return '⚽';
+      case "LOL":
+        return (
+          <img
+            src="/lol2.png"
+            alt="League of Legends"
+            className="w-5 h-5 inline-block"
+          />
+        );
+      case "PUBG":
+        return (
+          <img
+            src="https://pngimg.com/d/pubg_PNG55.png"
+            alt="PUBG"
+            className="w-5 h-5 inline-block"
+          />
+        );
+      case "FIFA":
+        return (
+          <img
+            src="/fconline.svg"
+            alt="FC Online"
+            className="w-5 h-5 inline-block"
+          />
+        );
     }
   };
 
@@ -224,7 +266,9 @@ export default function ESportsRanking() {
                 </span>
               </span>
             </h1>
-            <h2 className="text-lg text-gray-600 korean-text">{event?.eventName}</h2>
+            <h2 className="text-lg text-gray-600 korean-text">
+              {event?.eventName}
+            </h2>
           </div>
 
           {/* 탭 선택 */}
@@ -232,28 +276,48 @@ export default function ESportsRanking() {
             <div className="border-b border-gray-100">
               <nav className="flex space-x-8 px-6 sm:px-8">
                 <button
-                  onClick={() => setSelectedView('ranking')}
+                  onClick={() => setSelectedView("ranking")}
                   className={`py-5 px-1 border-b-2 font-medium text-sm korean-text transition-colors ${
-                    selectedView === 'ranking'
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    selectedView === "ranking"
+                      ? "border-primary text-primary"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
-                  <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-4 h-4 inline mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   승부 예측 순위
                 </button>
                 <button
-                  onClick={() => setSelectedView('results')}
+                  onClick={() => setSelectedView("results")}
                   className={`py-5 px-1 border-b-2 font-medium text-sm korean-text transition-colors ${
-                    selectedView === 'results'
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    selectedView === "results"
+                      ? "border-primary text-primary"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
-                  <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <svg
+                    className="w-4 h-4 inline mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
                   </svg>
                   게임 결과
                 </button>
@@ -261,33 +325,72 @@ export default function ESportsRanking() {
             </div>
           </div>
 
-          {selectedView === 'ranking' ? (
+          {selectedView === "ranking" ? (
             <div className="space-y-6">
               {/* 내 베팅 포인트 요약 */}
               {myBettingPoints && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md border border-blue-200">
                   <div className="p-6">
                     <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center">
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
                       </svg>
                       내 베팅 포인트 현황
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center p-4 bg-white rounded-lg border">
-                        <div className="text-2xl font-bold text-blue-600">{myBettingPoints.lolScore}</div>
-                        <div className="text-sm text-gray-600">🎮 LoL</div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          {myBettingPoints.lolScore}
+                        </div>
+                        <div className="text-sm text-gray-600 flex items-center justify-center gap-1">
+                          <img
+                            src="/lol2.png"
+                            alt="League of Legends"
+                            className="w-auto h-4"
+                          />
+                          LoL
+                        </div>
                       </div>
                       <div className="text-center p-4 bg-white rounded-lg border">
-                        <div className="text-2xl font-bold text-orange-600">{myBettingPoints.pubgScore}</div>
-                        <div className="text-sm text-gray-600">🔫 PUBG</div>
+                        <div className="text-2xl font-bold text-orange-600">
+                          {myBettingPoints.pubgScore}
+                        </div>
+                        <div className="text-sm text-gray-600 flex items-center justify-center gap-1">
+                          <img
+                            src="https://pngimg.com/d/pubg_PNG55.png"
+                            alt="PUBG"
+                            className="w-4 h-4"
+                          />
+                          PUBG
+                        </div>
                       </div>
                       <div className="text-center p-4 bg-white rounded-lg border">
-                        <div className="text-2xl font-bold text-green-600">{myBettingPoints.fifaScore}</div>
-                        <div className="text-sm text-gray-600">⚽ FIFA</div>
+                        <div className="text-2xl font-bold text-green-600">
+                          {myBettingPoints.fifaScore}
+                        </div>
+                        <div className="text-sm text-gray-600 flex items-center justify-center gap-1">
+                          <img
+                            src="/fconline.svg"
+                            alt="FC Online"
+                            className="w-4 h-4"
+                          />
+                          FC Online
+                        </div>
                       </div>
                       <div className="text-center p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg">
-                        <div className="text-2xl font-bold">{myBettingPoints.totalScore}</div>
+                        <div className="text-2xl font-bold">
+                          {myBettingPoints.totalScore}
+                        </div>
                         <div className="text-sm">총 획득 점수</div>
                       </div>
                     </div>
@@ -298,71 +401,82 @@ export default function ESportsRanking() {
               {/* 승부 예측 순위 */}
               <div className="bg-white rounded-lg shadow-md">
                 <div className="p-6 border-b border-gray-200">
-                  <h3 className="text-xl font-semibold text-gray-900">승부 예측 순위</h3>
-                  <p className="text-gray-600 mt-1">예측 정확도에 따른 최종 순위입니다</p>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    승부 예측 순위
+                  </h3>
+                  <p className="text-gray-600 mt-1">
+                    예측 정확도에 따른 최종 순위입니다
+                  </p>
                 </div>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        순위
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        학생
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        LoL
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        PUBG
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        FIFA
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        총점
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {ranking.map((user, index) => (
-                      <tr key={user.studentId} className={index < 3 ? 'bg-yellow-50' : ''}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRankColor(user.rank)}`}>
-                            {getRankIcon(user.rank)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {user.name}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {user.studentId}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
-                          {user.gameScores.LOL || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
-                          {user.gameScores.PUBG || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
-                          {user.gameScores.FIFA || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className="text-lg font-semibold text-blue-600">
-                            {user.totalScore}
-                          </span>
-                        </td>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          순위
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          학생
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          LoL
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          PUBG
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          FIFA
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          총점
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {ranking.map((user, index) => (
+                        <tr
+                          key={user.studentId}
+                          className={index < 3 ? "bg-yellow-50" : ""}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRankColor(
+                                user.rank
+                              )}`}
+                            >
+                              {getRankIcon(user.rank)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {user.name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {user.studentId}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                            {user.gameScores.LOL || "-"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                            {user.gameScores.PUBG || "-"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                            {user.gameScores.FIFA || "-"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <span className="text-lg font-semibold text-blue-600">
+                              {user.totalScore}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           ) : (
@@ -370,39 +484,45 @@ export default function ESportsRanking() {
             <div className="space-y-6">
               {/* 게임 선택 */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">게임 선택</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  게임 선택
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
-                    { value: 'LOL', name: 'League of Legends' },
-                    { value: 'PUBG', name: 'PUBG' },
-                    { value: 'FIFA', name: 'FIFA Online 4' }
+                    { value: "LOL", name: "League of Legends" },
+                    { value: "PUBG", name: "PUBG" },
+                    { value: "FIFA", name: "FC Online" },
                   ].map((game) => (
                     <button
                       key={game.value}
                       onClick={() => setSelectedGame(game.value as GameType)}
                       className={`p-4 rounded-lg border-2 transition-colors ${
                         selectedGame === game.value
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-300 hover:border-gray-400"
                       }`}
                     >
-                      <div className="mb-2">
-                        {game.value === 'LOL' && (
-                          <svg className="w-8 h-8 mx-auto text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M21 6H3a1 1 0 000 2h.062l1.538 12.31A2 2 0 006.58 22h10.84a2 2 0 001.98-1.69L20.938 8H21a1 1 0 000-2zM19.938 8L18.58 20H5.42L4.062 8h15.876zM9 10a1 1 0 011 1v6a1 1 0 01-2 0v-6a1 1 0 011-1zm6 0a1 1 0 011 1v6a1 1 0 01-2 0v-6a1 1 0 011-1z"/>
-                            <path d="M12 2a4 4 0 014 4v2H8V6a4 4 0 014-4z"/>
-                          </svg>
+                      <div className="mb-2 flex justify-center">
+                        {game.value === "LOL" && (
+                          <img
+                            src="/lol2.png"
+                            alt="League of Legends"
+                            className="w-auto h-4"
+                          />
                         )}
-                        {game.value === 'PUBG' && (
-                          <svg className="w-8 h-8 mx-auto text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12H8m8 0a4 4 0 01-4 4H8a4 4 0 01-4-4 4 4 0 014-4h4a4 4 0 014 4z" />
-                          </svg>
+                        {game.value === "PUBG" && (
+                          <img
+                            src="https://pngimg.com/d/pubg_PNG55.png"
+                            alt="PUBG"
+                            className="w-8 h-8"
+                          />
                         )}
-                        {game.value === 'FIFA' && (
-                          <svg className="w-8 h-8 mx-auto text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                          </svg>
+                        {game.value === "FIFA" && (
+                          <img
+                            src="/fconline.svg"
+                            alt="FC Online"
+                            className="w-8 h-8"
+                          />
                         )}
                       </div>
                       <div className="font-semibold">{game.name}</div>
@@ -418,7 +538,7 @@ export default function ESportsRanking() {
                     {getGameIcon(selectedGame)} {selectedGame} 경기 결과
                   </h3>
                 </div>
-                
+
                 <div className="p-6">
                   {gameResults[selectedGame] ? (
                     <div className="space-y-4">
@@ -426,19 +546,27 @@ export default function ESportsRanking() {
                         <div
                           key={result.teamId}
                           className={`flex items-center justify-between p-4 rounded-lg border-2 ${
-                            index === 0 ? 'border-yellow-300 bg-yellow-50' :
-                            index === 1 ? 'border-gray-300 bg-gray-50' :
-                            index === 2 ? 'border-orange-300 bg-orange-50' :
-                            'border-gray-200 bg-white'
+                            index === 0
+                              ? "border-yellow-300 bg-yellow-50"
+                              : index === 1
+                              ? "border-gray-300 bg-gray-50"
+                              : index === 2
+                              ? "border-orange-300 bg-orange-50"
+                              : "border-gray-200 bg-white"
                           }`}
                         >
                           <div className="flex items-center space-x-4">
-                            <div className={`text-2xl ${
-                              index === 0 ? 'text-yellow-600' :
-                              index === 1 ? 'text-gray-600' :
-                              index === 2 ? 'text-orange-600' :
-                              'text-blue-600'
-                            }`}>
+                            <div
+                              className={`text-2xl ${
+                                index === 0
+                                  ? "text-yellow-600"
+                                  : index === 1
+                                  ? "text-gray-600"
+                                  : index === 2
+                                  ? "text-orange-600"
+                                  : "text-blue-600"
+                              }`}
+                            >
                               {getRankIcon(result.rank)}
                             </div>
                             <div>

@@ -133,7 +133,7 @@ export function ESportsHero() {
                 <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300 mb-0 sm:mb-4 flex-shrink-0">
                   <img
                     src="/fconline.svg"
-                    alt="FIFA Online 4"
+                    alt="FC Online"
                     className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10"
                   />
                 </div>
