@@ -176,14 +176,14 @@ export default function ESportsBetting() {
       <main className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 헤더 섹션 */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 sm:mb-12">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 mb-4">
               <span className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></span>
-              <span className="text-sm font-semibold text-primary korean-text">
+              <span className="text-sm font-semibold text-primary korean-text whitespace-nowrap">
                 승부 예측 참여
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold korean-text mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold korean-text mb-2 px-4">
               <span className="bg-gradient-to-r from-dark to-gray-700 bg-clip-text text-transparent">
                 승부{" "}
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -191,7 +191,7 @@ export default function ESportsBetting() {
                 </span>
               </span>
             </h1>
-            <h2 className="text-lg text-gray-600 korean-text">
+            <h2 className="text-base sm:text-lg text-gray-600 korean-text px-4 break-words">
               {event?.eventName}
             </h2>
           </div>
@@ -248,11 +248,11 @@ export default function ESportsBetting() {
           ) : (
             <div className="space-y-6">
               {/* 게임 선택 */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-6 sm:p-8">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6 korean-text">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-4 sm:p-6 md:p-8">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6 korean-text">
                   게임 선택
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   {[
                     { value: "LOL", name: "League of Legends" },
                     { value: "PUBG", name: "PUBG" },
@@ -261,42 +261,42 @@ export default function ESportsBetting() {
                     <button
                       key={game.value}
                       onClick={() => setSelectedGame(game.value as GameType)}
-                      className={`p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 ${
+                      className={`p-3 sm:p-4 md:p-6 rounded-xl border-2 transition-all duration-300 ${
                         selectedGame === game.value
                           ? "border-primary bg-gradient-to-br from-primary/10 to-secondary/10 shadow-lg"
                           : "border-gray-200 bg-white/70 hover:border-primary/50 hover:shadow-md hover:-translate-y-1"
                       }`}
                     >
-                      <div className="mb-3 relative h-8 flex items-center justify-center">
+                      <div className="mb-2 sm:mb-3 relative h-6 sm:h-8 flex items-center justify-center">
                         {game.value === "LOL" && (
                           <Image
                             src="/lol2.png"
                             alt="League of Legends"
-                            width={32}
-                            height={32}
-                            className="object-contain"
+                            width={24}
+                            height={24}
+                            className="object-contain sm:w-8 sm:h-8"
                           />
                         )}
                         {game.value === "PUBG" && (
                           <Image
                             src="https://pngimg.com/d/pubg_PNG55.png"
                             alt="PUBG"
-                            width={32}
-                            height={32}
-                            className="object-contain"
+                            width={24}
+                            height={24}
+                            className="object-contain sm:w-8 sm:h-8"
                           />
                         )}
                         {game.value === "FIFA" && (
                           <Image
                             src="/fconline.svg"
                             alt="FC Online"
-                            width={32}
-                            height={32}
-                            className="object-contain"
+                            width={24}
+                            height={24}
+                            className="object-contain sm:w-8 sm:h-8"
                           />
                         )}
                       </div>
-                      <div className="font-semibold korean-text">
+                      <div className="font-semibold text-sm sm:text-base korean-text">
                         {game.name}
                       </div>
                     </button>
@@ -305,26 +305,26 @@ export default function ESportsBetting() {
               </div>
 
               {/* 승부 예측 상태 */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-6 sm:p-8">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
-                  <h3 className="text-xl font-semibold text-gray-900 korean-text">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-4 sm:p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 korean-text">
                     승부 예측 현황
                   </h3>
-                  <div className="text-left sm:text-right">
-                    <div className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  <div className="text-left sm:text-right w-full sm:w-auto">
+                    <div className="text-base sm:text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                       사용: {getTotalBetPoints()}/
                       {ESportsConstants.POINTS_PER_GAME}pt
                     </div>
-                    <div className="text-sm text-gray-600 korean-text">
+                    <div className="text-xs sm:text-sm text-gray-600 korean-text">
                       남은 포인트: {getRemainingPoints()}pt
                     </div>
                   </div>
                 </div>
 
                 {/* 진행률 바 */}
-                <div className="w-full bg-gray-200 rounded-full h-3 mb-6">
+                <div className="w-full bg-gray-200 rounded-full h-2.5 sm:h-3 mb-4 sm:mb-6">
                   <div
-                    className="bg-gradient-to-r from-primary to-secondary h-3 rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-primary to-secondary h-2.5 sm:h-3 rounded-full transition-all duration-300"
                     style={{
                       width: `${
                         (getTotalBetPoints() /
@@ -336,8 +336,8 @@ export default function ESportsBetting() {
                 </div>
 
                 {bets.length > 0 && (
-                  <div className="space-y-2 mb-6 p-4 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-xl border border-primary/10">
-                    <h4 className="font-medium text-gray-900 korean-text mb-3">
+                  <div className="space-y-2 mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-xl border border-primary/10">
+                    <h4 className="font-medium text-sm sm:text-base text-gray-900 korean-text mb-2 sm:mb-3">
                       내 승부 예측:
                     </h4>
                     {bets.map((bet) => {
@@ -345,12 +345,12 @@ export default function ESportsBetting() {
                       return (
                         <div
                           key={bet.teamId}
-                          className="flex justify-between text-sm bg-white/50 backdrop-blur-sm px-3 py-2 rounded-lg"
+                          className="flex justify-between items-center text-xs sm:text-sm bg-white/50 backdrop-blur-sm px-3 py-2 rounded-lg min-w-0"
                         >
-                          <span className="korean-text font-medium">
+                          <span className="korean-text font-medium truncate mr-2">
                             {team?.teamName}
                           </span>
-                          <span className="font-semibold text-primary">
+                          <span className="font-semibold text-primary whitespace-nowrap">
                             {bet.betPoints}pt
                           </span>
                         </div>
@@ -365,19 +365,19 @@ export default function ESportsBetting() {
                     getTotalBetPoints() !== ESportsConstants.POINTS_PER_GAME ||
                     submitting
                   }
-                  className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 korean-text"
+                  className="w-full py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm sm:text-base font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 korean-text"
                 >
                   {submitting ? "승부 예측 중..." : "승부 예측 확정"}
                 </button>
               </div>
 
               {/* 팀 목록 */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-6 sm:p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900 korean-text">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-4 sm:p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 korean-text">
                     참가팀 목록
                   </h3>
-                  <div className="text-sm font-medium text-gray-600 korean-text">
+                  <div className="text-xs sm:text-sm font-medium text-gray-600 korean-text whitespace-nowrap">
                     총{" "}
                     <span className="text-primary font-semibold">
                       {teams.reduce(
@@ -391,10 +391,10 @@ export default function ESportsBetting() {
                 </div>
 
                 {/* 베팅 인기 순위 표시 */}
-                <div className="mb-6 p-5 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl border border-primary/20">
-                  <h4 className="font-semibold text-gray-900 mb-4 flex items-center korean-text">
+                <div className="mb-4 sm:mb-6 p-4 sm:p-5 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl border border-primary/20">
+                  <h4 className="font-semibold text-sm sm:text-base text-gray-900 mb-3 sm:mb-4 flex items-center korean-text">
                     <svg
-                      className="w-5 h-5 mr-2 text-primary"
+                      className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-primary flex-shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -408,7 +408,7 @@ export default function ESportsBetting() {
                     </svg>
                     베팅 인기도
                   </h4>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {teams
                       .sort(
                         (a, b) =>
@@ -418,10 +418,10 @@ export default function ESportsBetting() {
                       .map((team, index) => (
                         <div
                           key={team.teamId}
-                          className="flex items-center space-x-3 bg-white/70 backdrop-blur-sm px-4 py-3 rounded-lg"
+                          className="flex items-center space-x-2 sm:space-x-3 bg-white/70 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-3 rounded-lg min-w-0"
                         >
                           <div
-                            className={`text-lg ${
+                            className={`text-base sm:text-lg flex-shrink-0 ${
                               index === 0
                                 ? "text-yellow-600"
                                 : index === 1
@@ -431,11 +431,11 @@ export default function ESportsBetting() {
                           >
                             {index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉"}
                           </div>
-                          <div className="flex-1 flex items-center justify-between">
-                            <span className="font-medium text-gray-900 korean-text">
+                          <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 min-w-0">
+                            <span className="font-medium text-sm sm:text-base text-gray-900 korean-text truncate">
                               {team.teamName}
                             </span>
-                            <span className="text-sm font-semibold text-primary korean-text">
+                            <span className="text-xs sm:text-sm font-semibold text-primary korean-text whitespace-nowrap">
                               {team.totalBetPoints}pt ({team.bettorCount}명)
                             </span>
                           </div>
@@ -444,7 +444,7 @@ export default function ESportsBetting() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {teams
                     .sort(
                       (a, b) =>
@@ -462,7 +462,7 @@ export default function ESportsBetting() {
                       return (
                         <div
                           key={team.teamId}
-                          className={`border-2 rounded-xl p-5 sm:p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                          className={`border-2 rounded-xl p-4 sm:p-5 md:p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
                             index === 0
                               ? "border-yellow-300 bg-gradient-to-br from-yellow-50 to-orange-50"
                               : index === 1
@@ -472,12 +472,12 @@ export default function ESportsBetting() {
                               : "border-gray-200 bg-white/70 backdrop-blur-sm hover:border-primary/30"
                           }`}
                         >
-                          <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-3">
-                            <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row justify-between items-start mb-3 sm:mb-4 gap-3">
+                            <div className="flex-1 min-w-0 w-full sm:w-auto">
                               <div className="flex items-center space-x-2 mb-1 flex-wrap">
                                 {index < 3 && (
                                   <span
-                                    className={`text-lg ${
+                                    className={`text-base sm:text-lg flex-shrink-0 ${
                                       index === 0
                                         ? "text-yellow-600"
                                         : index === 1
@@ -492,43 +492,45 @@ export default function ESportsBetting() {
                                       : "🥉"}
                                   </span>
                                 )}
-                                <h4 className="text-lg font-semibold text-gray-900 korean-text">
+                                <h4 className="text-base sm:text-lg font-semibold text-gray-900 korean-text break-words min-w-0">
                                   {team.teamName}
                                 </h4>
                                 {index === 0 && (
-                                  <span className="px-3 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full korean-text">
+                                  <span className="px-2 sm:px-3 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full korean-text whitespace-nowrap">
                                     최고 인기
                                   </span>
                                 )}
                               </div>
                               {team.description && (
-                                <p className="text-gray-600 text-sm mt-2 korean-text">
+                                <p className="text-gray-600 text-xs sm:text-sm mt-2 korean-text break-words">
                                   {team.description}
                                 </p>
                               )}
                             </div>
-                            <div className="text-left sm:text-right">
-                              <div className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                                {team.totalBetPoints || 0}pt
+                            <div className="text-left sm:text-right w-full sm:w-auto flex sm:flex-col justify-between sm:justify-start items-start sm:items-end">
+                              <div>
+                                <div className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                                  {team.totalBetPoints || 0}pt
+                                </div>
+                                <div className="text-xs sm:text-sm text-gray-600 korean-text">
+                                  {team.bettorCount || 0}명 베팅
+                                </div>
                               </div>
-                              <div className="text-sm text-gray-600 korean-text">
-                                {team.bettorCount || 0}명이 베팅
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1 korean-text">
+                              <div className="text-xs text-gray-500 korean-text">
                                 인기도 {popularityPercent.toFixed(1)}%
                               </div>
                             </div>
                           </div>
 
                           {/* 인기도 프로그래스 바 */}
-                          <div className="mb-5">
+                          <div className="mb-4 sm:mb-5">
                             <div className="flex justify-between text-xs text-gray-500 mb-2 korean-text">
                               <span>베팅 인기도</span>
                               <span>{popularityPercent.toFixed(1)}%</span>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div className="w-full bg-gray-200 rounded-full h-2 sm:h-2.5">
                               <div
-                                className={`h-2.5 rounded-full transition-all duration-500 ${
+                                className={`h-2 sm:h-2.5 rounded-full transition-all duration-500 ${
                                   index === 0
                                     ? "bg-gradient-to-r from-yellow-400 to-orange-500"
                                     : index === 1
@@ -543,8 +545,8 @@ export default function ESportsBetting() {
                           </div>
 
                           {/* 팀원 정보 */}
-                          <div className="mb-5">
-                            <h5 className="font-medium text-gray-900 mb-3 korean-text">
+                          <div className="mb-4 sm:mb-5">
+                            <h5 className="font-medium text-sm sm:text-base text-gray-900 mb-2 sm:mb-3 korean-text">
                               팀원:
                             </h5>
                             <div className="space-y-3">
@@ -585,9 +587,9 @@ export default function ESportsBetting() {
                           </div>
 
                           {/* 승부 예측 입력 */}
-                          <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl p-4 sm:p-5 border border-gray-200">
-                            <div className="flex items-center justify-between mb-3">
-                              <label className="text-sm font-medium text-gray-700 korean-text">
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl p-3 sm:p-4 md:p-5 border border-gray-200">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 sm:mb-3 gap-1">
+                              <label className="text-xs sm:text-sm font-medium text-gray-700 korean-text">
                                 승부 예측 포인트
                               </label>
                               <div className="text-xs text-gray-500 korean-text">
@@ -599,7 +601,7 @@ export default function ESportsBetting() {
                                 </span>
                               </div>
                             </div>
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2 sm:space-x-3">
                               <input
                                 type="number"
                                 min="0"
@@ -614,15 +616,15 @@ export default function ESportsBetting() {
                                     parseInt(e.target.value) || 0
                                   )
                                 }
-                                className="border-2 border-gray-300 rounded-lg px-4 py-3 w-28 text-center font-semibold focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                className="border-2 border-gray-300 rounded-lg px-3 py-2 sm:px-4 sm:py-3 w-20 sm:w-28 text-center text-sm sm:text-base font-semibold focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                                 placeholder="0"
                               />
-                              <span className="text-sm text-gray-600 korean-text font-medium">
+                              <span className="text-xs sm:text-sm text-gray-600 korean-text font-medium whitespace-nowrap">
                                 포인트
                               </span>
                               {getBetForTeam(team.teamId) > 0 && (
                                 <div className="flex-1 text-right">
-                                  <span className="text-sm font-medium text-emerald-600 korean-text">
+                                  <span className="text-xs sm:text-sm font-medium text-emerald-600 korean-text whitespace-nowrap">
                                     ✓ 베팅 중
                                   </span>
                                 </div>

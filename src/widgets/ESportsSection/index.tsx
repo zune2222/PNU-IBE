@@ -22,23 +22,25 @@ export function ESportsSection() {
 
   const fetchEvents = async () => {
     try {
-      const response = await apiClient.get<{
-        event_id: number;
-        event_name: string;
-        status: string;
-        register_start_date: string;
-        register_end_date: string;
-        betting_start_date?: string;
-        betting_end_date?: string;
-      }[]>('/api/admin/events');
+      const response = await apiClient.get<
+        {
+          event_id: number;
+          event_name: string;
+          status: string;
+          register_start_date: string;
+          register_end_date: string;
+          betting_start_date?: string;
+          betting_end_date?: string;
+        }[]
+      >("/api/admin/events");
       const eventsData: Event[] = response.map((event) => ({
         eventId: event.event_id,
         eventName: event.event_name,
         status: event.status,
         registerStartDate: event.register_start_date,
         registerEndDate: event.register_end_date,
-        predictionStartDate: event.betting_start_date || '',
-        predictionEndDate: event.betting_end_date || '',
+        predictionStartDate: event.betting_start_date || "",
+        predictionEndDate: event.betting_end_date || "",
       }));
       setEvents(eventsData);
     } catch (error) {
@@ -158,24 +160,24 @@ export function ESportsSection() {
               >
                 <div className="p-6 sm:p-8">
                   <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
-                    <div className="mb-4 sm:mb-0">
-                      <h3 className="text-xl sm:text-2xl font-bold text-dark korean-text mb-2">
+                    <div className="mb-4 sm:mb-0 w-full sm:w-auto">
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-dark korean-text mb-2 break-words">
                         {event.eventName}
                       </h3>
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(
                           event.status
-                        )}`}
+                        )} whitespace-nowrap`}
                       >
                         {getStatusText(event.status)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-6">
-                    <div className="flex items-center">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-6">
+                    <div className="flex items-start min-w-0">
                       <svg
-                        className="w-4 h-4 mr-2 text-primary"
+                        className="w-4 h-4 mr-2 mt-0.5 text-primary flex-shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -187,18 +189,33 @@ export function ESportsSection() {
                           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      <span className="font-medium korean-text">
-                        참가 신청:
-                      </span>
-                      <span className="ml-2 korean-text">
-                        {new Date(event.registerStartDate).toLocaleDateString()}{" "}
-                        ~ {new Date(event.registerEndDate).toLocaleDateString()}
-                      </span>
+                      <div className="min-w-0 flex-1">
+                        <span className="font-medium korean-text block sm:inline">
+                          참가 신청:
+                        </span>
+                        <span className="korean-text block sm:inline sm:ml-2 break-words">
+                          {new Date(event.registerStartDate).toLocaleDateString(
+                            "ko-KR",
+                            {
+                              month: "numeric",
+                              day: "numeric",
+                            }
+                          )}{" "}
+                          ~{" "}
+                          {new Date(event.registerEndDate).toLocaleDateString(
+                            "ko-KR",
+                            {
+                              month: "numeric",
+                              day: "numeric",
+                            }
+                          )}
+                        </span>
+                      </div>
                     </div>
                     {event.predictionStartDate && (
-                      <div className="flex items-center">
+                      <div className="flex items-start min-w-0">
                         <svg
-                          className="w-4 h-4 mr-2 text-secondary"
+                          className="w-4 h-4 mr-2 mt-0.5 text-secondary flex-shrink-0"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -210,30 +227,40 @@ export function ESportsSection() {
                             d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                           />
                         </svg>
-                        <span className="font-medium korean-text">
-                          승부 예측 기간:
-                        </span>
-                        <span className="ml-2 korean-text">
-                          {new Date(
-                            event.predictionStartDate
-                          ).toLocaleDateString()}{" "}
-                          ~{" "}
-                          {new Date(event.predictionEndDate).toLocaleDateString()}
-                        </span>
+                        <div className="min-w-0 flex-1">
+                          <span className="font-medium korean-text block sm:inline">
+                            승부 예측:
+                          </span>
+                          <span className="korean-text block sm:inline sm:ml-2 break-words">
+                            {new Date(
+                              event.predictionStartDate
+                            ).toLocaleDateString("ko-KR", {
+                              month: "numeric",
+                              day: "numeric",
+                            })}{" "}
+                            ~{" "}
+                            {new Date(
+                              event.predictionEndDate
+                            ).toLocaleDateString("ko-KR", {
+                              month: "numeric",
+                              day: "numeric",
+                            })}
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex flex-wrap gap-3">
+                  <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
                     {event.status === "REGISTRATION_OPEN" && (
                       <button
                         onClick={() =>
                           (window.location.href = `/esports/register?eventId=${event.eventId}`)
                         }
-                        className="group/btn inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                        className="group/btn inline-flex items-center justify-center px-3 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 text-sm sm:text-base"
                       >
                         <svg
-                          className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform"
+                          className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 group-hover/btn:scale-110 transition-transform flex-shrink-0"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -245,21 +272,22 @@ export function ESportsSection() {
                             d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
                           />
                         </svg>
-                        <span className="korean-text font-medium">
+                        <span className="korean-text font-medium whitespace-nowrap">
                           참가 신청
                         </span>
                       </button>
                     )}
 
-                    {(event.status === "REGISTRATION_OPEN" || event.status === "PREDICTION_OPEN") && (
+                    {(event.status === "REGISTRATION_OPEN" ||
+                      event.status === "PREDICTION_OPEN") && (
                       <button
                         onClick={() =>
                           (window.location.href = `/esports/betting?eventId=${event.eventId}`)
                         }
-                        className="group/btn inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                        className="group/btn inline-flex items-center justify-center px-3 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 text-sm sm:text-base"
                       >
                         <svg
-                          className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform"
+                          className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 group-hover/btn:scale-110 transition-transform flex-shrink-0"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -271,8 +299,8 @@ export function ESportsSection() {
                             d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                           />
                         </svg>
-                        <span className="korean-text font-medium">
-                          승부 예측 참여
+                        <span className="korean-text font-medium whitespace-nowrap">
+                          승부 예측
                         </span>
                       </button>
                     )}
@@ -281,10 +309,10 @@ export function ESportsSection() {
                       onClick={() =>
                         (window.location.href = `/esports/ranking?eventId=${event.eventId}`)
                       }
-                      className="group/btn inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                      className="group/btn inline-flex items-center justify-center px-3 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 text-sm sm:text-base"
                     >
                       <svg
-                        className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 group-hover/btn:scale-110 transition-transform flex-shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -296,17 +324,19 @@ export function ESportsSection() {
                           d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                         />
                       </svg>
-                      <span className="korean-text font-medium">순위표</span>
+                      <span className="korean-text font-medium whitespace-nowrap">
+                        순위표
+                      </span>
                     </button>
 
                     <button
                       onClick={() =>
                         (window.location.href = `/esports/teams?eventId=${event.eventId}`)
                       }
-                      className="group/btn inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                      className="group/btn inline-flex items-center justify-center px-3 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 text-sm sm:text-base"
                     >
                       <svg
-                        className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 group-hover/btn:scale-110 transition-transform flex-shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -318,7 +348,9 @@ export function ESportsSection() {
                           d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                         />
                       </svg>
-                      <span className="korean-text font-medium">참가팀</span>
+                      <span className="korean-text font-medium whitespace-nowrap">
+                        참가팀
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -332,26 +364,26 @@ export function ESportsSection() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="mt-16 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-3xl p-6 sm:p-8 md:p-10 border border-blue-100"
+          className="mt-12 sm:mt-16 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10 border border-blue-100"
         >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-dark korean-text mb-4">
+          <div className="text-center mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-dark korean-text mb-3 sm:mb-4 break-words px-2">
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 승부 예측 시스템
               </span>{" "}
               안내
             </h2>
-            <p className="text-gray-600 korean-text">
+            <p className="text-sm sm:text-base text-gray-600 korean-text px-2">
               안전하고 재미있는 승부 예측 시스템을 소개합니다
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-white/50 shadow-lg">
               <div className="flex items-center mb-4">
-                <div className="bg-gradient-to-br from-primary to-secondary p-3 rounded-xl shadow-lg mr-4">
+                <div className="bg-gradient-to-br from-primary to-secondary p-2.5 sm:p-3 rounded-lg sm:rounded-xl shadow-lg mr-3 sm:mr-4 flex-shrink-0">
                   <svg
-                    className="w-6 h-6 text-white"
+                    className="w-5 h-5 sm:w-6 sm:h-6 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -364,31 +396,37 @@ export function ESportsSection() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-dark korean-text">
+                <h3 className="text-lg sm:text-xl font-bold text-dark korean-text">
                   게임 방식
                 </h3>
               </div>
-              <ul className="text-gray-600 space-y-2 korean-text">
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
-                  게임당 100포인트 지급 (총 300포인트)
+              <ul className="text-sm sm:text-base text-gray-600 space-y-2 korean-text">
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-primary rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
+                  <span className="break-words">
+                    게임당 100포인트 지급 (총 300포인트)
+                  </span>
                 </li>
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-secondary rounded-full mr-3"></span>
-                  여러 팀에 자유롭게 분배 가능
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-secondary rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
+                  <span className="break-words">
+                    여러 팀에 자유롭게 분배 가능
+                  </span>
                 </li>
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-tertiary rounded-full mr-3"></span>
-                  최소 1포인트 단위로 승부 예측
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-tertiary rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
+                  <span className="break-words">
+                    최소 1포인트 단위로 승부 예측
+                  </span>
                 </li>
               </ul>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-white/50 shadow-lg">
               <div className="flex items-center mb-4">
-                <div className="bg-gradient-to-br from-secondary to-tertiary p-3 rounded-xl shadow-lg mr-4">
+                <div className="bg-gradient-to-br from-secondary to-tertiary p-2.5 sm:p-3 rounded-lg sm:rounded-xl shadow-lg mr-3 sm:mr-4 flex-shrink-0">
                   <svg
-                    className="w-6 h-6 text-white"
+                    className="w-5 h-5 sm:w-6 sm:h-6 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -401,22 +439,24 @@ export function ESportsSection() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-dark korean-text">
+                <h3 className="text-lg sm:text-xl font-bold text-dark korean-text">
                   배수 시스템
                 </h3>
               </div>
-              <ul className="text-gray-600 space-y-2 korean-text">
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
-                  1등: 5.0배 (항상 고정)
+              <ul className="text-sm sm:text-base text-gray-600 space-y-2 korean-text">
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
+                  <span className="break-words">1등: 5.0배 (항상 고정)</span>
                 </li>
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full mr-3"></span>
-                  중간등수: 참가팀 수에 따라 자동 조절
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
+                  <span className="break-words">
+                    중간등수: 참가팀 수에 따라 자동 조절
+                  </span>
                 </li>
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-                  꼴등: 1.0배 (원금 보장)
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
+                  <span className="break-words">꼴등: 1.0배 (원금 보장)</span>
                 </li>
               </ul>
             </div>

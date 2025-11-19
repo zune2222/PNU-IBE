@@ -83,7 +83,11 @@ export default function ESportsRegister() {
 
   const fetchEvent = async () => {
     try {
-      const response = await apiClient.get<{event_id: number; event_name: string; status: string}>(`/api/admin/events/${eventId}`);
+      const response = await apiClient.get<{
+        event_id: number;
+        event_name: string;
+        status: string;
+      }>(`/api/admin/events/${eventId}`);
       setEvent({
         eventId: response.event_id,
         eventName: response.event_name,
@@ -92,10 +96,12 @@ export default function ESportsRegister() {
     } catch (error: unknown) {
       console.error("이벤트 정보 조회 실패:", error);
       if (
-        error && typeof error === 'object' && 'message' in error && 
-        typeof (error as {message: unknown}).message === 'string' &&
-        ((error as {message: string}).message.includes("404") ||
-         (error as {message: string}).message.includes("찾을 수 없습니다"))
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof (error as { message: unknown }).message === "string" &&
+        ((error as { message: string }).message.includes("404") ||
+          (error as { message: string }).message.includes("찾을 수 없습니다"))
       ) {
         showToast({
           type: "error",
@@ -148,7 +154,10 @@ export default function ESportsRegister() {
             : [],
       };
 
-      const response = await apiClient.post<{message?: string}>("/api/teams", teamData);
+      const response = await apiClient.post<{ message?: string }>(
+        "/api/teams",
+        teamData
+      );
 
       if (response) {
         showToast({
@@ -161,7 +170,13 @@ export default function ESportsRegister() {
       console.error("팀 등록 실패:", error);
       showToast({
         type: "error",
-        message: (error && typeof error === 'object' && 'message' in error && typeof (error as {message: unknown}).message === 'string') ? (error as {message: string}).message : "팀 등록에 실패했습니다. 다시 시도해주세요.",
+        message:
+          error &&
+          typeof error === "object" &&
+          "message" in error &&
+          typeof (error as { message: unknown }).message === "string"
+            ? (error as { message: string }).message
+            : "팀 등록에 실패했습니다. 다시 시도해주세요.",
       });
     } finally {
       setSubmitting(false);
@@ -231,7 +246,8 @@ export default function ESportsRegister() {
     value: string | boolean
   ) => {
     const updatedMembers = [...members];
-    (updatedMembers[index] as unknown as Record<string, unknown>)[field] = value;
+    (updatedMembers[index] as unknown as Record<string, unknown>)[field] =
+      value;
     setMembers(updatedMembers);
   };
 
@@ -434,18 +450,18 @@ export default function ESportsRegister() {
 
       <Header />
 
-      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 pt-24 pb-16">
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 pt-20 sm:pt-24 pb-12 sm:pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-6 sm:p-8 md:p-10">
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-2xl border border-white/50 p-5 sm:p-6 md:p-8 lg:p-10">
             {/* 헤더 섹션 */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-6 sm:mb-8">
               <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 mb-4">
                 <span className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></span>
-                <span className="text-sm font-semibold text-primary korean-text">
+                <span className="text-sm font-semibold text-primary korean-text whitespace-nowrap">
                   참가 신청
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold korean-text mb-2">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold korean-text mb-2 px-2">
                 <span className="bg-gradient-to-r from-dark to-gray-700 bg-clip-text text-transparent">
                   E-Sports 대회{" "}
                   <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -453,7 +469,7 @@ export default function ESportsRegister() {
                   </span>
                 </span>
               </h1>
-              <h2 className="text-lg text-gray-600 korean-text">
+              <h2 className="text-base sm:text-lg text-gray-600 korean-text px-2 break-words">
                 {event?.eventName}
               </h2>
             </div>
@@ -510,22 +526,25 @@ export default function ESportsRegister() {
             ) : (
               /* 팀 등록 단계 */
               <div>
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
-                  <p className="text-green-800 korean-text">
+                <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-md">
+                  <p className="text-sm sm:text-base text-green-800 korean-text break-words">
                     ✓ 로그인 완료: {user?.name} ({user?.studentId})
                   </p>
                 </div>
 
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 korean-text">
                   2. 팀 등록
                 </h3>
-                <form onSubmit={handleTeamSubmit} className="space-y-6">
+                <form
+                  onSubmit={handleTeamSubmit}
+                  className="space-y-4 sm:space-y-6"
+                >
                   {/* 게임 선택 */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2 korean-text">
                       참가 종목 *
                     </label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                       {[
                         {
                           value: "LOL",
@@ -545,9 +564,9 @@ export default function ESportsRegister() {
                       ].map((game) => (
                         <label
                           key={game.value}
-                          className={`cursor-pointer border rounded-lg p-4 ${
+                          className={`cursor-pointer border rounded-lg p-3 sm:p-4 transition-all ${
                             selectedGame === game.value
-                              ? "border-blue-500 bg-blue-50"
+                              ? "border-blue-500 bg-blue-50 shadow-md"
                               : "border-gray-300 hover:border-gray-400"
                           }`}
                         >
@@ -562,10 +581,10 @@ export default function ESportsRegister() {
                             className="sr-only"
                           />
                           <div className="text-center">
-                            <div className="font-semibold text-gray-900">
+                            <div className="font-semibold text-sm sm:text-base text-gray-900 korean-text">
                               {game.name}
                             </div>
-                            <div className="text-sm text-gray-600">
+                            <div className="text-xs sm:text-sm text-gray-600 korean-text">
                               {game.desc}
                             </div>
                           </div>
@@ -575,21 +594,21 @@ export default function ESportsRegister() {
                   </div>
 
                   {/* 팀 기본 정보 */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 korean-text">
                         팀명 *
                       </label>
                       <input
                         type="text"
                         value={teamName}
                         onChange={(e) => setTeamName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 korean-text">
                         게임 닉네임 *{" "}
                         {selectedGame === "LOL" && "(라이엇 ID#태그)"}
                       </label>
@@ -598,7 +617,7 @@ export default function ESportsRegister() {
                           type="text"
                           value={gameNickname}
                           onChange={(e) => setGameNickname(e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="flex-1 px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-0"
                           placeholder={
                             selectedGame === "LOL"
                               ? "예: Hide on bush#KR1"
@@ -611,21 +630,26 @@ export default function ESportsRegister() {
                             type="button"
                             onClick={verifyLolAccount}
                             disabled={verifyingAccount || !gameNickname.trim()}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                            className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                               lolAccountVerified
                                 ? "bg-green-100 text-green-800 border border-green-300"
                                 : "bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                             }`}
                           >
                             {verifyingAccount ? (
-                              <div className="flex items-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                <span>확인 중...</span>
+                              <div className="flex items-center space-x-1 sm:space-x-2">
+                                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
+                                <span className="hidden sm:inline korean-text">
+                                  확인 중...
+                                </span>
+                                <span className="sm:hidden korean-text">
+                                  ...
+                                </span>
                               </div>
                             ) : lolAccountVerified ? (
                               <div className="flex items-center space-x-1">
                                 <svg
-                                  className="w-4 h-4"
+                                  className="w-3 h-3 sm:w-4 sm:h-4"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -637,10 +661,10 @@ export default function ESportsRegister() {
                                     d="M5 13l4 4L19 7"
                                   />
                                 </svg>
-                                <span>확인됨</span>
+                                <span className="korean-text">확인됨</span>
                               </div>
                             ) : (
-                              "정보 확인"
+                              <span className="korean-text">정보 확인</span>
                             )}
                           </button>
                         )}
@@ -649,21 +673,26 @@ export default function ESportsRegister() {
                             type="button"
                             onClick={verifyPubgAccount}
                             disabled={verifyingAccount || !gameNickname.trim()}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                            className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                               pubgAccountVerified
                                 ? "bg-green-100 text-green-800 border border-green-300"
                                 : "bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50"
                             }`}
                           >
                             {verifyingAccount ? (
-                              <div className="flex items-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                <span>확인 중...</span>
+                              <div className="flex items-center space-x-1 sm:space-x-2">
+                                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
+                                <span className="hidden sm:inline korean-text">
+                                  확인 중...
+                                </span>
+                                <span className="sm:hidden korean-text">
+                                  ...
+                                </span>
                               </div>
                             ) : pubgAccountVerified ? (
                               <div className="flex items-center space-x-1">
                                 <svg
-                                  className="w-4 h-4"
+                                  className="w-3 h-3 sm:w-4 sm:h-4"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -675,10 +704,10 @@ export default function ESportsRegister() {
                                     d="M5 13l4 4L19 7"
                                   />
                                 </svg>
-                                <span>확인됨</span>
+                                <span className="korean-text">확인됨</span>
                               </div>
                             ) : (
-                              "정보 확인"
+                              <span className="korean-text">정보 확인</span>
                             )}
                           </button>
                         )}
@@ -687,21 +716,26 @@ export default function ESportsRegister() {
                             type="button"
                             onClick={verifyFifaAccount}
                             disabled={verifyingAccount || !gameNickname.trim()}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                            className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                               fifaAccountVerified
                                 ? "bg-green-100 text-green-800 border border-green-300"
                                 : "bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
                             }`}
                           >
                             {verifyingAccount ? (
-                              <div className="flex items-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                <span>확인 중...</span>
+                              <div className="flex items-center space-x-1 sm:space-x-2">
+                                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
+                                <span className="hidden sm:inline korean-text">
+                                  확인 중...
+                                </span>
+                                <span className="sm:hidden korean-text">
+                                  ...
+                                </span>
                               </div>
                             ) : fifaAccountVerified ? (
                               <div className="flex items-center space-x-1">
                                 <svg
-                                  className="w-4 h-4"
+                                  className="w-3 h-3 sm:w-4 sm:h-4"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -713,10 +747,10 @@ export default function ESportsRegister() {
                                     d="M5 13l4 4L19 7"
                                   />
                                 </svg>
-                                <span>확인됨</span>
+                                <span className="korean-text">확인됨</span>
                               </div>
                             ) : (
-                              "정보 확인"
+                              <span className="korean-text">정보 확인</span>
                             )}
                           </button>
                         )}
@@ -752,14 +786,14 @@ export default function ESportsRegister() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 korean-text">
                         연락처(전화번호) *
                       </label>
                       <input
                         type="tel"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="010-1234-5678"
                         pattern="^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$"
                         title="연락처 형식: 010-1234-5678"
@@ -767,14 +801,14 @@ export default function ESportsRegister() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 korean-text">
                         이메일 *
                       </label>
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="example@pnu.ac.kr"
                         required
                       />
@@ -925,11 +959,11 @@ export default function ESportsRegister() {
 
                   {/* 프로필 이미지 업로드 */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 korean-text">
                       프로필 이미지 (선택)
                     </label>
-                    <div className="flex items-center gap-4 flex-col sm:flex-row">
-                      <div className="w-28 h-28 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden">
+                    <div className="flex items-center gap-3 sm:gap-4 flex-col sm:flex-row">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden flex-shrink-0">
                         {profileImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -938,7 +972,7 @@ export default function ESportsRegister() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span className="text-sm text-gray-500 text-center px-2">
+                          <span className="text-xs sm:text-sm text-gray-500 text-center px-2 korean-text">
                             업로드 시<br />
                             미리보기 표시
                           </span>
@@ -950,9 +984,9 @@ export default function ESportsRegister() {
                           accept="image/*"
                           onChange={handleProfileImageUpload}
                           disabled={profileImageUploading || submitting}
-                          className="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          className="w-full text-xs sm:text-sm text-gray-700 file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-md file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         />
-                        <p className="text-sm text-gray-500 mt-2">
+                        <p className="text-xs sm:text-sm text-gray-500 mt-2 korean-text">
                           JPG, PNG 이미지 파일 (최대 5MB 권장)
                         </p>
                         {profileImageUploading && (
@@ -985,7 +1019,7 @@ export default function ESportsRegister() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 korean-text">
                       한줄 소개
                     </label>
                     <textarea
@@ -993,10 +1027,10 @@ export default function ESportsRegister() {
                       onChange={(e) => setDescription(e.target.value)}
                       rows={3}
                       maxLength={200}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="팀의 각오나 소개를 적어주세요 (200자 이내)"
                     />
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       {description.length}/200
                     </p>
                   </div>
@@ -1044,7 +1078,11 @@ export default function ESportsRegister() {
                                 type="text"
                                 value={member.studentId}
                                 onChange={(e) =>
-                                  updateMember(index, "studentId", e.target.value)
+                                  updateMember(
+                                    index,
+                                    "studentId",
+                                    e.target.value
+                                  )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="예: 202012345"
@@ -1171,7 +1209,7 @@ export default function ESportsRegister() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    className="w-full py-3 sm:py-3.5 bg-blue-600 text-white text-sm sm:text-base font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md hover:shadow-lg korean-text"
                   >
                     {submitting ? "등록 중..." : "팀 등록"}
                   </button>
