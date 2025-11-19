@@ -206,7 +206,7 @@ export default function ESportsRanking() {
           <img
             src="/lol2.png"
             alt="League of Legends"
-            className="w-5 h-5 inline-block"
+            className="w-auto h-5 inline-block"
           />
         );
       case "PUBG":
@@ -535,7 +535,7 @@ export default function ESportsRanking() {
               <div className="bg-white rounded-lg shadow-md">
                 <div className="p-6 border-b border-gray-200">
                   <h3 className="text-xl font-semibold text-gray-900 flex items-center">
-                    {getGameIcon(selectedGame)} {selectedGame} 경기 결과
+                    {selectedGame} 경기 결과
                   </h3>
                 </div>
 
