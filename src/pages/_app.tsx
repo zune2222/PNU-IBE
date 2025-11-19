@@ -1,9 +1,11 @@
 import "../styles/globals.css";
+import React from "react";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { GoogleAnalytics, pageview } from "../shared/lib/analytics";
 import { AuthProvider } from "../shared/contexts/AuthContext";
+import { ESSportsAuthProvider } from "../shared/contexts/ESSportsAuthContext";
 import { ToastProvider } from "../shared/components/Toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -202,12 +204,14 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ToastProvider>
-          <main className="font-pretendard">
-            <GoogleAnalytics />
-            <AppWrapper Component={Component} pageProps={pageProps} />
-          </main>
-        </ToastProvider>
+        <ESSportsAuthProvider>
+          <ToastProvider>
+            <main className="font-pretendard">
+              <GoogleAnalytics />
+              <AppWrapper Component={Component} pageProps={pageProps} />
+            </main>
+          </ToastProvider>
+        </ESSportsAuthProvider>
       </AuthProvider>
       {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools initialIsOpen={false} />

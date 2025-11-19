@@ -3,6 +3,9 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { Header } from '../../widgets/Header';
 import { Footer } from '../../widgets/Footer';
+import { apiClient } from '../../shared/services/api';
+import { esportsApiService } from '../../shared/services/esportsApi';
+import { useToast } from '../../shared/components/Toast';
 
 interface Event {
   eventId: number;
@@ -28,15 +31,27 @@ interface GameResult {
   rank: number;
 }
 
+interface BettingPointSummary {
+  eventId: number;
+  studentId: string;
+  totalScore: number;
+  lolScore: number;
+  pubgScore: number;
+  fifaScore: number;
+  hasResults: boolean;
+}
+
 export default function ESportsRanking() {
   const router = useRouter();
   const { eventId } = router.query;
+  const { showToast } = useToast();
   
   const [event, setEvent] = useState<Event | null>(null);
   const [selectedView, setSelectedView] = useState<'ranking' | 'results'>('ranking');
   const [selectedGame, setSelectedGame] = useState<GameType>('LOL');
   const [ranking, setRanking] = useState<RankingUser[]>([]);
   const [gameResults, setGameResults] = useState<{[key in GameType]?: GameResult[]}>({});
+  const [myBettingPoints, setMyBettingPoints] = useState<BettingPointSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,62 +59,58 @@ export default function ESportsRanking() {
       fetchEvent();
       fetchRanking();
       fetchGameResults();
+      fetchMyBettingPoints();
     }
   }, [eventId]);
 
   const fetchEvent = async () => {
     try {
+      const response = await apiClient.get<{event_id: number; event_name: string; status: string}>(`/api/admin/events/${eventId}`);
       setEvent({
-        eventId: Number(eventId),
-        eventName: '제1회 PNU E-Sports 대회',
-        status: 'COMPLETED'
+        eventId: response.event_id,
+        eventName: response.event_name,
+        status: response.status
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('이벤트 정보 조회 실패:', error);
+      if (error && typeof error === 'object' && 'message' in error && 
+           typeof (error as {message: unknown}).message === 'string' &&
+           ((error as {message: string}).message.includes('404') ||
+            (error as {message: string}).message.includes('찾을 수 없습니다'))) {
+        showToast({
+          type: 'error',
+          message: '이벤트를 찾을 수 없습니다. 이벤트 목록으로 돌아갑니다.',
+        });
+        router.push('/esports');
+      }
     }
   };
 
   const fetchRanking = async () => {
     try {
-      // Mock 데이터
-      const mockRanking: RankingUser[] = [
-        {
-          studentId: '202012345',
-          name: '김철수',
-          totalScore: 850,
-          gameScores: { LOL: 300, PUBG: 250, FIFA: 300 },
-          rank: 1
+      const response = await apiClient.get<{
+        rankings: {
+          student_id: string;
+          name: string;
+          final_score?: number;
+          lol_score?: number;
+          pubg_score?: number;
+          fifa_score?: number;
+          rank: number;
+        }[];
+      }>(`/api/ranking?eventId=${eventId}`);
+      const rankingData: RankingUser[] = response.rankings.map((entry) => ({
+        studentId: entry.student_id,
+        name: entry.name,
+        totalScore: entry.final_score || 0,
+        gameScores: {
+          LOL: entry.lol_score || 0,
+          PUBG: entry.pubg_score || 0,
+          FIFA: entry.fifa_score || 0
         },
-        {
-          studentId: '202067890',
-          name: '이영희',
-          totalScore: 720,
-          gameScores: { LOL: 200, PUBG: 320, FIFA: 200 },
-          rank: 2
-        },
-        {
-          studentId: '202011111',
-          name: '박민수',
-          totalScore: 680,
-          gameScores: { LOL: 250, PUBG: 180, FIFA: 250 },
-          rank: 3
-        },
-        {
-          studentId: '202099999',
-          name: '최지혜',
-          totalScore: 620,
-          gameScores: { LOL: 180, PUBG: 200, FIFA: 240 },
-          rank: 4
-        },
-        {
-          studentId: '202055555',
-          name: '정호영',
-          totalScore: 580,
-          gameScores: { LOL: 150, PUBG: 230, FIFA: 200 },
-          rank: 5
-        }
-      ];
-      setRanking(mockRanking);
+        rank: entry.rank
+      }));
+      setRanking(rankingData);
     } catch (error) {
       console.error('순위 조회 실패:', error);
     }
@@ -107,32 +118,45 @@ export default function ESportsRanking() {
 
   const fetchGameResults = async () => {
     try {
-      // Mock 데이터
-      const mockResults = {
-        LOL: [
-          { teamId: 1, teamName: '불타는 망치들', rank: 1 },
-          { teamId: 2, teamName: '코딩의 신들', rank: 2 },
-          { teamId: 3, teamName: '알고리즘 파이터즈', rank: 3 },
-          { teamId: 4, teamName: '버그 헌터즈', rank: 4 }
-        ],
-        PUBG: [
-          { teamId: 5, teamName: '배그 마스터즈', rank: 1 },
-          { teamId: 6, teamName: '치킨 사냥꾼들', rank: 2 },
-          { teamId: 7, teamName: '스쿼드 킹즈', rank: 3 },
-          { teamId: 8, teamName: '배그 레전드', rank: 4 }
-        ],
-        FIFA: [
-          { teamId: 9, teamName: '축구천재', rank: 1 },
-          { teamId: 10, teamName: 'FIFA 왕', rank: 2 },
-          { teamId: 11, teamName: '골잡이들', rank: 3 },
-          { teamId: 12, teamName: '축구 머신', rank: 4 }
-        ]
-      };
-      setGameResults(mockResults);
+      const results: {[key in GameType]?: GameResult[]} = {};
+      
+      for (const gameType of ['LOL', 'PUBG', 'FIFA'] as GameType[]) {
+        try {
+          const response = await apiClient.get<{
+            success: boolean;
+            results?: {
+              team_id: number;
+              team_name: string;
+              rank: number;
+            }[];
+          }>(`/api/admin/results?eventId=${eventId}&gameType=${gameType}`);
+          if (response.success && response.results) {
+            results[gameType] = response.results.map((result) => ({
+              teamId: result.team_id,
+              teamName: result.team_name,
+              rank: result.rank
+            }));
+          }
+        } catch (error) {
+          console.error(`${gameType} 결과 조회 실패:`, error);
+        }
+      }
+      
+      setGameResults(results);
     } catch (error) {
       console.error('게임 결과 조회 실패:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMyBettingPoints = async () => {
+    try {
+      const pointSummary = await esportsApiService.getMyPointSummary(eventId);
+      setMyBettingPoints(pointSummary);
+    } catch (error) {
+      console.error('내 베팅 포인트 조회 실패:', error);
+      // 로그인하지 않은 경우에는 null 상태 유지
     }
   };
 
@@ -238,12 +262,45 @@ export default function ESportsRanking() {
           </div>
 
           {selectedView === 'ranking' ? (
-            /* 승부 예측 순위 */
-            <div className="bg-white rounded-lg shadow-md">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-900">승부 예측 순위</h3>
-                <p className="text-gray-600 mt-1">예측 정확도에 따른 최종 순위입니다</p>
-              </div>
+            <div className="space-y-6">
+              {/* 내 베팅 포인트 요약 */}
+              {myBettingPoints && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md border border-blue-200">
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      내 베팅 포인트 현황
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-white rounded-lg border">
+                        <div className="text-2xl font-bold text-blue-600">{myBettingPoints.lolScore}</div>
+                        <div className="text-sm text-gray-600">🎮 LoL</div>
+                      </div>
+                      <div className="text-center p-4 bg-white rounded-lg border">
+                        <div className="text-2xl font-bold text-orange-600">{myBettingPoints.pubgScore}</div>
+                        <div className="text-sm text-gray-600">🔫 PUBG</div>
+                      </div>
+                      <div className="text-center p-4 bg-white rounded-lg border">
+                        <div className="text-2xl font-bold text-green-600">{myBettingPoints.fifaScore}</div>
+                        <div className="text-sm text-gray-600">⚽ FIFA</div>
+                      </div>
+                      <div className="text-center p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg">
+                        <div className="text-2xl font-bold">{myBettingPoints.totalScore}</div>
+                        <div className="text-sm">총 획득 점수</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 승부 예측 순위 */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900">승부 예측 순위</h3>
+                  <p className="text-gray-600 mt-1">예측 정확도에 따른 최종 순위입니다</p>
+                </div>
               
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -305,6 +362,7 @@ export default function ESportsRanking() {
                     ))}
                   </tbody>
                 </table>
+              </div>
               </div>
             </div>
           ) : (

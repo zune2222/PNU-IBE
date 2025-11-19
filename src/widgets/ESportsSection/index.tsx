@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { apiClient } from "../../shared/services/api";
 
 interface Event {
   eventId: number;
@@ -21,20 +22,28 @@ export function ESportsSection() {
 
   const fetchEvents = async () => {
     try {
-      // 추후 실제 API 연동
-      setEvents([
-        {
-          eventId: 1,
-          eventName: "제1회 PNU E-Sports 대회",
-          status: "REGISTRATION_OPEN",
-          registerStartDate: "2024-11-01T00:00:00",
-          registerEndDate: "2024-11-15T23:59:59",
-          predictionStartDate: "2024-11-16T00:00:00",
-          predictionEndDate: "2024-11-20T18:00:00",
-        },
-      ]);
+      const response = await apiClient.get<{
+        event_id: number;
+        event_name: string;
+        status: string;
+        register_start_date: string;
+        register_end_date: string;
+        betting_start_date?: string;
+        betting_end_date?: string;
+      }[]>('/api/admin/events');
+      const eventsData: Event[] = response.map((event) => ({
+        eventId: event.event_id,
+        eventName: event.event_name,
+        status: event.status,
+        registerStartDate: event.register_start_date,
+        registerEndDate: event.register_end_date,
+        predictionStartDate: event.betting_start_date || '',
+        predictionEndDate: event.betting_end_date || '',
+      }));
+      setEvents(eventsData);
     } catch (error) {
       console.error("이벤트 목록 조회 실패:", error);
+      setEvents([]); // 에러 시 빈 배열
     } finally {
       setLoading(false);
     }
@@ -242,7 +251,7 @@ export function ESportsSection() {
                       </button>
                     )}
 
-                    {event.status === "PREDICTION_OPEN" && (
+                    {(event.status === "REGISTRATION_OPEN" || event.status === "PREDICTION_OPEN") && (
                       <button
                         onClick={() =>
                           (window.location.href = `/esports/betting?eventId=${event.eventId}`)

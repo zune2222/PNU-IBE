@@ -19,6 +19,7 @@ export type ActiveTab =
   | "overview"
   | "notices"
   | "events"
+  | "esports"
   | "rentals"
   | "lockboxes"
   | "items";

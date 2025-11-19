@@ -3,115 +3,45 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { Header } from '../../widgets/Header';
 import { Footer } from '../../widgets/Footer';
-
-interface Event {
-  eventId: number;
-  eventName: string;
-  status: string;
-}
-
-type GameType = 'LOL' | 'PUBG' | 'FIFA';
-
-interface Team {
-  teamId: number;
-  teamName: string;
-  gameType: GameType;
-  profileImageUrl?: string;
-  description?: string;
-  totalBetPoints: number;
-  bettorCount: number;
-  members: {
-    studentId: string;
-    name: string;
-    gameNickname: string;
-    gameApiData?: string;
-  }[];
-}
-
-interface BetInfo {
-  teamId: number;
-  betPoints: number;
-}
+import { useESSportsAuth } from '../../shared/contexts/ESSportsAuthContext';
+import { useToast } from '../../shared/components/Toast';
+import { useEvent } from '../../shared/hooks/useEvent';
+import { esportsApiService } from '../../shared/services/esportsApi';
+import { ESportsConstants } from '../../shared/constants/esports';
+import LoLPlayerStats from '../../components/esports/LoLPlayerStats';
+import PubgPlayerStats from '../../components/esports/PubgPlayerStats';
+import FifaPlayerStats from '../../components/esports/FifaPlayerStats';
+import type { Team, BetInfo, GameType } from '../../shared/types/esports';
+import Link from 'next/link';
 
 export default function ESportsBetting() {
   const router = useRouter();
   const { eventId } = router.query;
   
-  const [event, setEvent] = useState<Event | null>(null);
+  const { isAuthenticated, loading: authLoading } = useESSportsAuth();
+  const { showToast } = useToast();
+  const { event } = useEvent();
+  
   const [selectedGame, setSelectedGame] = useState<GameType>('LOL');
   const [teams, setTeams] = useState<Team[]>([]);
   const [bets, setBets] = useState<BetInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  
-  // 학생 인증 (임시)
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [studentId, setStudentId] = useState('');
-
-  const POINTS_PER_GAME = 100;
 
   useEffect(() => {
     if (eventId) {
-      fetchEvent();
       fetchTeams();
+      if (isAuthenticated) {
+        fetchMyBets();
+      }
     }
-  }, [eventId, selectedGame]);
-
-  const fetchEvent = async () => {
-    try {
-      // 추후 실제 API 연동
-      setEvent({
-        eventId: Number(eventId),
-        eventName: '제1회 PNU E-Sports 대회',
-        status: 'PREDICTION_OPEN'
-      });
-    } catch (error) {
-      console.error('이벤트 정보 조회 실패:', error);
-    }
-  };
+  }, [eventId, selectedGame, isAuthenticated]);
 
   const fetchTeams = async () => {
     try {
-      // Mock 데이터
-      const mockTeams: Team[] = [
-        {
-          teamId: 1,
-          teamName: '불타는 망치들',
-          gameType: selectedGame,
-          profileImageUrl: '',
-          description: '우승을 향해 달려갑니다!',
-          totalBetPoints: 450,
-          bettorCount: 12,
-          members: [
-            { studentId: '202012345', name: '김철수', gameNickname: 'IronHammer' }
-          ]
-        },
-        {
-          teamId: 2,
-          teamName: '코딩의 신들',
-          gameType: selectedGame,
-          profileImageUrl: '',
-          description: '버그를 잡듯 적을 잡겠습니다',
-          totalBetPoints: 320,
-          bettorCount: 8,
-          members: [
-            { studentId: '202067890', name: '이영희', gameNickname: 'CodeMaster' }
-          ]
-        },
-        {
-          teamId: 3,
-          teamName: '알고리즘 파이터즈',
-          gameType: selectedGame,
-          profileImageUrl: '',
-          description: 'O(1)로 승리하겠습니다',
-          totalBetPoints: 230,
-          bettorCount: 5,
-          members: [
-            { studentId: '202011111', name: '박민수', gameNickname: 'AlgoFighter' }
-          ]
-        }
-      ];
-      setTeams(mockTeams);
+      setLoading(true);
+      const teamsData = await esportsApiService.getBettingStatus(eventId, selectedGame);
+      setTeams(teamsData);
     } catch (error) {
       console.error('팀 목록 조회 실패:', error);
     } finally {
@@ -119,14 +49,23 @@ export default function ESportsBetting() {
     }
   };
 
-  const handleAuthenticate = () => {
-    // 간단한 인증 (실제로는 proper 인증 필요)
-    const inputStudentId = prompt('학번을 입력하세요:');
-    if (inputStudentId) {
-      setStudentId(inputStudentId);
-      setIsAuthenticated(true);
+  const fetchMyBets = async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const myBets = await esportsApiService.getMyBets(eventId, selectedGame);
+      setBets(myBets);
+    } catch (error) {
+      console.error('내 베팅 정보 조회 실패:', error);
     }
   };
+
+  // 로그인 페이지로 리다이렉트
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated && eventId) {
+      router.push(`/esports/login?returnUrl=${encodeURIComponent(router.asPath)}`);
+    }
+  }, [authLoading, isAuthenticated, eventId, router]);
 
   const updateBet = (teamId: number, points: number) => {
     setBets(prevBets => {
@@ -154,7 +93,7 @@ export default function ESportsBetting() {
   };
 
   const getRemainingPoints = () => {
-    return POINTS_PER_GAME - getTotalBetPoints();
+    return ESportsConstants.POINTS_PER_GAME - getTotalBetPoints();
   };
 
   const getBetForTeam = (teamId: number) => {
@@ -163,35 +102,41 @@ export default function ESportsBetting() {
   };
 
   const handleSubmitBets = async () => {
-    if (getTotalBetPoints() !== POINTS_PER_GAME) {
-      alert(`총 ${POINTS_PER_GAME}포인트를 모두 사용해야 합니다.`);
+    if (getTotalBetPoints() !== ESportsConstants.POINTS_PER_GAME) {
+      showToast({
+        type: 'warning',
+        message: `총 ${ESportsConstants.POINTS_PER_GAME}포인트를 모두 사용해야 합니다.`,
+      });
       return;
     }
 
     setSubmitting(true);
     try {
-      // 추후 실제 API 연동
-      const bettingData = {
-        eventId: Number(eventId),
-        gameType: selectedGame,
-        bets: bets
-      };
+      await esportsApiService.submitBets(eventId, selectedGame, bets);
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      alert('승부 예측이 완료되었습니다!');
-      setBets([]);
+      showToast({
+        type: 'success',
+        message: '승부 예측이 완료되었습니다!',
+      });
       fetchTeams(); // 업데이트된 승부 예측 현황 조회
-    } catch (error) {
+      fetchMyBets(); // 내 베팅 정보 갱신
+    } catch (error: unknown) {
       console.error('승부 예측 실패:', error);
-      alert('승부 예측에 실패했습니다. 다시 시도해주세요.');
+      showToast({
+        type: 'error',
+        message: (error && typeof error === 'object' && 'message' in error && typeof (error as {message: unknown}).message === 'string') ? (error as {message: string}).message : '승부 예측에 실패했습니다. 다시 시도해주세요.',
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
   const getMultiplier = (rank: number, totalTeams: number) => {
-    return 5.0 - (4.0 * (rank - 1) / (totalTeams - 1));
+    if (totalTeams <= 1) {
+      return ESportsConstants.MAX_MULTIPLIER;
+    }
+    return ESportsConstants.MAX_MULTIPLIER - 
+           (ESportsConstants.MULTIPLIER_RANGE * (rank - 1) / (totalTeams - 1));
   };
 
   if (loading) {
@@ -235,24 +180,28 @@ export default function ESportsBetting() {
             <h2 className="text-lg text-gray-600 korean-text">{event?.eventName}</h2>
           </div>
 
-          {!isAuthenticated ? (
+          {authLoading ? (
+            <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            </div>
+          ) : !isAuthenticated ? (
             <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-8 text-center">
               <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
                 <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-dark korean-text mb-4">학생 인증이 필요합니다</h3>
-              <p className="text-gray-600 korean-text mb-6">승부 예측 참여를 위해서는 먼저 학생 인증을 완료해야 합니다.</p>
-              <button
-                onClick={handleAuthenticate}
+              <h3 className="text-2xl font-bold text-dark korean-text mb-4">로그인이 필요합니다</h3>
+              <p className="text-gray-600 korean-text mb-6">승부 예측 참여를 위해서는 먼저 로그인을 완료해야 합니다.</p>
+              <Link
+                href={`/esports/login?returnUrl=${encodeURIComponent(router.asPath)}`}
                 className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 korean-text font-medium"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
-                학생 인증하기
-              </button>
+                로그인하기
+              </Link>
             </div>
           ) : (
             <div className="space-y-6">
@@ -305,7 +254,7 @@ export default function ESportsBetting() {
                   <h3 className="text-xl font-semibold text-gray-900">승부 예측 현황</h3>
                   <div className="text-right">
                     <div className="text-lg font-semibold text-blue-600">
-                      사용: {getTotalBetPoints()}/{POINTS_PER_GAME}pt
+                      사용: {getTotalBetPoints()}/{ESportsConstants.POINTS_PER_GAME}pt
                     </div>
                     <div className="text-sm text-gray-600">
                       남은 포인트: {getRemainingPoints()}pt
@@ -317,7 +266,7 @@ export default function ESportsBetting() {
                 <div className="w-full bg-gray-200 rounded-full h-3 mb-6">
                   <div
                     className="bg-blue-600 h-3 rounded-full transition-all duration-300"
-                    style={{ width: `${(getTotalBetPoints() / POINTS_PER_GAME) * 100}%` }}
+                    style={{ width: `${(getTotalBetPoints() / ESportsConstants.POINTS_PER_GAME) * 100}%` }}
                   ></div>
                 </div>
 
@@ -338,7 +287,7 @@ export default function ESportsBetting() {
 
                 <button
                   onClick={handleSubmitBets}
-                  disabled={getTotalBetPoints() !== POINTS_PER_GAME || submitting}
+                  disabled={getTotalBetPoints() !== ESportsConstants.POINTS_PER_GAME || submitting}
                   className="w-full py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {submitting ? '승부 예측 중...' : '승부 예측 확정'}
@@ -347,66 +296,191 @@ export default function ESportsBetting() {
 
               {/* 팀 목록 */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  참가팀 목록 (인기순)
-                </h3>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    참가팀 목록
+                  </h3>
+                  <div className="text-sm text-gray-500">
+                    총 {teams.reduce((sum, team) => sum + (team.totalBetPoints || 0), 0)}pt 베팅됨
+                  </div>
+                </div>
+
+                {/* 베팅 인기 순위 표시 */}
+                <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                  <h4 className="font-medium text-blue-900 mb-3 flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    베팅 인기도
+                  </h4>
+                  <div className="space-y-2">
+                    {teams
+                      .sort((a, b) => (b.totalBetPoints || 0) - (a.totalBetPoints || 0))
+                      .slice(0, 3)
+                      .map((team, index) => (
+                        <div key={team.teamId} className="flex items-center space-x-3">
+                          <div className={`text-lg ${
+                            index === 0 ? 'text-yellow-600' :
+                            index === 1 ? 'text-gray-600' :
+                            'text-orange-600'
+                          }`}>
+                            {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                          </div>
+                          <div className="flex-1 flex items-center justify-between">
+                            <span className="font-medium text-gray-900">{team.teamName}</span>
+                            <span className="text-sm font-semibold text-blue-600">
+                              {team.totalBetPoints}pt ({team.bettorCount}명)
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
                 
                 <div className="space-y-4">
-                  {teams.map((team) => (
-                    <div
-                      key={team.teamId}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900">
-                            {team.teamName}
-                          </h4>
-                          {team.description && (
-                            <p className="text-gray-600 text-sm mt-1">
-                              {team.description}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-semibold text-green-600">
-                            {team.totalBetPoints}pt
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            {team.bettorCount}명 승부 예측
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 팀원 정보 */}
-                      <div className="mb-4">
-                        <h5 className="font-medium text-gray-900 mb-2">팀원:</h5>
-                        <div className="space-y-1">
-                          {team.members.map((member, index) => (
-                            <div key={index} className="text-sm text-gray-600">
-                              {member.name} ({member.gameNickname})
+                  {teams
+                    .sort((a, b) => (b.totalBetPoints || 0) - (a.totalBetPoints || 0))
+                    .map((team, index) => {
+                      const maxBetPoints = Math.max(...teams.map(t => t.totalBetPoints || 0));
+                      const popularityPercent = maxBetPoints > 0 ? ((team.totalBetPoints || 0) / maxBetPoints) * 100 : 0;
+                      
+                      return (
+                        <div
+                          key={team.teamId}
+                          className={`border-2 rounded-lg p-5 transition-all duration-300 hover:shadow-lg ${
+                            index === 0 ? 'border-yellow-300 bg-gradient-to-r from-yellow-50 to-orange-50' :
+                            index === 1 ? 'border-gray-300 bg-gradient-to-r from-gray-50 to-slate-50' :
+                            index === 2 ? 'border-orange-300 bg-gradient-to-r from-orange-50 to-red-50' :
+                            'border-gray-200 bg-white hover:border-blue-300'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-1">
+                                {index < 3 && (
+                                  <span className={`text-lg ${
+                                    index === 0 ? 'text-yellow-600' :
+                                    index === 1 ? 'text-gray-600' :
+                                    'text-orange-600'
+                                  }`}>
+                                    {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                  </span>
+                                )}
+                                <h4 className="text-lg font-semibold text-gray-900">
+                                  {team.teamName}
+                                </h4>
+                                {index === 0 && (
+                                  <span className="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full">
+                                    최고 인기
+                                  </span>
+                                )}
+                              </div>
+                              {team.description && (
+                                <p className="text-gray-600 text-sm mt-1">
+                                  {team.description}
+                                </p>
+                              )}
                             </div>
-                          ))}
-                        </div>
-                      </div>
+                            <div className="text-right">
+                              <div className="text-xl font-bold text-blue-600">
+                                {team.totalBetPoints || 0}pt
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                {team.bettorCount || 0}명이 베팅
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                인기도 {popularityPercent.toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
 
-                      {/* 승부 예측 입력 */}
-                      <div className="flex items-center space-x-4">
-                        <label className="text-sm font-medium text-gray-700">
-                          승부 예측 포인트:
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          max={getRemainingPoints() + getBetForTeam(team.teamId)}
-                          value={getBetForTeam(team.teamId)}
-                          onChange={(e) => updateBet(team.teamId, parseInt(e.target.value) || 0)}
-                          className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-600">pt</span>
-                      </div>
-                    </div>
-                  ))}
+                          {/* 인기도 프로그래스 바 */}
+                          <div className="mb-4">
+                            <div className="flex justify-between text-xs text-gray-500 mb-1">
+                              <span>베팅 인기도</span>
+                              <span>{popularityPercent.toFixed(1)}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full transition-all duration-500 ${
+                                  index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
+                                  index === 1 ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
+                                  index === 2 ? 'bg-gradient-to-r from-orange-400 to-red-500' :
+                                  'bg-gradient-to-r from-blue-400 to-blue-500'
+                                }`}
+                                style={{ width: `${popularityPercent}%` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          {/* 팀원 정보 */}
+                          <div className="mb-4">
+                            <h5 className="font-medium text-gray-900 mb-3">팀원:</h5>
+                            <div className="space-y-3">
+                              {team.members.map((member, memberIndex) => (
+                                <div key={memberIndex}>
+                                  {selectedGame === 'LOL' ? (
+                                    <LoLPlayerStats 
+                                      gameNickname={member.gameNickname}
+                                      showTitle={false}
+                                      compact={true}
+                                    />
+                                  ) : selectedGame === 'PUBG' ? (
+                                    <PubgPlayerStats 
+                                      gameNickname={member.gameNickname}
+                                      showTitle={false}
+                                      compact={true}
+                                    />
+                                  ) : selectedGame === 'FIFA' ? (
+                                    <FifaPlayerStats 
+                                      gameNickname={member.gameNickname}
+                                      showTitle={false}
+                                      compact={true}
+                                    />
+                                  ) : (
+                                    <div className="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
+                                      <span className="font-medium">{member.name}</span>
+                                      <span className="text-gray-500"> ({member.gameNickname})</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 승부 예측 입력 */}
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-sm font-medium text-gray-700">
+                                승부 예측 포인트
+                              </label>
+                              <div className="text-xs text-gray-500">
+                                최대 {getRemainingPoints() + getBetForTeam(team.teamId)}pt
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="number"
+                                min="0"
+                                max={getRemainingPoints() + getBetForTeam(team.teamId)}
+                                value={getBetForTeam(team.teamId)}
+                                onChange={(e) => updateBet(team.teamId, parseInt(e.target.value) || 0)}
+                                className="border border-gray-300 rounded-lg px-4 py-2 w-24 text-center font-semibold"
+                                placeholder="0"
+                              />
+                              <span className="text-sm text-gray-600">포인트</span>
+                              {getBetForTeam(team.teamId) > 0 && (
+                                <div className="flex-1 text-right">
+                                  <span className="text-sm font-medium text-green-600">
+                                    ✓ 베팅 중
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
 

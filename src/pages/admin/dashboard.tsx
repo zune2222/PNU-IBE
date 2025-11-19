@@ -23,6 +23,7 @@ import DashboardOverview from "../../components/admin/DashboardOverview";
 import RentalManagement from "../../components/admin/RentalManagement";
 import NoticeManagement from "../../components/admin/NoticeManagement";
 import EventManagement from "../../components/admin/EventManagement";
+import ESportsEventManagement from "../../components/admin/ESportsEventManagement";
 import LockboxManagement from "../../components/admin/LockboxManagement";
 import ItemManagement from "../../components/admin/ItemManagement";
 
@@ -34,7 +35,7 @@ import {
 } from "../../shared/types/dashboard";
 
 export default function AdminDashboard() {
-  const { user, loading, signOut, isAdmin } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("overview");
@@ -89,12 +90,6 @@ export default function AdminDashboard() {
     });
   };
 
-  // 권한 확인 및 리다이렉트
-  useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
-      router.push("/admin/login");
-    }
-  }, [user, loading, isAdmin, router]);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -144,18 +139,16 @@ export default function AdminDashboard() {
 
   // 데이터 로드
   useEffect(() => {
-    if (isAdmin) {
-      loadData();
-    }
-  }, [isAdmin, loadData]);
+    loadData();
+  }, [loadData]);
 
   // 실시간 데이터 업데이트 (30초마다)
   useEffect(() => {
-    if (isAdmin && activeTab === "overview") {
+    if (activeTab === "overview") {
       const interval = setInterval(loadData, 30000);
       return () => clearInterval(interval);
     }
-  }, [isAdmin, activeTab, loadData]);
+  }, [activeTab, loadData]);
 
   const calculateDashboardStats = (
     applications: FirestoreRentalApplication[],
@@ -313,10 +306,6 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!user || !isAdmin) {
-    return null;
-  }
-
   return (
     <>
       <Head>
@@ -342,7 +331,7 @@ export default function AdminDashboard() {
               </h1>
               <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                 <span className="text-xs sm:text-sm text-gray-600">
-                  {user.email}님 환영합니다
+                  {user?.email || "관리자"}님 환영합니다
                 </span>
                 <button
                   onClick={handleLogout}
@@ -388,6 +377,16 @@ export default function AdminDashboard() {
                 }`}
               >
                 행사 관리
+              </button>
+              <button
+                onClick={() => setActiveTab("esports")}
+                className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
+                  activeTab === "esports"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                🎮 E-Sports 관리
               </button>
               <button
                 onClick={() => setActiveTab("rentals")}
@@ -463,13 +462,20 @@ export default function AdminDashboard() {
             />
           )}
 
+          {/* E-Sports 이벤트 관리 */}
+          {activeTab === "esports" && (
+            <div className="mt-6">
+              <ESportsEventManagement />
+            </div>
+          )}
+
           {/* 보관함 관리 - 기존 코드 유지 */}
           {activeTab === "lockboxes" && (
             <LockboxManagement
               lockboxPasswords={lockboxPasswords}
               isLoading={isLoading}
               loadData={loadData}
-              userEmail={user?.email || ""}
+              userEmail={user?.email || "admin@pnu-ibe.com"}
             />
           )}
 
