@@ -70,14 +70,15 @@ export function ESportsHero() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto korean-text mb-12"
           >
-            부산대학교 정보의생명공학대학 학생회에서 주최하는 E-Sports 대회에 참여하세요.
+            부산대학교 정보의생명공학대학 학생회에서 주최하는 E-Sports 대회에
+            참여하세요.
             <br className="hidden sm:block" />
             다양한 게임 종목으로 실력을 겨루고 새로운 친구들과 만나보세요!
             <br className="hidden sm:block" />
             <span className="font-semibold text-primary">
               참가와 관전 모두 즐거운
-            </span>
-            {" "}대회로 모든 학생이 함께할 수 있습니다.
+            </span>{" "}
+            대회로 모든 학생이 함께할 수 있습니다.
           </motion.p>
 
           {/* 게임 종목 카드들 */}
@@ -91,7 +92,7 @@ export function ESportsHero() {
               <div className="flex flex-row sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
                 <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300 mb-0 sm:mb-4 flex-shrink-0">
                   <img
-                    src="https://i.namu.wiki/i/Orcz5CeeL6H_7giL475Wr2yC_aaMP0L7zX4aTHDipM7Zom-O7XvkJQwKlewAZuVJOa9N3_VlG_j15ddJ2hDN-A.svg"
+                    src="/lol.svg"
                     alt="League of Legends"
                     className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10"
                   />
@@ -131,14 +132,14 @@ export function ESportsHero() {
               <div className="flex flex-row sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
                 <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300 mb-0 sm:mb-4 flex-shrink-0">
                   <img
-                    src="https://i.namu.wiki/i/Kpu2c2Fjn68gb_v09dCzlPkBttZxD4ZMTX_vGnCvkH2pr0hyNKSSsplRV5j0XtUbGWl7Ak13j1Wz5HW3j2tXmQLqygTX_2U1_v6I6vlRPOaSLbwDF_7FJmyQk0cn057AYqMKlb0x3Eod96Il6q1s6g.svg"
+                    src="/fconline.svg"
                     alt="FIFA Online 4"
                     className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10"
                   />
                 </div>
                 <div className="text-left sm:text-center flex-1 sm:flex-none">
                   <div className="text-lg sm:text-xl md:text-2xl font-bold text-dark korean-text mb-0 sm:mb-1">
-                    FIFA Online 4
+                    FC Online
                   </div>
                   <div className="text-sm sm:text-base text-gray-600 korean-text">
                     개인전
