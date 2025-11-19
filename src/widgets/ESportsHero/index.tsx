@@ -114,7 +114,7 @@ export function ESportsHero() {
                   <img
                     src="https://pngimg.com/d/pubg_PNG55.png"
                     alt="PUBG"
-                    className="w-12 h-12 sm:w-12 sm:h-12 md:w-12 md:h-12"
+                    className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10"
                   />
                 </div>
                 <div className="text-left sm:text-center flex-1 sm:flex-none">
