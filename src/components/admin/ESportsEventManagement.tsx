@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { apiClient } from "../../shared/services/api";
 import { useToast } from "../../shared/components/Toast";
 import { useESSportsAuth } from "../../shared/contexts/ESSportsAuthContext";
@@ -213,24 +213,7 @@ export default function ESportsEventManagement() {
     }
   };
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  useEffect(() => {
-    if (!isEsportsAuthenticated || !selectedEventId) {
-      if (!isEsportsAuthenticated) {
-        setTeams([]);
-        setSelectedTeam(null);
-        setTeamEditForm(null);
-      }
-      return;
-    }
-    fetchEventTeams(selectedEventId, teamGameFilter);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEventId, teamGameFilter, isEsportsAuthenticated]);
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       const response = await apiClient.get<ESportsEvent[]>("/api/admin/events");
       setEvents(response);
@@ -250,7 +233,24 @@ export default function ESportsEventManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedEventId]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
+
+  useEffect(() => {
+    if (!isEsportsAuthenticated || !selectedEventId) {
+      if (!isEsportsAuthenticated) {
+        setTeams([]);
+        setSelectedTeam(null);
+        setTeamEditForm(null);
+      }
+      return;
+    }
+    fetchEventTeams(selectedEventId, teamGameFilter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEventId, teamGameFilter, isEsportsAuthenticated]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

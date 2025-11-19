@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { Header } from "../../widgets/Header";
@@ -59,16 +59,7 @@ export default function ESportsRanking() {
     useState<BettingPointSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (eventId) {
-      fetchEvent();
-      fetchRanking();
-      fetchGameResults();
-      fetchMyBettingPoints();
-    }
-  }, [eventId]);
-
-  const fetchEvent = async () => {
+  const fetchEvent = useCallback(async () => {
     try {
       const response = await apiClient.get<{
         event_id: number;
@@ -97,9 +88,9 @@ export default function ESportsRanking() {
         router.push("/esports");
       }
     }
-  };
+  }, [eventId, showToast, router]);
 
-  const fetchRanking = async () => {
+  const fetchRanking = useCallback(async () => {
     try {
       const response = await apiClient.get<{
         rankings: {
@@ -127,9 +118,9 @@ export default function ESportsRanking() {
     } catch (error) {
       console.error("순위 조회 실패:", error);
     }
-  };
+  }, [eventId]);
 
-  const fetchGameResults = async () => {
+  const fetchGameResults = useCallback(async () => {
     try {
       const results: { [key in GameType]?: GameResult[] } = {};
 
@@ -161,9 +152,9 @@ export default function ESportsRanking() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId]);
 
-  const fetchMyBettingPoints = async () => {
+  const fetchMyBettingPoints = useCallback(async () => {
     try {
       const pointSummary = await esportsApiService.getMyPointSummary(eventId);
       setMyBettingPoints(pointSummary);
@@ -171,7 +162,22 @@ export default function ESportsRanking() {
       console.error("내 베팅 포인트 조회 실패:", error);
       // 로그인하지 않은 경우에는 null 상태 유지
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    if (eventId) {
+      fetchEvent();
+      fetchRanking();
+      fetchGameResults();
+      fetchMyBettingPoints();
+    }
+  }, [
+    eventId,
+    fetchEvent,
+    fetchRanking,
+    fetchGameResults,
+    fetchMyBettingPoints,
+  ]);
 
   const getRankColor = (rank: number) => {
     switch (rank) {
@@ -196,35 +202,6 @@ export default function ESportsRanking() {
         return "🥉";
       default:
         return `${rank}위`;
-    }
-  };
-
-  const getGameIcon = (game: GameType) => {
-    switch (game) {
-      case "LOL":
-        return (
-          <img
-            src="/lol2.png"
-            alt="League of Legends"
-            className="w-auto h-5 inline-block"
-          />
-        );
-      case "PUBG":
-        return (
-          <img
-            src="https://pngimg.com/d/pubg_PNG55.png"
-            alt="PUBG"
-            className="w-5 h-5 inline-block"
-          />
-        );
-      case "FIFA":
-        return (
-          <img
-            src="/fconline.svg"
-            alt="FC Online"
-            className="w-5 h-5 inline-block"
-          />
-        );
     }
   };
 

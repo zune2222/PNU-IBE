@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { apiClient } from "../../shared/services/api";
 import { useToast } from "../../shared/components/Toast";
 
@@ -51,25 +51,7 @@ export default function MatchResultManagement() {
   // 팀별 순위 입력 상태
   const [teamRanks, setTeamRanks] = useState<Map<number, TeamRankInfo>>(new Map());
 
-  // 이벤트 목록 불러오기
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  // 선택된 이벤트의 팀 목록 불러오기
-  useEffect(() => {
-    if (selectedEventId) {
-      fetchTeams(selectedEventId);
-      fetchExistingResults(selectedEventId);
-    }
-  }, [selectedEventId]);
-
-  // 게임 타입 변경 시 순위 초기화
-  useEffect(() => {
-    initializeRanks();
-  }, [selectedGameType, teams]);
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       const response = await apiClient.get<ESportsEvent[]>("/api/admin/events");
       setEvents(response);
@@ -77,9 +59,9 @@ export default function MatchResultManagement() {
       console.error("이벤트 목록 조회 실패:", error);
       showToast({ type: "error", message: "이벤트 목록을 불러오는데 실패했습니다." });
     }
-  };
+  }, [showToast]);
 
-  const fetchTeams = async (eventId: number) => {
+  const fetchTeams = useCallback(async (eventId: number) => {
     setLoading(true);
     try {
       const response = await apiClient.get<TeamInfo[]>(
@@ -92,9 +74,9 @@ export default function MatchResultManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
-  const fetchExistingResults = async (eventId: number) => {
+  const fetchExistingResults = useCallback(async (eventId: number) => {
     try {
       const response = await apiClient.get<{
         eventId: number;
@@ -107,9 +89,9 @@ export default function MatchResultManagement() {
       // 결과가 없을 수 있으므로 에러를 무시
       setExistingResults([]);
     }
-  };
+  }, []);
 
-  const initializeRanks = () => {
+  const initializeRanks = useCallback(() => {
     const gameTeams = teams.filter((team) => team.game_type === selectedGameType);
     const newRanks = new Map<number, TeamRankInfo>();
 
@@ -127,7 +109,25 @@ export default function MatchResultManagement() {
     });
 
     setTeamRanks(newRanks);
-  };
+  }, [teams, selectedGameType, existingResults]);
+
+  // 이벤트 목록 불러오기
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
+
+  // 선택된 이벤트의 팀 목록 불러오기
+  useEffect(() => {
+    if (selectedEventId) {
+      fetchTeams(selectedEventId);
+      fetchExistingResults(selectedEventId);
+    }
+  }, [selectedEventId, fetchTeams, fetchExistingResults]);
+
+  // 게임 타입 변경 시 순위 초기화
+  useEffect(() => {
+    initializeRanks();
+  }, [initializeRanks]);
 
   const updateRank = (teamId: number, field: keyof TeamRankInfo, value: number | string) => {
     setTeamRanks((prev) => {
