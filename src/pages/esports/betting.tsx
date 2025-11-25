@@ -34,38 +34,41 @@ export default function ESportsBetting() {
 
     try {
       setLoading(true);
-      const teamsData = await esportsApiService.getBettingStatus(
+      const bettingStatusData = await esportsApiService.getBettingStatus(
         eventId,
         selectedGame
       );
-      // API에서 이미 gameType으로 필터링된 데이터를 보내줍니다
-      setTeams(teamsData);
+      
+      if (Array.isArray(bettingStatusData)) {
+        // 이전 API 응답 형식
+        setTeams(bettingStatusData);
+      } else {
+        // 새로운 API 응답 형식
+        setTeams(bettingStatusData.teams || []);
+        
+        // 내 베팅 정보가 있다면 업데이트
+        if (isAuthenticated && bettingStatusData.userBetSummary) {
+          const userBets = bettingStatusData.userBetSummary.userBets || [];
+          setBets(userBets.map(bet => ({
+            teamId: bet.teamId,
+            betPoints: bet.betPoints
+          })));
+        }
+      }
     } catch (error) {
-      console.error("팀 목록 조회 실패:", error);
+      console.error("베팅 현황 조회 실패:", error);
     } finally {
       setLoading(false);
     }
-  }, [eventId, selectedGame]);
-
-  const fetchMyBets = useCallback(async () => {
-    if (!isAuthenticated || !eventId) return;
-
-    try {
-      const myBets = await esportsApiService.getMyBets(eventId, selectedGame);
-      setBets(myBets);
-    } catch (error) {
-      console.error("내 베팅 정보 조회 실패:", error);
-    }
   }, [eventId, selectedGame, isAuthenticated]);
+
+  // fetchMyBets 함수는 제거됨 - 이제 getBettingStatus에서 내 베팅 정보를 가져옴
 
   useEffect(() => {
     if (eventId) {
       fetchTeams();
-      if (isAuthenticated) {
-        fetchMyBets();
-      }
     }
-  }, [eventId, selectedGame, isAuthenticated, fetchTeams, fetchMyBets]);
+  }, [eventId, selectedGame, isAuthenticated, fetchTeams]);
 
   // 로그인 페이지로 리다이렉트
   useEffect(() => {
@@ -81,6 +84,20 @@ export default function ESportsBetting() {
       const existingBetIndex = prevBets.findIndex(
         (bet) => bet.teamId === teamId
       );
+      
+      const currentBetPoints = getBetForTeam(teamId);
+      const remainingPoints = getRemainingPoints();
+      const maxAllowedPoints = remainingPoints + currentBetPoints;
+      
+      // 포인트가 최대 허용량을 초과하는 경우 제한
+      if (points > maxAllowedPoints) {
+        points = maxAllowedPoints;
+      }
+      
+      // 음수 입력 방지
+      if (points < 0) {
+        points = 0;
+      }
 
       if (points === 0) {
         // 포인트가 0이면 승부 예측 제거
@@ -129,8 +146,7 @@ export default function ESportsBetting() {
         type: "success",
         message: "승부 예측이 완료되었습니다!",
       });
-      fetchTeams(); // 업데이트된 승부 예측 현황 조회
-      fetchMyBets(); // 내 베팅 정보 갱신
+      fetchTeams(); // 업데이트된 승부 예측 현황 및 내 베팅 정보 조회
     } catch (error: unknown) {
       console.error("승부 예측 실패:", error);
       showToast({
@@ -609,13 +625,23 @@ export default function ESportsBetting() {
                                   getRemainingPoints() +
                                   getBetForTeam(team.teamId)
                                 }
-                                value={getBetForTeam(team.teamId)}
-                                onChange={(e) =>
-                                  updateBet(
-                                    team.teamId,
-                                    parseInt(e.target.value) || 0
-                                  )
-                                }
+                                value={getBetForTeam(team.teamId) || ""}
+                                onChange={(e) => {
+                                  const inputValue = e.target.value;
+                                  if (inputValue === "") {
+                                    updateBet(team.teamId, 0);
+                                  } else {
+                                    const points = parseInt(inputValue);
+                                    if (!isNaN(points)) {
+                                      updateBet(team.teamId, points);
+                                    }
+                                  }
+                                }}
+                                onFocus={(e) => {
+                                  if (getBetForTeam(team.teamId) === 0) {
+                                    e.target.value = "";
+                                  }
+                                }}
                                 className="border-2 border-gray-300 rounded-lg px-3 py-2 sm:px-4 sm:py-3 w-20 sm:w-28 text-center text-sm sm:text-base font-semibold focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                                 placeholder="0"
                               />

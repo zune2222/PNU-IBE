@@ -16,6 +16,7 @@ import type {
   ApiTeamResponse,
   ApiBettingResponse,
   ApiRankingResponse,
+  ApiBettingStatusResponse,
 } from '../types/esports';
 
 class ESportsApiService {
@@ -74,16 +75,30 @@ class ESportsApiService {
   async getBettingStatus(
     eventId: string | string[] | undefined,
     gameType: GameType
-  ): Promise<Team[]> {
+  ): Promise<ApiBettingStatusResponse | Team[]> {
     if (!eventId || Array.isArray(eventId)) {
       return [];
     }
 
     try {
-      const response = await apiClient.get<{ teams: ApiTeamResponse[] }>(
+      const response = await apiClient.get<ApiBettingStatusResponse>(
         `/api/betting/status?eventId=${eventId}&gameType=${gameType}`
       );
-      return response.teams.map(this.transformTeamResponse);
+      
+      // 새로운 API 응답 형식인지 확인
+      if (response.teams && Array.isArray(response.teams)) {
+        return {
+          eventId: response.eventId,
+          eventName: response.eventName,
+          gameType: response.gameType,
+          teams: response.teams.map(this.transformTeamResponse),
+          userBetSummary: response.userBetSummary
+        };
+      } else {
+        // 이전 형식의 응답이라면 teams 배열로 반환
+        const teams = (response as any).teams || response;
+        return Array.isArray(teams) ? teams.map(this.transformTeamResponse) : [];
+      }
     } catch (error) {
       console.error('베팅 현황 조회 실패:', error);
       throw error;
@@ -339,6 +354,8 @@ class ESportsApiService {
 }
 
 export const esportsApiService = new ESportsApiService();
+
+
 
 
 
