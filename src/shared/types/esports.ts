@@ -122,6 +122,25 @@ export interface ApiRankingResponse {
   }>;
 }
 
+export interface BettingStatusResponse {
+  eventId: number;
+  eventName: string;
+  gameType: GameType;
+  teams: Team[];
+  userBetSummary?: {
+    studentId: string;
+    gameType: GameType;
+    totalBetPoints: number;
+    remainingPoints: number;
+    userBets: Array<{
+      teamId: number;
+      teamName: string;
+      betPoints: number;
+    }>;
+    lastBetTime?: string;
+  };
+}
+
 export interface ApiBettingStatusResponse {
   eventId: number;
   eventName: string;

@@ -17,6 +17,7 @@ import type {
   ApiBettingResponse,
   ApiRankingResponse,
   ApiBettingStatusResponse,
+  BettingStatusResponse,
 } from '../types/esports';
 
 class ESportsApiService {
@@ -75,7 +76,7 @@ class ESportsApiService {
   async getBettingStatus(
     eventId: string | string[] | undefined,
     gameType: GameType
-  ): Promise<ApiBettingStatusResponse | Team[]> {
+  ): Promise<BettingStatusResponse | Team[]> {
     if (!eventId || Array.isArray(eventId)) {
       return [];
     }
@@ -96,7 +97,8 @@ class ESportsApiService {
         };
       } else {
         // 이전 형식의 응답이라면 teams 배열로 반환
-        const teams = (response as any).teams || response;
+        const responseData = response as unknown as { teams?: ApiTeamResponse[] } | ApiTeamResponse[];
+        const teams = 'teams' in responseData ? responseData.teams : responseData;
         return Array.isArray(teams) ? teams.map(this.transformTeamResponse) : [];
       }
     } catch (error) {
