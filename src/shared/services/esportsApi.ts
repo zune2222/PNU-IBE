@@ -82,27 +82,36 @@ class ESportsApiService {
     }
 
     try {
-      const response = await apiClient.get<ApiBettingStatusResponse>(
-        `/api/betting/status?eventId=${eventId}&gameType=${gameType}`
-      );
+      const url = `/api/betting/status?eventId=${eventId}&gameType=${gameType}`;
+      console.log("🌐 API 요청:", url);
+      
+      const response = await apiClient.get<ApiBettingStatusResponse>(url);
+      
+      console.log("🔄 원본 API 응답:", response);
       
       // 새로운 API 응답 형식인지 확인
       if (response.teams && Array.isArray(response.teams)) {
-        return {
-          eventId: response.eventId,
-          eventName: response.eventName,
-          gameType: response.gameType,
+        // 백엔드에서 snake_case로 응답하므로 올바르게 변환
+        const rawResponse = response as unknown as Record<string, unknown>;
+        const transformedResponse: BettingStatusResponse = {
+          eventId: (rawResponse.event_id as number) || (rawResponse.eventId as number),
+          eventName: (rawResponse.event_name as string) || (rawResponse.eventName as string),
+          gameType: (rawResponse.game_type as GameType) || (rawResponse.gameType as GameType),
           teams: response.teams.map(this.transformTeamResponse),
-          userBetSummary: response.userBetSummary
+          userBetSummary: (rawResponse.user_bet_summary || rawResponse.userBetSummary) as BettingStatusResponse['userBetSummary']
         };
+        console.log("✅ 변환된 응답 (새 형식):", transformedResponse);
+        return transformedResponse;
       } else {
         // 이전 형식의 응답이라면 teams 배열로 반환
         const responseData = response as unknown as { teams?: ApiTeamResponse[] } | ApiTeamResponse[];
         const teams = 'teams' in responseData ? responseData.teams : responseData;
-        return Array.isArray(teams) ? teams.map(this.transformTeamResponse) : [];
+        const transformedTeams = Array.isArray(teams) ? teams.map(this.transformTeamResponse) : [];
+        console.log("✅ 변환된 응답 (이전 형식):", transformedTeams);
+        return transformedTeams;
       }
     } catch (error) {
-      console.error('베팅 현황 조회 실패:', error);
+      console.error('❌ 베팅 현황 조회 실패:', error);
       throw error;
     }
   }

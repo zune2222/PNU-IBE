@@ -67,10 +67,12 @@ export default function MatchResultManagement() {
       const response = await apiClient.get<TeamInfo[]>(
         `/api/teams/events/${eventId}`
       );
-      setTeams(response);
+      // response가 배열이 아니면 빈 배열로 처리
+      setTeams(Array.isArray(response) ? response : []);
     } catch (error) {
       console.error("팀 목록 조회 실패:", error);
       showToast({ type: "error", message: "팀 목록을 불러오는데 실패했습니다." });
+      setTeams([]);
     } finally {
       setLoading(false);
     }
@@ -83,7 +85,8 @@ export default function MatchResultManagement() {
         eventName: string;
         teamResults: TeamResult[];
       }>(`/api/admin/team-results?eventId=${eventId}`);
-      setExistingResults(response.teamResults);
+      // teamResults가 없거나 undefined인 경우 빈 배열로 처리
+      setExistingResults(response?.teamResults || []);
     } catch (error) {
       console.error("기존 결과 조회 실패:", error);
       // 결과가 없을 수 있으므로 에러를 무시

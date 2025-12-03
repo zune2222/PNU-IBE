@@ -34,33 +34,98 @@ export default function ESportsBetting() {
 
     try {
       setLoading(true);
+      console.log("🔍 베팅 현황 조회 시작:", { eventId, selectedGame, isAuthenticated });
+      
       const bettingStatusData = await esportsApiService.getBettingStatus(
         eventId,
         selectedGame
       );
       
+      console.log("📊 베팅 현황 API 응답:", bettingStatusData);
+      
+      // 응답 타입에 따른 처리
       if (Array.isArray(bettingStatusData)) {
-        // 이전 API 응답 형식
+        // 이전 API 응답 형식 (Team[])
+        console.log("📦 이전 API 형식 (배열):", bettingStatusData.length, "개 팀");
         setTeams(bettingStatusData);
-      } else {
-        // 새로운 API 응답 형식
-        setTeams(bettingStatusData.teams || []);
+        setBets([]); // 이전 형식에서는 베팅 정보 없음
+      } else if (bettingStatusData && typeof bettingStatusData === 'object') {
+        // 새로운 API 응답 형식 (BettingStatusResponse)
+        console.log("📦 새로운 API 형식 (객체):", {
+          eventId: bettingStatusData.eventId,
+          eventName: bettingStatusData.eventName,
+          gameType: bettingStatusData.gameType,
+          teams: bettingStatusData.teams?.length || 0,
+          userBetSummary: bettingStatusData.userBetSummary ? "있음" : "없음"
+        });
         
-        // 내 베팅 정보가 있다면 업데이트
+        // teams 필드 확인 및 설정
+        const teams = bettingStatusData.teams || [];
+        console.log("📋 팀 목록:", teams);
+        setTeams(teams);
+        
+        // 내 베팅 정보 처리
         if (isAuthenticated && bettingStatusData.userBetSummary) {
-          const userBets = bettingStatusData.userBetSummary.userBets || [];
-          setBets(userBets.map(bet => ({
-            teamId: bet.teamId,
-            betPoints: bet.betPoints
-          })));
+          console.log("🔍 userBetSummary 원본:", bettingStatusData.userBetSummary);
+          
+          // snake_case 가능성 고려하여 양쪽 다 확인
+          const userBetSummary = bettingStatusData.userBetSummary as Record<string, unknown>;
+          const userBets = (userBetSummary.userBets as unknown[]) || (userBetSummary.user_bets as unknown[]) || [];
+          
+          console.log("💰 내 베팅 정보:", userBets);
+          console.log("📊 userBetSummary 전체:", userBetSummary);
+          
+          // userBets가 배열이고 요소가 있는지 확인
+          if (Array.isArray(userBets) && userBets.length > 0) {
+            setBets(userBets.map((bet: unknown) => {
+              const betObj = bet as Record<string, unknown>;
+              return {
+                teamId: (betObj.teamId as number) || (betObj.team_id as number),
+                betPoints: (betObj.betPoints as number) || (betObj.bet_points as number)
+              };
+            }));
+          } else {
+            console.log("⚠️ userBets가 비어있거나 배열이 아님:", userBets);
+            setBets([]);
+          }
+        } else {
+          console.log("💰 내 베팅 정보 없음:", { 
+            isAuthenticated, 
+            hasUserBetSummary: !!bettingStatusData.userBetSummary 
+          });
+          setBets([]);
         }
+      } else {
+        console.log("⚠️ 예상하지 못한 응답 형식:", typeof bettingStatusData, bettingStatusData);
+        setTeams([]);
+        setBets([]);
       }
     } catch (error) {
-      console.error("베팅 현황 조회 실패:", error);
+      console.error("❌ 베팅 현황 조회 실패:", error);
+      
+      // 더 자세한 에러 정보 로그
+      if (error && typeof error === 'object') {
+        const errorObj = error as Record<string, unknown>;
+        console.error("에러 상세:", {
+          message: errorObj.message,
+          status: errorObj.status,
+          response: (errorObj.response as Record<string, unknown>)?.data
+        });
+      }
+      
+      // 사용자에게 에러 메시지 표시
+      showToast({
+        type: "error",
+        message: "베팅 현황을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.",
+      });
+      
+      // 빈 배열로 설정하여 UI가 깨지지 않도록 함
+      setTeams([]);
+      setBets([]);
     } finally {
       setLoading(false);
     }
-  }, [eventId, selectedGame, isAuthenticated]);
+  }, [eventId, selectedGame, isAuthenticated, showToast]);
 
   // fetchMyBets 함수는 제거됨 - 이제 getBettingStatus에서 내 베팅 정보를 가져옴
 
@@ -461,12 +526,37 @@ export default function ESportsBetting() {
                 </div>
 
                 <div className="space-y-3 sm:space-y-4">
-                  {teams
-                    .sort(
-                      (a, b) =>
-                        (b.totalBetPoints || 0) - (a.totalBetPoints || 0)
-                    )
-                    .map((team, index) => {
+                  {teams.length === 0 ? (
+                    <div className="text-center py-8 sm:py-12">
+                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                        <svg
+                          className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-700 korean-text mb-2 sm:mb-3">
+                        참가팀이 없습니다
+                      </h3>
+                      <p className="text-sm sm:text-base text-gray-500 korean-text">
+                        아직 {selectedGame === "LOL" ? "League of Legends" : selectedGame === "PUBG" ? "PUBG" : "FIFA Online 4"}에 등록된 팀이 없습니다.
+                      </p>
+                    </div>
+                  ) : (
+                    teams
+                      .sort(
+                        (a, b) =>
+                          (b.totalBetPoints || 0) - (a.totalBetPoints || 0)
+                      )
+                      .map((team, index) => {
                       const maxBetPoints = Math.max(
                         ...teams.map((t) => t.totalBetPoints || 0)
                       );
@@ -659,7 +749,8 @@ export default function ESportsBetting() {
                           </div>
                         </div>
                       );
-                    })}
+                    })
+                  )}
                 </div>
               </div>
             </div>
